@@ -14,6 +14,13 @@
 \newcommand*{\currentdegrees}[1]{\gdef\@currentdegrees{#1}}
 \newcommand*{\@currentdegrees}{Specify your current degrees}
 
+\newcommand*{\studentnumber}[1]{\gdef\@studentnumber{#1}}
+\newcommand*{\@studentnumber}{Specify your student number}
+
+\newcommand*{\subtitle}[1]{\gdef\@subtitle{#1}}
+\newcommand*{\@subtitle}{Specify the subtitle}
+
+
 %Degree you are submitting for.
 \newcommand*{\submittedfor}[1]{\gdef\@submittedfor{#1}}
 \newcommand*{\@submittedfor}{Specify degree you are submitting for}
@@ -48,18 +55,26 @@
 	\thetitle
 \end{center}
 
+\vspace{12 pt}
+
+\begin{center}
+    \Huge
+	\textit{\@subtitle}\\
+\end{center}
+
+\vspace{24 pt}
+
 \begin{center}
 	\Large
     \theauthor \\
-		\@currentdegrees{}
+		\@studentnumber
 \end{center}
 
 \vspace{108 pt}
 
 \begin{center}
     \Large
-\textit{A thesis submitted for the degree of \@submittedfor{} of Philosophy at\\
-The University of Queensland in \thedate{}}\\
+\textit{The University of Queensland, \thedate{}}\\
 \Large
 	\@school{}
 \end{center}
