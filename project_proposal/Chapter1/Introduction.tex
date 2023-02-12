@@ -19,6 +19,18 @@ A common approach is to employ a firewall to filter out potentially malicious pa
 This project focuses primarily on securing edge IoT Ethernet networks. 
 
 
+\section{Aims}
+
+The aims of the proposed FPGA Ethernet controller and web interface on a RISC-V processor are:
+
+\begin{itemize}
+    \item Create a Custom MAC
+    \item Create a Custom hardware based packet filter
+    \item Use a RISC-V Softcore processor to control the packet filter and host a web interface
+\end{itemize}
+
+
+
 \section{Custom MAC}
 The decision in creating a custom MAC might be considered as insteresting given the range of pre-existing Intellectual 
 Property (IP) cores for Ethernet on FPGAs. The issue with the pre-existing solutions only have a single output to connect to something like a softcore
@@ -27,10 +39,8 @@ to the MAC to allow traffic to flow through a hardware-based firewall. This is a
 microprocessors. 
 
 
-\section{RISC-V processor}
 
-
-\section{Firewall}
+\section{Packet Filter Firewall}
 
 Usually, the first line of defence against bad actors, it is a vital component in a computer network and can become vastly complex. There are several
 types of Firewalls such as packet filters (pf), stateful packet firewalls and application firewalls \cite{FirewallsBook}. Firewalls can also perform 
@@ -41,3 +51,6 @@ Packet filters are considered as stateless and traditionally only filter on the 
 More advanced firewalls can perform deep packet inspection and explore the contents of the higher layers to better evaluate a packets true intention. 
 While there is provision to add this functionality on an FPGA based firewall, this will not be explored in this project due to its significant increase 
 in complexity. 
+
+
+\section{RISC-V processor}
