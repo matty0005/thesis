@@ -1,0 +1,43 @@
+
+% ***************************************************
+% Example of an internal chapter
+% ***************************************************
+%This is an internal chapter of the thesis.
+%If you have a long title, you can supply an abbreviated version to print in the Table of Contents using the optional argument to the \chapter command.
+\chapter[Abbreviated title]{Timeline and Plan}
+\label{Chap:label}	%CREATE YOUR OWN LABEL.
+\pagestyle{headings}
+
+
+
+% ********* Enter your text below this line: ********
+This section of the report details the plan and timeline of the proposed project.
+% ***************************************************
+
+
+\section{Milestones}
+\label{Sec:label}	%CREATE YOUR OWN LABEL.
+
+% ********* Enter your text below this line: ********
+Table ~\ref{table:milestones} shows the tasks and expected durations of the proposed project.
+  
+
+\begin{table}[hbt!]
+\centering%
+% \begin{tabularx}{lll}
+    \begin{tabularx}{\textwidth}{ lXl }
+        \hline
+        Task                            & Details & Duration  \\ \hline
+        Create MAC                      &  Create custom Layer 2 Ethernet hardware based on the IEEE 802.3 standard      & 3-4 Weeks \\
+        Wishbone Interface              &  Connect the Ethernet MAC to the NEORV32 RISC-V Processor using the wishbone interface and access it via software       & 2 Weels   \\
+        Webserver                       &  Create and Get the webserver working on the NEORV32 Processor. Web page should be accessed from another computer       & 5-6 Weeks \\ 
+        Firewall Hardware               &  Create the hardware between 2 Ethernet MACs to filter out packets based on rules      & 3-4 Weeks \\ 
+        Integration with software       &  Add functionality to the server to be able to configure the firewall rules       & 1 Week \\ 
+        Measure and Compare             &  Compare to pre-existing solutions       & 1 Week \\ 
+        \hline
+        \end{tabularx}
+\caption{ Milestones for the proposed project}\label{table:milestones}
+\end{table}
+ 
+
+\section{Risk assessment}

@@ -5,18 +5,39 @@
 % Introduction
 % ***************************************************
 
+
+
+This chapter provides the necessary background and reasoning behind the proposed project. 
 \section{Topic}
 
 % ********* Enter your text below this line: ********
-The proposed thesis project 
 
-The IEEE 802.3 standard\cite{IEEE802.3-2012}, more commonly known by the name of 'Ethernet' defines the \textit{'Medium Access Control'} (MAC) protocol amongst other things for two or more devices to communicate over a network. This standard is just one part in the layered network models such as the OSI model and TCP/IP models. 
+In a technology age of growing numbers of cyber attacks and growing number of Internet-of-Things (IoT) devices being interconnected, it's 
+paramount to ensure these devices operate safetly and securely. There are a plethora of different ways to reduce the likelyhood of cyber attacks.
+A common approach is to employ a firewall to filter out potentially malicious packets. 
 
-
-RISC-V, a reduced instruction set computer architecture, is an open and royalty free instruction set architecture (ISA). As a result, a plethora of soft-core processors have been made. The specific core proposed in this project is the 'NEORV32` RISC-V processor. It's a highly configurable microcontroller like system on chip (SoC) written purely in VHDL.
-
-
+This project focuses primarily on securing edge IoT Ethernet networks. 
 
 
+\section{Custom MAC}
+The decision in creating a custom MAC might be considered as insteresting given the range of pre-existing Intellectual 
+Property (IP) cores for Ethernet on FPGAs. The issue with the pre-existing solutions only have a single output to connect to something like a softcore
+processor. To create a firewall, the network traffic would need to pass through the processor. To decrease latency, a second interface can be added 
+to the MAC to allow traffic to flow through a hardware-based firewall. This is analogous to the direct memory access (DMA) controller on most modern 
+microprocessors. 
 
-% ***************************************************
+
+\section{RISC-V processor}
+
+
+\section{Firewall}
+
+Usually, the first line of defence against bad actors, it is a vital component in a computer network and can become vastly complex. There are several
+types of Firewalls such as packet filters (pf), stateful packet firewalls and application firewalls \cite{FirewallsBook}. Firewalls can also perform 
+other tasks and employ other techniques to secure a network, however, in this project the most basic pf-style firewall will be implemented. 
+Packet filters are considered as stateless and traditionally only filter on the fields in the headers in the network (layer 2) and transport 
+(layer 3) layers \cite{FirewallsBook}. Such fields include IP addresses, port numbers and protocol type.
+
+More advanced firewalls can perform deep packet inspection and explore the contents of the higher layers to better evaluate a packets true intention. 
+While there is provision to add this functionality on an FPGA based firewall, this will not be explored in this project due to its significant increase 
+in complexity. 
