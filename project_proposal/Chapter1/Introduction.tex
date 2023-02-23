@@ -13,19 +13,33 @@ This chapter provides the necessary background and reasoning behind the proposed
 
 
 In a technology age of growing numbers of cyber attacks and record number of connected devices, it's 
-paramount to ensure these devices operate safetly and securely. In the 2021-22 financial year the Australian Cyber Security Center (ACSC) recieved in 
-excess of 76,000 cybercrime reports and growing \cite{acsc_2022}. 
+paramount to ensure these devices operate safetly and securely. The Australian Cyber Security Center (ACSC) recieved in 
+excess of 76,000 cybercrime reports and growing in the 2021-22 financial year \cite{acsc_2022}. The growing trend of Internet of Things (IoT) will provide 
+more opportunity for black hats (malicious attackers). IHS Markit estimates 125 billion IoT devices will be connected by 2030 \cite{IHS_iot}. 
+
+To cope with the increase in IoT devices, a common shift to edge computing has evolved in favour over the traditionally more centralised cloud computing 
+architecture. The core principals behind the paradigm is to move the data processing closer geographically to its origin to not only decrease the 
+central load, but to improve latency \cite{EdgeComputingPerspectives}. Due to the distrbutied load, smaller and more efficient computers can be used 
+at the edge/permimeter of these networks \cite{EdgeComputingPerspectives}. Just like any other computer connected to the broader network, these 
+edge networks also need to be protected from bad actors.
+
+
 
 \section{Topic}
 
-% ********* Enter your text below this line: ********
+While there is no single solution that will fully protect an edge network, a common and effective way to reduce the unauthorised/unwanted network 
+traffic is by simply filtering out the potentially malicious packets. While this may seem overly complex, in reality a few simple rules can be followed
+to decide on whether to forward or deny/drop/block packets from entering or exiting a network. These packet filters (pf) are a type of firewall that do 
+not follow any complex rules and keep state between packets or use deep packet inpsection to check the contents of the payload to ensure it's not 
+malicious. 
 
-There are a plethora of different ways to reduce the likelyhood of cyber attacks.
-A common approach is to employ a firewall to filter out potentially malicious packets. 
+Packet filters are considered as stateless and traditionally only filter based on the fields in the headers at the network (layer 2) and transport 
+(layer 3) layers \cite{FirewallsBook}. Such fields include IP addresses, port numbers and protocol type.
 
-This project focuses primarily on securing edge IoT Ethernet networks. 
+The proposed project consists of making a hardware implementation of a pf with custom Ethernet Media Access Controllers (MAC) connected to a hardware
+based filtering block which is all controlled by a RISC-V softcore processor. This will then also have a web interface so that a user can configure
+the rules for the pf.
 
-\section{Defining IoT edge netwoks}
 
 
 \section{Aims}
@@ -36,6 +50,7 @@ The aims of the proposed FPGA Ethernet controller and web interface on a RISC-V 
     \item Increase security to edge IoT networks.
     \item Increase the power efficiency for wire-speed firewalls.
 \end{itemize}
+
 
 
 \section{Establishing Exclusions}
