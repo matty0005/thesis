@@ -10,8 +10,11 @@
 This chapter provides the necessary background and reasoning behind the proposed project. 
 
 \section{Background }
-In a technology age of growing numbers of cyber attacks and growing number of Internet-of-Things (IoT) devices being interconnected, it's 
-paramount to ensure these devices operate safetly and securely. 
+
+
+In a technology age of growing numbers of cyber attacks and record number of connected devices, it's 
+paramount to ensure these devices operate safetly and securely. In the 2021-22 financial year the Australian Cyber Security Center (ACSC) recieved in 
+excess of 76,000 cybercrime reports and growing \cite{acsc_2022}. 
 
 \section{Topic}
 
@@ -21,6 +24,8 @@ There are a plethora of different ways to reduce the likelyhood of cyber attacks
 A common approach is to employ a firewall to filter out potentially malicious packets. 
 
 This project focuses primarily on securing edge IoT Ethernet networks. 
+
+\section{Defining IoT edge netwoks}
 
 
 \section{Aims}
@@ -33,3 +38,15 @@ The aims of the proposed FPGA Ethernet controller and web interface on a RISC-V 
 \end{itemize}
 
 
+\section{Establishing Exclusions}
+
+While the proposed project will reduce the likelyhood of network based attacks it is not a \textit{'one size fits all'} solution. 
+By the nature of the IoT and edge network ecosystem, there are a myriad of different attack vectors where not all of them will be detectable at the
+netowrk level.
+
+The proposed project will \textbf{not}
+\begin{itemize}
+    \item Protect against all attacks
+    \item Be able to protect against all IoT devices.
+    \item Not perform routing
+\end{itemize}
