@@ -4,7 +4,7 @@
 % ***************************************************
 %This is an internal chapter of the thesis.
 %If you have a long title, you can supply an abbreviated version to print in the Table of Contents using the optional argument to the \chapter command.
-\chapter[Abbreviated title]{Background}
+\chapter[Literature review]{Literature review}
 \label{Chap:label}	%CREATE YOUR OWN LABEL.
 \pagestyle{headings}
 
@@ -13,9 +13,25 @@
 Some of the concepts behind the proposed project, such as an Ethernet MAC or RISC-V processor are not new, there is a variety of previous works in these areas. This part of the proposal will explore the prior work related to the project. 
 
 
+
+\section{RISC-V processor}
+Due to the open nature of the RISC-V architecture, many designers have made their own System on Chips (SoC) and created their own implementations.
+
+TALK ABOUT DIFFERENT RISC-V SOCs
+
+The specific SoC explored in the proposed project is the \textit{NEORV32 RISC-V} softcore processor written in VHDL. This SoC is vendor agnostic and 
+includes many built in features while giving the flexibility to turn on and off select features as required. It has the standard UART, SPI, and GPIO 
+interfaces, but also supports a \textit{'Wishbone b4'} external bus interface. The wishbone interface allows for custom hardware to be memory mapped 
+into the CPU. 
+
+
+
+
+
 \section{Ethernet MAC}
 
-
+First introduced in 1983 \cite{IEEE802.3-2012}, the IEEE 802.3 standardardised a technology, Ethernet, to interconnect devices. There have been 
+many attempts at creating hardware for Ethernet MACs. 
 
 
 
