@@ -4,7 +4,7 @@
 % ***************************************************
 %This is an internal chapter of the thesis.
 %If you have a long title, you can supply an abbreviated version to print in the Table of Contents using the optional argument to the \chapter command.
-\chapter[Literature review]{Literature review}
+\chapter[Literature review]{Literature review }
 \label{Chap:label}	%CREATE YOUR OWN LABEL.
 \pagestyle{headings}
 
@@ -15,15 +15,19 @@ Some of the concepts behind the proposed project, such as an Ethernet MAC or RIS
 
 
 \section{RISC-V processor}
-Due to the open nature of the RISC-V architecture, many designers have made their own System on Chips (SoC) and created their own implementations.
+Due to the open nature of the RISC-V architecture, many designers have made their own System on Chips (SoC) and created their own implementations. RISC-V 
+themselves have published a list\footnote[1]{See: https://github.com/riscv/riscv-isa-manual/blob/master/marchid.md} of different RISC-V implementations 
+that have a unique architecture ID. The majority of these are either written for application specific integrated circuits (ASICs), written in a hardware 
+description language other than VHDL or has poor documentation with the exception of the  \textit{NEORV32 RISC-V} softcore processor. This SoC written 
+in vendor agnostic VHDL and importantly has a considerable amount of documentation. 
 
-TALK ABOUT DIFFERENT RISC-V SOCs
+Being a softcore processor, there is control over which modules are implemented and are not. Some basic features of the \textit{NEORV32 RISC-V} include 
+UART, SPI, and GPIO interfaces \cite{neorv32Datasheet}. The datasheet \cite{neorv32Datasheet} also mentions that it supports a \textit{'Wishbone b4'} 
+external bus interface. 
 
-The specific SoC explored in the proposed project is the \textit{NEORV32 RISC-V} softcore processor written in VHDL. This SoC is vendor agnostic and 
-includes many built in features while giving the flexibility to turn on and off select features as required. It has the standard UART, SPI, and GPIO 
-interfaces, but also supports a \textit{'Wishbone b4'} external bus interface. The wishbone interface allows for custom hardware to be memory mapped 
-into the CPU. 
 
+A Wishbone B4 (refered to as just 'wishbone') interconnection is designed specifically to connect peices of hardware together on a System-on-Chip (SoC) \cite{WishboneSpec}. In the NEORV32, 
+It allows for external hardware modules to be memory mapped into the the 32bit address space on the processor \cite{neorv32Datasheet}.
 
 
 
