@@ -95,9 +95,7 @@
         \chaptitlefont\hrule height 0.5pt \vspace{1em}%
         {##1}\vspace{1em}\hrule height 0.5pt%
         }%
-    \renewcommand{\printchapternum}{%
-        \chapnumfont\thechapter%
-        }%
+
 }
 
 \chapterstyle{mychapterstyle}

@@ -60,6 +60,11 @@
 % Assemble title page
 \maketitle
 
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries}{}{0pt}{\Huge}
+  \titlespacing*{\chapter}{0pt}{-50pt}{40pt}
+
+
 
 \clearpage
 %YOU MUST EDIT THIS DOCUMENT.
@@ -81,15 +86,6 @@
 %CHAPTER 3
 \input{./Chapter3/Timeline.tex}
 
-% HOW TO ADD ADDITIONAL CHAPTERS
-% Step One: Add a new folder called "ChapterX" (X being the chapter number).
-% Step Two: Within the folder add a new .tex file by clicking the "New File" button in the Overleaf Menu. Rename the file to a title of your choice.
-% Step Three: Copy the Chapter 2 headline and "\input" command located above and insert it below Chapter 2.
-% Step Four: Rename the headline to your specific chapter number, change the input command to include the name of the folder you created and the name of the file you created.
-% Repeat this process for every chapter.
-
-%CONCLUSION CHAPTER
-\input{./Conclusion/Conclusion.tex}
 
 % ***************************************************
 % Bibliography
