@@ -1,71 +1,80 @@
-%If you are presenting work which has been previously published, acknowledge this here.
-% ***************************************************
-% How to introduce a previously published chapter
-% ***************************************************
-%This is an example of how you might introduce a chapter that has been published previously. 
-\cleartoevenpage
-\pagestyle{empty}	
-%Use this command (above) to suppress the header from the preceding chapter.
-
-\noindent
-The following publication has been incorporated as Chapter~\ref{Chap:label}.
-
-\noindent
-1.~\cite{DumyCitationKey} \textbf{Your Name}, Co-author 1, and Final Author, \href{linktoyourpaper}{Title of your paper}, \textit{Journal} Issue, Number, Year
-
-\begin{table}[h]
-	\begin{center}
-	\begin{tabular}{|c|l|l|}
-		\hline
-		Contributor & Statement of contribution & \% \\
-		\hline
-		\textbf{Your Name}				& writing of text 					& 70\\
-															& proof-reading							& 60 \\
-															& theoretical derivations 	& 70\\
-															& numerical calculations 		& 100\\
-															& preparation of figures 		& 80 \\
-															& initial concept						& 10 \\
-		\hline
-		Co-author 1								& writing of text 					& 20\\
-															& proof-reading							& 10 \\
-															& supervision, guidance 		& 20\\
-															& theoretical derivations 	& 10\\
-															& preparation of figures 		& 20 \\
-															& initial concept						& 10 \\
-		\hline
-		Final Author							& writing of text 					& 10\\
-															& proof-reading							& 30 \\
-															& supervision, guidance 		& 80 \\
-															& theoretical derivations 	& 20 \\
-															& preparation of figures 		& 10 \\
-															& initial concept						& 80 \\
-		\hline
-	\end{tabular}
-	\end{center}
-\end{table}
-
-If your task breakdown requires further clarification, do so here. Do not exceed a single page.
-
 
 % ***************************************************
 % Example of an internal chapter
 % ***************************************************
 %This is an internal chapter of the thesis.
 %If you have a long title, you can supply an abbreviated version to print in the Table of Contents using the optional argument to the \chapter command.
-\chapter[Abbreviated title]{Full title}
+\chapter[Literature review]{Literature review }
 \label{Chap:label}	%CREATE YOUR OWN LABEL.
 \pagestyle{headings}
 
-% ********* Enter your text below this line: ********
-Introduce the broad layout of the chapter.
-
-% ***************************************************
 
 
-\section{Introduction}
-\label{Sec:label}	%CREATE YOUR OWN LABEL.
+Some of the concepts behind the proposed project, such as an Ethernet MAC or RISC-V processor are not new, there is a variety of previous works in these areas. This part of the proposal will explore the prior work related to the project. 
 
-% ********* Enter your text below this line: ********
-Add your text here. 
 
-% ***************************************************
+
+\section{RISC-V processor}
+Due to the open nature of the RISC-V architecture, many designers have made their own System on Chips (SoC) and created their own implementations. RISC-V 
+themselves have published a list\footnote[1]{See: https://github.com/riscv/riscv-isa-manual/blob/master/marchid.md} of different RISC-V implementations 
+that have a unique architecture ID. The majority of these are either written for application specific integrated circuits (ASICs), written in a hardware 
+description language other than VHDL or has poor documentation with the exception of the  \textit{NEORV32 RISC-V} softcore processor. This SoC written 
+in vendor agnostic VHDL and importantly has a considerable amount of documentation. 
+
+Being a softcore processor, there is control over which modules are implemented and are not. Some basic features of the \textit{NEORV32 RISC-V} include 
+UART, SPI, and GPIO interfaces \cite{neorv32Datasheet}. The datasheet \cite{neorv32Datasheet} also mentions that it supports a \textit{'Wishbone b4'} 
+external bus interface. 
+
+
+A Wishbone B4 (refered to as just 'wishbone') interconnection is designed specifically to connect peices of hardware together on a System-on-Chip (SoC) \cite{WishboneSpec}. In the NEORV32, 
+It allows for external hardware modules to be memory mapped into the the 32bit address space on the processor \cite{neorv32Datasheet}.
+
+
+
+
+\section{Ethernet MAC}
+
+First introduced in 1983 \cite{IEEE802.3-2012}, the IEEE 802.3 standardardised a technology, Ethernet, to interconnect devices. There have been 
+many attempts at creating hardware for Ethernet MACs. 
+
+
+
+
+
+The decision in creating a custom MAC might be considered as interesting given the range of pre-existing Intellectual 
+Property (IP) cores for Ethernet on FPGAs. The issue with the pre-existing solutions only have a single output to connect to something like a softcore
+processor. To create a firewall, the network traffic would need to pass through the processor. To decrease latency, a second interface can be added 
+to the MAC to allow traffic to flow through a hardware-based firewall. This is analogous to the direct memory access (DMA) controller on most modern 
+microprocessors. 
+
+
+
+\section{Packet Filter Firewall}
+
+Usually, the first line of defence against bad actors, it is a vital component in a computer network and can become vastly complex. There are several
+types of Firewalls such as packet filters (pf), stateful packet firewalls and application firewalls \cite{FirewallsBook}. Firewalls can also perform 
+other tasks and employ other techniques to secure a network, however, in this project the most basic pf-style firewall will be implemented. 
+Packet filters are considered as stateless and traditionally only filter on the fields in the headers in the network (layer 2) and transport 
+(layer 3) layers \cite{FirewallsBook}. Such fields include IP addresses, port numbers and protocol type.
+
+More advanced firewalls can perform deep packet inspection and explore the contents of the higher layers to better evaluate a packets true intention. 
+While there is provision to add this functionality on an FPGA based firewall, this will not be explored in this project due to its significant increase 
+in complexity. 
+
+
+\section{RISC-V processor}
+
+
+
+
+
+
+The IEEE 802.3 standard\cite{IEEE802.3-2012}, more commonly known by the name of 'Ethernet' defines the \textit{'Medium Access Control'} (MAC) 
+protocol amongst other things for two or more devices to communicate over a network. This standard is just one part in the layered network 
+models such as the OSI model and TCP/IP models. 
+
+
+RISC-V, a reduced instruction set computer architecture, is an open and royalty free instruction set architecture (ISA). As a result, a plethora 
+of soft-core processors have been made. The specific core proposed in this project is the 'NEORV32` RISC-V processor. It's a highly configurable 
+microcontroller like system on chip (SoC) written purely in VHDL.
+
