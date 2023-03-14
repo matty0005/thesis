@@ -60,11 +60,6 @@
 % Assemble title page
 \maketitle
 
-\titleformat{\chapter}[display]
-  {\normalfont\bfseries}{}{0pt}{\Huge}
-  \titlespacing*{\chapter}{0pt}{-50pt}{40pt}
-
-
 
 \clearpage
 %YOU MUST EDIT THIS DOCUMENT.
@@ -84,11 +79,17 @@
 \input{./Chapter2/Chapter2.tex}
 
 %CHAPTER 3
-\input{./Chapter3/Topic.tex}
+\input{./Chapter3/Timeline.tex}
 
-%CHAPTER 4
-\input{./Chapter4/Timeline.tex}
+% HOW TO ADD ADDITIONAL CHAPTERS
+% Step One: Add a new folder called "ChapterX" (X being the chapter number).
+% Step Two: Within the folder add a new .tex file by clicking the "New File" button in the Overleaf Menu. Rename the file to a title of your choice.
+% Step Three: Copy the Chapter 2 headline and "\input" command located above and insert it below Chapter 2.
+% Step Four: Rename the headline to your specific chapter number, change the input command to include the name of the folder you created and the name of the file you created.
+% Repeat this process for every chapter.
 
+%CONCLUSION CHAPTER
+\input{./Conclusion/Conclusion.tex}
 
 % ***************************************************
 % Bibliography
@@ -99,6 +100,16 @@
 
 %When you have finished your thesis we recommend that you manually fix any errors in your bibliography. 
 %To do this, compile, copy the .bbl into a new .tex file and include this here after commenting out the other bibliography commands. Make corrections in that .tex file.
+
+% ***************************************************
+% Appendices
+%**************************************************** 
+%UNCOMMENT THIS SECTION IF YOU ARE USING APPENDICES.
+%Simply adapt the same formatting used for other chapters.
+\appendix
+% If you need appendix in your thesis then consider the following appendix file (you can add more if you need more) otherwise you should not consider it in your main thesis.
+\include{./Appendix/Appendix}
+
 
 
 \end{document}

@@ -1,0 +1,67 @@
+
+% ***************************************************
+% Example of an internal chapter
+% ***************************************************
+%This is an internal chapter of the thesis.
+%If you have a long title, you can supply an abbreviated version to print in the Table of Contents using the optional argument to the \chapter command.
+\chapter[Timeline and Plan]{Timeline and Plan}
+\label{Chap:label}	%CREATE YOUR OWN LABEL.
+\pagestyle{headings}
+
+
+
+% ********* Enter your text below this line: ********
+This section of the report details the plan and timeline of the proposed project. It also details the necessary risk assessment.
+% ***************************************************
+
+
+\section{Milestones}
+\label{Sec:label}	%CREATE YOUR OWN LABEL.
+
+% ********* Enter your text below this line: ********
+The TRL benchmark provides a breakdown of the phases of developement, the milestones table ~\ref{table:milestones} below highlights the different design 
+stages and tasks throughout the project. The expected durations of these are also presented.
+  
+
+\begin{table}[hbt!]
+\centering%
+% \begin{tabularx}{lll}
+    \begin{tabularx}{\textwidth}{ lXl }
+        \hline
+        Task                            & Details & Duration  \\ \hline
+        Create MAC                      &  Create custom Layer 2 Ethernet hardware based on the IEEE 802.3 standard      & 3-4 Weeks \\
+        Wishbone Interface              &  Connect the Ethernet MAC to the NEORV32 RISC-V Processor using the wishbone interface and access it via software       & 2 Weels   \\
+        Webserver                       &  Create and Get the webserver working on the NEORV32 Processor. Web page should be accessed from another computer       & 5-6 Weeks \\ 
+        Firewall Hardware               &  Create the hardware between 2 Ethernet MACs to filter out packets based on rules      & 3-4 Weeks \\ 
+        Integration with software       &  Add functionality to the server to be able to configure the firewall rules       & 1 Week \\ 
+        Measure and Compare             &  Compare to pre-existing solutions       & 1 Week \\ 
+        \hline
+        \end{tabularx}
+\caption{ Milestones for the proposed project}\label{table:milestones}
+\end{table}
+ 
+
+\section{Project Risk Assessment}
+
+The majority of the work compeleted in the proposed project is digital and poses little risk outside of the standard office sitting. 
+
+\begin{table}[hbt!]
+    \centering%
+    % \begin{tabularx}{lll}
+        \begin{tabularx}{\textwidth}{ lllX }
+            \hline
+            Risk       & Severity & Likelyhood & Mitigation  \\ \hline
+
+            Licensing & Minor & Moderate & Avoid software/hardware that requires a specific license. \\
+            Data loss & Catastrophic & Unlikely & Ensure all items are backed-up to the cloud and use services such as GitHub where appropriate. Employ a 3 2 1 backup strategy \\
+            Hardware Failure & Moderate & Unlikely & Double check all connections to the FPGA board before powering. Reduce excessive handling where necessary to minimise risk of damaging the equiptment \\
+            % Electrocution from PoE Ethernet & High & Low & Ensure all items are backed-up to the cloud and use services such as GitHub where appropriate. \\
+            Illness & High & Likely & Take breaks periodically to avoid being overworked, and take necessary recovery steps if sick. \\
+            Missed Deadlines & Major & Likely & Ensure plans are followed and compelete tasks as soon as possible. If behind, spend extra time on project to catch up.\\
+    
+            \hline
+            \end{tabularx}
+    \caption{ Risk assessment of proposed project}\label{table:milestones}
+    \end{table}
+     
+    
