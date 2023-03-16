@@ -14,9 +14,17 @@ Some of the concepts behind the proposed project, such as an Ethernet MAC or RIS
 
 
 \section{Field Programmable Gate Arrays (FPGA)}
+First introduced by Xilinx in 1984, field programmable gate arrays (FPGAs) allowed for custom logic designs to be recognised without the need for 
+expensive application specific integrated circuits (ASICs) \cite{30YearsOfFPGA}. 
+
 
 
 \section{RISC-V processor}
+RISC-V, a reduced instruction set computer architecture, is an open and royalty free instruction set architecture (ISA). As a result, a plethora 
+of soft-core processors have been made. The specific core proposed in this project is the 'NEORV32` RISC-V processor. It's a highly configurable 
+microcontroller like system on chip (SoC) written purely in VHDL.
+
+
 Due to the open nature of the RISC-V architecture, many designers have made their own System on Chips (SoC) and created their own implementations. RISC-V 
 themselves have published a list\footnote[1]{See: https://github.com/riscv/riscv-isa-manual/blob/master/marchid.md} of different RISC-V implementations 
 that have a unique architecture ID. The majority of these are either written for application specific integrated circuits (ASICs), written in a hardware 
@@ -38,6 +46,11 @@ It allows for external hardware modules to be memory mapped into the the 32bit a
 
 First introduced in 1983 \cite{IEEE802.3-2012}, the IEEE 802.3 standardardised a technology, Ethernet, to interconnect devices. There have been 
 many attempts at creating hardware for Ethernet MACs. 
+
+The IEEE 802.3 standard\cite{IEEE802.3-2012}, more commonly known by the name of 'Ethernet' defines the \textit{'Medium Access Control'} (MAC) 
+protocol amongst other things for two or more devices to communicate over a network. This standard is just one part in the layered network 
+models such as the OSI model and TCP/IP models. 
+
 
 
 
@@ -64,23 +77,14 @@ While there is provision to add this functionality on an FPGA based firewall, th
 in complexity. 
 
 
-\section{RISC-V processor}
-
-
-
 \section{Web servers}
+... The LwIP library is a popular lightweight TCP/IP stack which has been investigated in a plethora of reaserch papers and projects. 
+
+
+Recently, FreeRTOS have published their \textit{FreeRTOS-Plus-TCP} library which aims to provide ... over the LwIP stack. 
 
 
 
 
 
-
-The IEEE 802.3 standard\cite{IEEE802.3-2012}, more commonly known by the name of 'Ethernet' defines the \textit{'Medium Access Control'} (MAC) 
-protocol amongst other things for two or more devices to communicate over a network. This standard is just one part in the layered network 
-models such as the OSI model and TCP/IP models. 
-
-
-RISC-V, a reduced instruction set computer architecture, is an open and royalty free instruction set architecture (ISA). As a result, a plethora 
-of soft-core processors have been made. The specific core proposed in this project is the 'NEORV32` RISC-V processor. It's a highly configurable 
-microcontroller like system on chip (SoC) written purely in VHDL.
 
