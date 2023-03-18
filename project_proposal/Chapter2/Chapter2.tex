@@ -13,11 +13,46 @@
 Some of the concepts behind the proposed project, such as an Ethernet MAC or RISC-V processor are not new, there is a variety of previous works in these areas. This part of the proposal will explore the prior work related to the project. 
 
 
-\section{Field Programmable Gate Arrays (FPGA)}
-First introduced by Xilinx in 1984, field programmable gate arrays (FPGAs) allowed for custom logic designs to be recognised without the need for 
-expensive application specific integrated circuits (ASICs) \cite{30YearsOfFPGA}.
 
 
+\section{Packet Filter Firewall}
+
+Usually, the first line of defence against bad actors, it is firewalls play a vital component in computer networks and can become vastly complex. 
+In essence, the job of a firewall is to isolate and restrict acess to an internal network from an external one \cite{BuildingInternetFirewalls}.
+
+There are several types of Firewalls such as packet filters (PF), stateful packet firewalls and application firewalls \cite{FirewallsBook}. 
+PFs are considered as stateless and traditionally filter exlcusively on the fields in the network (layer 2) and transport 
+(layer 3) layer headers \cite{FirewallsBook}. Such fields include IP addresses, port numbers and protocol type.
+
+Due to this, PFs are inherently simple and efficient. Consequently, they are widely available and can be either implemented in software or in 
+hardware \cite{BuildingInternetFirewalls}. The book, \cite{BuildingInternetFirewalls}, also highlights some inherent flaws with PFs. These include not being able 
+to suprress a sophisticated attacks and in some cases can be challenging to properly configure. More advanced firewalls can perform deep packet inspection and 
+explore the contents of the higher layers to better evaluate a packets true intention \cite{FirewallsBook}. 
+
+
+
+
+\section{Field Programmable Gate Arrays}
+First introduced by Xilinx in 1984, field programmable gate arrays (FPGAs) allowed for large custom logic designs to be recognised without the need for 
+expensive application specific integrated circuits (ASICs). More importantly, FPGAs did not suffer from the same scalability issues that
+programmable array logic (PAL) encountered and has allowed for larger and more complex designs \cite{30YearsOfFPGA}. 
+
+A big advantage to custom logic is the ability to create highly parallelised designs while also with a lower latency than software based serialised algorithms. 
+As such, FPGAs became ubiquitous in both digital signal processing and for accelerating an assortment of computing architectures and processes \cite{FPGAComputing}.
+System on chip (SoC) design with custom hardware acceleration modules is an active area research. As \cite{FPGAComputing} points out, there is a focus towards 
+using both hardware and software in \textit{edge} devices due to growing numbers of IoT devices.
+
+Several papers, \cite{LwIPFPGAFirewall} \cite{IPFPGAFirewall2000} \cite{packetFilteringFPGA}, have proposed a range of related FPGA based firewalls, all having 
+slightly diffrent properties and using different classificiation mechanisms. Each of the propsoed firewalls in the afformentioned papers use custom hardware 
+to first detect and then handle the incomming network packet. The key benefit to these firewalls is their high 
+performance - namely, low latency, and high throughput. Article \cite{LwIPFPGAFirewall} proposed an ethernet firwall using LwIP and five-tuple binding 
+to achieve a throughput of 950Mbps with a latency of 61.266us. A conference proceeding in 2000 \cite{IPFPGAFirewall2000} which used a comparator unit to check the 
+fields of the IP header obtained a filtering rate of 500,000 packets per second. 
+
+The enabling concept behind the above FPGA based firewalls is SoC design which involves integrating multiple components into a single package, or in this case a 
+single FPGA. Often these will include small softcore microprocessors and some custom ethernet hardware like the proposed packet filters in \cite{LwIPFPGAFirewall}.
+Softcore processors are configurable and can be modeled in a hardware description language (HDL) which can then be synthesised onto ASICs or FPGAs hardware 
+\cite{SoftcoreBasedEmbeddedSystems}. Recently, the royalty free RISC-V based cores are a popular softcore architecture used on SoC design.
 
 
 \section{RISC-V processor}
@@ -64,18 +99,6 @@ to the MAC to allow traffic to flow through a hardware-based firewall. This is a
 microprocessors. 
 
 
-
-\section{Packet Filter Firewall}
-
-Usually, the first line of defence against bad actors, it is a vital component in a computer network and can become vastly complex. There are several
-types of Firewalls such as packet filters (pf), stateful packet firewalls and application firewalls \cite{FirewallsBook}. Firewalls can also perform 
-other tasks and employ other techniques to secure a network, however, in this project the most basic pf-style firewall will be implemented. 
-Packet filters are considered as stateless and traditionally only filter on the fields in the headers in the network (layer 2) and transport 
-(layer 3) layers \cite{FirewallsBook}. Such fields include IP addresses, port numbers and protocol type.
-
-More advanced firewalls can perform deep packet inspection and explore the contents of the higher layers to better evaluate a packets true intention. 
-While there is provision to add this functionality on an FPGA based firewall, this will not be explored in this project due to its significant increase 
-in complexity. 
 
 
 \section{Web servers}
