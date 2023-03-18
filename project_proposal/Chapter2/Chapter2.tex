@@ -61,15 +61,17 @@ are appart of the complex instructions sets (CISC) and are found in the majority
 subsequently fall under the RISC family and are ideal for low power microprocessors \cite{RV16Embedded}.
 
 RISC-V is an open and royalty free ISA and as a result, a plethora of softcore based custom implementations have been designed \cite{CatalogRISCSoftcore}. 
-A 2019 paper, \cite{CatalogRISCSoftcore} evaluated a variety of different RISC-V softcore processors. RISC-V International have also published 
-a list\footnote[1]{See: https://github.com/riscv/riscv-isa-manual/blob/master/marchid.md} of different RISC-V implementations 
+Consequently, there is an abundance of articles dealving into RISC-V from evaluating the ISA \cite{InvestigatingRiscv} to creating multicore architectures
+\cite{RiscVMulticore}. A 2019 paper, \cite{CatalogRISCSoftcore} evaluated a variety of different RISC-V softcore processors. RISC-V International have 
+also published a list\footnote[1]{See: https://github.com/riscv/riscv-isa-manual/blob/master/marchid.md} of different RISC-V implementations 
 that have a unique architecture ID. The majority of these are either written in a HDL for either application specific integrated circuits (ASICs) or FPGAs.
 The \textit{NEORV32 RISC-V} softcore processor is written purely in vendor agnostic VHDL and importantly has a considerable amount of documentation. 
 
 Being a softcore processor, control is given over which modules are implemented. Some basic features of the \textit{NEORV32 RISC-V} include 
 UART, SPI, and GPIO interfaces \cite{neorv32Datasheet}. The datasheet, \cite{neorv32Datasheet}, also mentions that it supports a \textit{'Wishbone b4'} 
-external bus interface. A Wishbone B4 (or just 'wishbone') interconnection is designed specifically to connect pieces of hardware together on a SoC into the memory 
-mapped 32bit address space in the processor \cite{WishboneSpec}. 
+external bus interface. A Wishbone B4 (or just 'wishbone') interconnection is designed specifically to connect modular pieces of hardware together on a 
+SoC into the memory mapped 32bit address space in the processor \cite{WishboneSpec}. This approach has the benefit of not neededing to create custom 
+instructions for the microprocessor. 
 
 
 
