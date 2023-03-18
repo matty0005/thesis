@@ -73,32 +73,22 @@ external bus interface. A Wishbone B4 (or just 'wishbone') interconnection is de
 SoC into the memory mapped 32bit address space in the processor \cite{WishboneSpec}. This approach has the benefit of not neededing to create custom 
 instructions for the microprocessor. 
 
-
+\newpage
 
 \section{Ethernet MAC}
 
-First introduced in 1983 \cite{IEEE802.3-2012}, the IEEE 802.3 standardardised a technology, Ethernet, to interconnect devices. There have been 
-many attempts at creating hardware for Ethernet MACs. 
+First introduced in 1983, the IEEE 802.3 standard \cite{IEEE802.3-2012}, more commonly known by the name of 'Ethernet', defines the \textit{'Medium Access Control'} 
+(MAC) protocol amongst other things for two or more devices to communicate over a network. This standard is just one part in the layered network 
+models such as the OSI model or TCP/IP model, namely the network layer - layer 2. 
 
-The IEEE 802.3 standard\cite{IEEE802.3-2012}, more commonly known by the name of 'Ethernet' defines the \textit{'Medium Access Control'} (MAC) 
-protocol amongst other things for two or more devices to communicate over a network. This standard is just one part in the layered network 
-models such as the OSI model and TCP/IP models. 
-
-
+As an old standard, there are several articles \cite{OptimisedEthernetMAC} \cite{EthernetAXI} \cite{EthernetRMII} about ethernet MACs implemented on FPGAs and 
+intellectual property (IP) blocks. These IP blocks 
 
 
 
 
-The decision in creating a custom MAC might be considered as interesting given the range of pre-existing Intellectual 
-Property (IP) cores for Ethernet on FPGAs. The issue with the pre-existing solutions only have a single output to connect to something like a softcore
-processor. To create a firewall, the network traffic would need to pass through the processor. To decrease latency, a second interface can be added 
-to the MAC to allow traffic to flow through a hardware-based firewall. This is analogous to the direct memory access (DMA) controller on most modern 
-microprocessors. 
 
-
-
-
-\section{Web servers}
+\section{Web servers and network stacks}
 ... The LwIP library is a popular lightweight TCP/IP stack which has been investigated in a plethora of research papers and projects. 
 
 

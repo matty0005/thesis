@@ -302,5 +302,54 @@ author = {ISLAM, Md Ashraful and KISE, Kenji},
 keywords = {Computer architecture ; Configuration management ; Field programmable gate arrays ; FPGA ; Hardware ; Impact analysis ; microarchiteture ; Microprocessors ; multicore ; Performance enhancement ; Pipelining (computers) ; Resource utilization ; RISC ; soft processor},
 }
 
+@incollection{OptimisedEthernetMAC,
+series = {Lecture Notes on Data Engineering and Communications Technologies},
+issn = {2367-4512},
+abstract = {The fully functional Ethernet-MAC layer is designed in accordance with IEEE 802.3 standards. The Proposed Ethernet MAC design is based on packet transceiver architecture for transmitting and receiving a packets and ensuring that the received packets are indeed valid. This design mainly includes Transmitter and Receiver-Finite state machines (FSM), FIFO’s, Cyclic Redundancy check (CRC), and padding modules. It’s compatible with input-output signals of Physical layer, the management module, and MII/RMII/GMII/RGMII interface of MAC Core. The design is extended to configure half duplex and full duplex mode based on the request. The design supports 10/100/1000 Mb/s and 1 Gb/s accessible speed and also extended to 10 Gb/s with parametrizable FIFO’s and configurable CRC with Tx and Rx state machines. The design is adaptable and is flexible to any FPGA vendors. It is synthesized on Xilinx platform by Verilog coding, simulated by ModelSim simulator and implemented on Virtex-7 FPGA Device. The proposed Ethernet-MAC Layer is compared with Xilinx Trimode Ethernet MAC Core (TEMAC) with respect to area resources with an optimization of 32.85% in slices and 24.88% LUT’s. The results have been encouraging.},
+pages = {725--732},
+volume = {26},
+publisher = {Springer International Publishing AG},
+booktitle = {International Conference on Intelligent Data Communication Technologies and Internet of Things (ICICI) 2018},
+isbn = {3030031454},
+year = {2019},
+title = {An Optimized Packet Transceiver Design for Ethernet-MAC Layer Based on FPGA},
+copyright = {Springer Nature Switzerland AG 2019},
+language = {eng},
+address = {Switzerland},
+author = {Hemanth, Jude and Fernando, Xavier and Lafata, Pavel and Baig, Zubair},
+keywords = {CRC ; Ethernet ; FPGA ; IEEE 802.3 ; MAC ; MDIO ; Physical layer ; RGMII ; Verilog},
+}
+
+
+@inproceedings{EthernetAXI,
+abstract = {SOC (System-on-a-Chip) is the development trend of current international VLSI and is the mainstream of IC development nowadays. In this paper, We present a design and verification of a MAC controller based on AXI bus, which system architecture integrates original design components and reusable IP cores", "then discuss its implementation of Multi-level and reusable verification platform using VMM verification method. Directed random test and assertion verification technology are used in verification procedure to finish verification plan effectively. The SoC chip is tape out now.},
+pages = {558--562},
+publisher = {IEEE},
+booktitle = {2013 Third International Conference on Intelligent System Design and Engineering Applications},
+isbn = {9781467348935},
+year = {2013},
+title = {Design and Verification of a MAC Controller Based on AXI Bus},
+language = {eng},
+author = {Guoteng, Pan and Li, Luo and Guodong, Ou and Qingchao, Fu and Han, Bai},
+keywords = {Architecture (computers) ; AXI bus ; Conferences ; Controllers ; Data buses ; Data transfer ; Design engineering ; EPON ; IEEE 802.3 Standards ; Media Access Control ; Monitoring ; Platforms ; Protocols ; Registers ; Reusable ; System-on-a-chip ; Systems design ; SystemVerilog Assertion ; Verification Methodology Manual},
+}
+
+@inproceedings{EthernetRMII,
+abstract = {FPGA-based solutions have become more common in embedded systems these days. These systems need to communicate with external world. Considering high-speed and popularity of Ethernet communication, a reliable real-time Ethernet component inside FPGA is of special value. To that end, this paper presents a new solution for 100 Mb/s FPGA-based Ethernet communications with timing analysis. The solution deals with "Reduced Media-Independent Interface" in its physical layer. UDP is the network protocol which is implemented from physical to transport layer. For getting used in real-time applications, timing analysis is done in the communication system. Component based software engineering is used in the design and development processes. In order to test the components inside FPGA, two different approaches are utilized. Signal measurement in combination with introduced windows based application contributes much in testing and validation phases.},
+pages = {35--39},
+publisher = {IEEE},
+booktitle = {2011 IEEE 3rd International Conference on Communication Software and Networks},
+isbn = {9781612844855},
+year = {2011},
+title = {FPGA implementation of real-time Ethernet communication using RMII interface},
+language = {eng},
+author = {Khalilzad, N. M. and Yekeh, F. and Asplund, L. and Pordel, M.},
+keywords = {100 Mb/s ; Clocks ; Complexity theory ; Equations ; Ethernet ; Field programmable gate arrays ; FPGA ; Real-Time ; RMII},
+}
+
+
+
+
+
 
 
