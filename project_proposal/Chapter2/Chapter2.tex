@@ -1,9 +1,3 @@
-
-% ***************************************************
-% Example of an internal chapter
-% ***************************************************
-%This is an internal chapter of the thesis.
-%If you have a long title, you can supply an abbreviated version to print in the Table of Contents using the optional argument to the \chapter command.
 \chapter[Literature review]{Literature review }
 \label{Chap:label}	%CREATE YOUR OWN LABEL.
 \pagestyle{headings}
@@ -84,11 +78,13 @@ models such as the OSI model or TCP/IP model, namely the network layer - layer 2
 
 A core function of the Ethernet MAC is to attach the required MAC layer headers to the head and tail of the layer 3 payload to create an ethernet packet.
 
+Figure \ref{fig:ieee-mac-headers}
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.65\textwidth]{Images/mac_packet.png}
     \caption{MAC layer headers \cite{IEEE802.3-2012}}
-    \label{fig:vul}
+    \label{fig:ieee-mac-headers}
 \end{figure}
 
 
@@ -98,7 +94,7 @@ machine (FSM).
 
 Others have published both complete \footnote[1]{See: https://github.com/yol/ethernet\_mac} \footnote[2]{See: https://github.com/alexforencich/verilog-ethernet/} 
 \footnote[3]{See: https://opencores.org/projects/ethernet\_tri\_mode} and uncomplete
-\footnote[4]{See https://github.com/pabennett/ethernet\_mac} ethernet MACs for FPGAs as well.
+\footnote[4]{See: https://github.com/pabennett/ethernet\_mac} ethernet MACs for FPGAs as well.
 
 
 
@@ -115,20 +111,6 @@ Often these papers run LwIP on real time operating systems (RTOS) such as FreeRT
 FreeRTOS is a leading RTOS for microprocessors and is distributed freely under the MIT license. As an RTOS, it provides an abstraction to the hardware that allows 
 for multitasking and brings other OS-Like features to embedded systems. Several ports are available including one for RISC-V. 
 
-Recently, FreeRTOS have published 
-their \textit{FreeRTOS-Plus-TCP} library which aims to provide ... over the LwIP stack. 
-
-
-... 
-
-\cite{LwIPFPGAFirewall}
-\cite{ImprovemntOptimLWIP}
-\cite{OptimCortexLwIP}
-\cite{IoTSurvey}
-
-
-
-
-
-
-
+FreeRTOS also provide their own TCP/IP network stack called \textit{FreeRTOS-Plus-TCP} and is much newer than LwIP, and consequently less research can be found 
+appart from existing documentation. The library aims to provide a threadsafe Berkley sockets API and network stack supporting multiple protocols 
+such as DHCP, DNS, TCP, and UDP \cite{FreeRTOSTCP}. 
