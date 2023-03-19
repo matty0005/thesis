@@ -81,14 +81,6 @@ First introduced in 1983, the IEEE 802.3 standard \cite{IEEE802.3-2012}, more co
 (MAC) protocol amongst other things for two or more devices to communicate over a network. This standard is just one part in the layered network 
 models such as the OSI model or TCP/IP model, namely the network layer - layer 2. 
 
-Several articles \cite{OptimisedEthernetMAC} \cite{EthernetAXI} \cite{EthernetRMII} about ethernet MACs implemented on FPGAs and 
-intellectual property (IP) blocks can be found. One approach highlighted in \cite{OptimisedEthernetMAC} to creating a custom MAC is by using a finite state 
-machine (FSM). 
-
-Others have published both complete \footnote[1]{See: https://github.com/yol/ethernet\_mac} \footnote[2]{See: https://github.com/alexforencich/verilog-ethernet/} 
-\footnote[3]{See: https://opencores.org/projects/ethernet\_tri\_mode} and uncomplete
-\footnote[4]{See https://github.com/pabennett/ethernet\_mac} ethernet MACs for FPGAs as well.
-
 
 A core function of the Ethernet MAC is to attach the required MAC layer headers to the head and tail of the layer 3 payload to create an ethernet packet.
 
@@ -100,9 +92,27 @@ A core function of the Ethernet MAC is to attach the required MAC layer headers 
 \end{figure}
 
 
+Several articles \cite{OptimisedEthernetMAC} \cite{EthernetAXI} \cite{EthernetRMII} about ethernet MACs implemented on FPGAs and 
+intellectual property (IP) blocks can be found. One approach highlighted in \cite{OptimisedEthernetMAC} to creating a custom MAC is by using a finite state 
+machine (FSM). 
+
+Others have published both complete \footnote[1]{See: https://github.com/yol/ethernet\_mac} \footnote[2]{See: https://github.com/alexforencich/verilog-ethernet/} 
+\footnote[3]{See: https://opencores.org/projects/ethernet\_tri\_mode} and uncomplete
+\footnote[4]{See https://github.com/pabennett/ethernet\_mac} ethernet MACs for FPGAs as well.
+
+
+
+
 \section{Web servers and network stacks}
+
+FreeRTOS is a real time operating system (RTOS). 
+
 ... The LwIP library is a popular lightweight TCP/IP stack which has been investigated in a plethora of research papers and projects. 
 
+\cite{LwIPFPGAFirewall}
+\cite{ImprovemntOptimLWIP}
+\cite{OptimCortexLwIP}
+\cite{IoTSurvey}
 
 Recently, FreeRTOS have published their \textit{FreeRTOS-Plus-TCP} library which aims to provide ... over the LwIP stack. 
 

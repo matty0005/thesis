@@ -11,9 +11,6 @@ to decide on whether to forward or deny/drop/block packets from entering or exit
 not follow any complex rules and keep state between packets or use deep packet inspection to check the contents of the payload to ensure it's not 
 malicious. 
 
-Packet filters are considered as stateless and traditionally only filter based on the fields in the headers at the network (layer 2) and transport 
-(layer 3) layers \cite{FirewallsBook}. Such fields include IP addresses, port numbers and protocol type.
-
 The proposed project consists of making a hardware implementation of a pf with custom Ethernet Media Access Controllers (MAC) connected to a hardware
 based filtering block which is all controlled by a RISC-V softcore processor. This will then also have a web interface so that a user can configure
 the rules for the pf.
