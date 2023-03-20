@@ -12,15 +12,15 @@ Some of the concepts behind the proposed project, such as an Ethernet MAC or RIS
 \section{Packet Filter Firewall}
 
 Usually, the first line of defence against bad actors, it is firewalls play a vital component in computer networks and can become vastly complex. 
-In essence, the job of a firewall is to isolate and restrict acess to an internal network from an external one \cite{BuildingInternetFirewalls}.
+In essence, the job of a firewall is to isolate and restrict access to an internal network from an external one \cite{BuildingInternetFirewalls}.
 
 There are several types of Firewalls such as packet filters (PF), stateful packet firewalls and application firewalls \cite{FirewallsBook}. 
-PFs are considered as stateless and traditionally filter exlcusively on the fields in the network (layer 2) and transport 
+PFs are considered as stateless and traditionally filter exclusively on the fields in the network (layer 2) and transport 
 (layer 3) layer headers \cite{FirewallsBook}. Such fields include IP addresses, port numbers and protocol type.
 
 Due to this, PFs are inherently simple and efficient. Consequently, they are widely available and can be either implemented in software or in 
 hardware \cite{BuildingInternetFirewalls}. The book, \cite{BuildingInternetFirewalls}, also highlights some inherent flaws with PFs. These include not being able 
-to suprress a sophisticated attacks and in some cases can be challenging to properly configure. More advanced firewalls can perform deep packet inspection and 
+to suppress sophisticated attacks and in some cases can be challenging to properly configure. More advanced firewalls can perform deep packet inspection and 
 explore the contents of the higher layers to better evaluate a packets true intention \cite{FirewallsBook}. 
 
 
@@ -37,34 +37,34 @@ System on chip (SoC) design with custom hardware acceleration modules is an acti
 using both hardware and software in \textit{edge} devices due to growing numbers of IoT devices.
 
 Several papers, \cite{LwIPFPGAFirewall} \cite{IPFPGAFirewall2000} \cite{packetFilteringFPGA}, have proposed a range of related FPGA based firewalls, all having 
-slightly diffrent properties and using different classificiation mechanisms. Each of the propsoed firewalls in the afformentioned papers use custom hardware 
-to first detect and then handle the incomming network packet. The key benefit to these firewalls is their high 
-performance - namely, low latency, and high throughput. Article \cite{LwIPFPGAFirewall} proposed an ethernet firwall using LwIP and five-tuple binding 
+slightly different properties and using different classification mechanisms. Each of the proposed firewalls in the aforementioned papers use custom hardware 
+to first detect and then handle the incoming network packet. The key benefit to these firewalls is their high 
+performance - namely, low latency, and high throughput. Article \cite{LwIPFPGAFirewall} proposed an Ethernet firewall using LwIP and five-tuple binding 
 to achieve a throughput of 950Mbps with a latency of 61.266us. A conference proceeding in 2000 \cite{IPFPGAFirewall2000} which used a comparator unit to check the 
 fields of the IP header obtained a filtering rate of 500,000 packets per second. 
 
 The enabling concept behind the above FPGA based firewalls is SoC design which involves integrating multiple components into a single package, or in this case a 
-single FPGA. Often these will include small softcore microprocessors and some custom ethernet hardware like the proposed packet filters in \cite{LwIPFPGAFirewall}.
-Softcore processors are configurable and can be modeled in a hardware description language (HDL) which can then be synthesised onto ASICs or FPGAs hardware 
+single FPGA. Often these will include small softcore microprocessors and some custom Ethernet hardware like the proposed packet filters in \cite{LwIPFPGAFirewall}.
+Softcore processors are configurable and can be modelled in a hardware description language (HDL) which can then be synthesised onto ASICs or FPGAs hardware 
 \cite{SoftcoreBasedEmbeddedSystems}. Recently, the royalty free RISC-V based cores are a popular softcore architecture used on SoC design.
 
 
 \section{RISC-V processor}
 In the world of processor architectures, there are four major families, namely AMD64, x86, ARM and RISC-V. The two former instruction set architectures (ISA) 
-are appart of the complex instructions sets (CISC) and are found in the majority of computers. ARM and RISC-V are a reduced version of the CISC family and 
+are apart of the complex instructions sets (CISC) and are found in the majority of computers. ARM and RISC-V are a reduced version of the CISC family and 
 subsequently fall under the RISC family and are ideal for low power microprocessors \cite{RV16Embedded}.
 
 RISC-V is an open and royalty free ISA and as a result, a plethora of softcore based custom implementations have been designed \cite{CatalogRISCSoftcore}. 
-Consequently, there is an abundance of articles dealving into RISC-V from evaluating the ISA \cite{InvestigatingRiscv} to creating multicore architectures
+Consequently, there is an abundance of articles delving into RISC-V from evaluating the ISA \cite{InvestigatingRiscv} to creating multicore architectures
 \cite{RiscVMulticore}. A 2019 paper, \cite{CatalogRISCSoftcore} evaluated a variety of different RISC-V softcore processors. RISC-V International have 
 also published a list\footnote[1]{See: https://github.com/riscv/riscv-isa-manual/blob/master/marchid.md} of different RISC-V implementations 
 that have a unique architecture ID. The majority of these are either written in a HDL for either application specific integrated circuits (ASICs) or FPGAs.
-The \textit{NEORV32 RISC-V} softcore processor is written purely in vendor agnostic VHDL and importantly has a considerable amount of documentation. 
+The \textit{NEORV32 RISC-V} softcore processor is written purely in vendor-agnostic VHDL and importantly has a considerable amount of documentation. 
 
 Being a softcore processor, control is given over which modules are implemented. Some basic features of the \textit{NEORV32 RISC-V} include 
 UART, SPI, and GPIO interfaces \cite{neorv32Datasheet}. The datasheet, \cite{neorv32Datasheet}, also mentions that it supports a \textit{'Wishbone b4'} 
 external bus interface. A Wishbone B4 (or just 'wishbone') interconnection is designed specifically to connect modular pieces of hardware together on a 
-SoC into the memory mapped 32bit address space in the processor \cite{WishboneSpec}. This approach has the benefit of not neededing to create custom 
+SoC into the memory mapped 32bit address space in the processor \cite{WishboneSpec}. This approach has the benefit of not needing to create custom 
 instructions for the microprocessor. 
 
 \newpage
@@ -76,8 +76,8 @@ First introduced in 1983, the IEEE 802.3 standard \cite{IEEE802.3-2012}, more co
 models such as the OSI model or TCP/IP model, namely the network layer - layer 2. 
 
 
-A core function of the Ethernet MAC is to attach the required MAC layer headers to the head and tail of the layer 3 payload to create an ethernet packet. The fields 
-in an ethernet packet can be seen in figure \ref{fig:ieee-mac-headers}. 
+A core function of the Ethernet MAC is to attach the required MAC layer headers to the head and tail of the layer 3 payload to create an Ethernet packet. The fields 
+in an Ethernet packet can be seen in figure \ref{fig:ieee-mac-headers}. 
 
 \begin{figure}[h]
     \centering
@@ -87,21 +87,21 @@ in an ethernet packet can be seen in figure \ref{fig:ieee-mac-headers}.
 \end{figure}
 
 After the packet has been constructed, the data is forwarded out to the physical (PHY) layer 
-least significant bit (LSB) first \cite{IEEE802.3-2012}. Typically a PHY management chip is used to handle the physical layer channel encoding amougst other things. 
-These PHY chips often can be interfaced with the media independant interfaces such as MII, RMII, GMII and RGMII \cite{OptimisedEthernetMAC}. The reduced media 
-independant interface (RMII) is one of these standards defined in \cite{IEEE802.3-2012} and consists of a reference clock, 2 bit wide transmit (TX), 2 bit wide 
-recieve (RX) lines and a few other supplimentary signals as defined in the LAN8720A datasheet \cite{LAN8720ADatasheet}.
+least significant bit (LSB) first \cite{IEEE802.3-2012}. Typically, a PHY management chip is used to handle the physical layer channel encoding amongst other things. 
+These PHY chips often can be interfaced with the media independent interfaces such as MII, RMII, GMII and RGMII \cite{OptimisedEthernetMAC}. The reduced media 
+independent interface (RMII) is one of these standards defined in \cite{IEEE802.3-2012} and consists of a reference clock, 2 bit wide transmit (TX), 2 bit wide 
+receive (RX) lines and a few other supplementary signals as defined in the LAN8720A datasheet \cite{LAN8720ADatasheet}.
 
-Numerous articles \cite{OptimisedEthernetMAC} \cite{EthernetAXI} \cite{EthernetRMII} can be found about ethernet MACs implemented on FPGAs each with a slightly 
+Numerous articles \cite{OptimisedEthernetMAC} \cite{EthernetAXI} \cite{EthernetRMII} can be found about Ethernet MACs implemented on FPGAs each with a slightly 
 different approach. Fundamentally though, as best highlighted in \cite{OptimisedEthernetMAC}, a simple way of implementing a MAC is by employing a finite state 
 machine (FSM). Another technique found in these articles is the use of first-in first-out (FIFO) buffers to cross clock domains. This is a common technique used 
-in FPGA design as it allows you to have the packet asssembly logic at a much higher clock rate than the output RMII reference clock speed \cite{EthernetAXI}. 
+in FPGA design as it allows you to have the packet assembly logic at a much higher clock rate than the output RMII reference clock speed \cite{EthernetAXI}. 
 
 \newpage
 
 In addition to the papers, there are a plethora of intellectual property (IP) blocks for xMII interfaces in HDL 
-which have their own benefits and drawbacks. Some freely available HDL modules for ethernet MACs can be found in both a complete \footnote[1]{See: https://github.com/yol/ethernet\_mac} \footnote[2]{See: https://github.com/alexforencich/verilog-ethernet/} 
-\footnote[3]{See: https://opencores.org/projects/ethernet\_tri\_mode} and uncomplete state
+which have their own benefits and drawbacks. Some freely available HDL modules for Ethernet MACs can be found in both a complete \footnote[1]{See: https://github.com/yol/ethernet\_mac} \footnote[2]{See: https://github.com/alexforencich/verilog-ethernet/} 
+\footnote[3]{See: https://opencores.org/projects/ethernet\_tri\_mode} and incomplete state
 \footnote[4]{See: https://github.com/pabennett/ethernet\_mac}.
 
 
@@ -113,7 +113,7 @@ which have their own benefits and drawbacks. Some freely available HDL modules f
 Almost all firewalls need to be configured with a ruleset which can be configured in two common ways, using a command line interface (CLI) 
 or by a Web graphical user interface (GUI). Before a web server can be realised, the network stack (Layers 3, and 4) need to be established since a web server 
 operates at the application layer (layer 4). As embedded platforms are resource limited, special precautions need to be taken when it comes to memory and resource 
-useage \cite{OptimCortexLwIP}.
+usage \cite{OptimCortexLwIP}.
 
 Article \cite{LwIPFPGAFirewall} investigated using the open source lightweight IP (LwIP) network stack as a mechanism for interfacing with the firewall. 
 The LwIP library is a popular lightweight TCP/IP stack which has been investigated in a plethora of research papers and projects \cite{ImprovemntOptimLWIP} 
@@ -123,7 +123,7 @@ FreeRTOS is a leading RTOS for microprocessors and is distributed freely under t
 for multitasking and brings other OS-Like features to embedded systems. Several ports are available including one for RISC-V. 
 
 FreeRTOS also provide their own TCP/IP network stack called \textit{FreeRTOS-Plus-TCP} which includes a HTTP web server example and is much newer than LwIP.
-Consequently less research can be found appart from existing documentation. The library aims to provide a threadsafe Berkley sockets API and network stack 
+Consequently, less research can be found apart from existing documentation. The library aims to provide a threadsafe Berkley sockets API and network stack 
 supporting multiple protocols such as DHCP, DNS, TCP, and UDP \cite{FreeRTOSTCP}. LwIP is not threadsafe and typically suffers from memory issues as found 
 in \cite{OptimCortexLwIP}.
 

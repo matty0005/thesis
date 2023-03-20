@@ -19,7 +19,7 @@ This section of the report details the plan and timeline of the proposed project
 \label{Sec:label}	%CREATE YOUR OWN LABEL.
 
 % ********* Enter your text below this line: ********
-The TRL benchmark provides a breakdown of the phases of developement, the milestones table ~\ref{table:milestones} below highlights the different design 
+The TRL benchmark provides a breakdown of the phases of development, the milestones table ~\ref{table:milestones} below highlights the different design 
 stages and tasks throughout the project. The expected durations of these are also presented.
   
 
@@ -31,7 +31,7 @@ stages and tasks throughout the project. The expected durations of these are als
         Task                            & Details & Duration  \\ \hline
         Create MAC                      &  Create custom Layer 2 Ethernet hardware based on the IEEE 802.3 standard      & 3-4 Weeks \\
         Wishbone Interface              &  Connect the Ethernet MAC to the NEORV32 RISC-V Processor using the wishbone interface and access it via software       & 2 Weels   \\
-        Webserver                       &  Create and Get the webserver working on the NEORV32 Processor. Web page should be accessed from another computer       & 5-6 Weeks \\ 
+        TCP/IP Stack + Webserver        &  Create and Get the webserver working on the NEORV32 Processor. Web page should be accessed from another computer       & 5-6 Weeks \\ 
         Firewall Hardware               &  Create the hardware between 2 Ethernet MACs to filter out packets based on rules      & 3-4 Weeks \\ 
         Integration with software       &  Add functionality to the server to be able to configure the firewall rules       & 1 Week \\ 
         Measure and Compare             &  Compare to pre-existing solutions       & 1 Week \\ 
@@ -41,9 +41,11 @@ stages and tasks throughout the project. The expected durations of these are als
 \end{table}
  
 
+\newpage
+
 \section{Project Risk Assessment}
 
-The majority of the work compeleted in the proposed project is digital and poses little risk outside of the standard office sitting. 
+The majority of the work completed in the proposed project is digital and poses little risk outside the standard office sitting. 
 
 \begin{table}[hbt!]
     \centering%
@@ -57,7 +59,7 @@ The majority of the work compeleted in the proposed project is digital and poses
             Hardware Failure & Moderate & Unlikely & Double check all connections to the FPGA board before powering. Reduce excessive handling where necessary to minimise risk of damaging the equiptment \\
             % Electrocution from PoE Ethernet & High & Low & Ensure all items are backed-up to the cloud and use services such as GitHub where appropriate. \\
             Illness & High & Likely & Take breaks periodically to avoid being overworked, and take necessary recovery steps if sick. \\
-            Missed Deadlines & Major & Likely & Ensure plans are followed and compelete tasks as soon as possible. If behind, spend extra time on project to catch up.\\
+            Missed Deadlines & Major & Likely & Ensure plans are followed and complete tasks as soon as possible. If behind, spend extra time on project to catch up.\\
     
             \hline
             \end{tabularx}

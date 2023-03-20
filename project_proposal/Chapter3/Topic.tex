@@ -18,6 +18,7 @@ present current statistics.  This project will have significant practical applic
 
 
 \section{System Overview}
+\subsection{Hardware Overview}
 
 The proposed system consists of two inputs and outputs, namely two ethernet interfaces which can be seen in figure \ref{fig:sys-overview}. This project uses the 
 Xilinx Artix 7 XC7A100T FPGA and two LAN8720A RMII interface chips. The Interface on the left of figure \ref{fig:sys-overview} is where the internal/private 
@@ -36,14 +37,20 @@ The hardware packet filter will be connected along with the two Ethernet PHY int
 The two Ethernet PHYs will be connected through the packet filter using a custom high speed interface to reduce the dependance of the microprocessor in the 
 filtering of IP packets. 
 
-\subsection{Implications}
+\subsubsection{Implications}
 
 Only the internal Ethernet interface is connected to the microprocessor which limits the web page access to devices on the private network. This is proposed to 
 increase the security and only allow configuration of the packet filter from a computer within the protected network.
 
-
-\subsection{Packet filtering algorithms}
+\subsection{Packet filtering hardware and algorithms}
 Todo - This section needs more research to base ideas off of. 
+
+
+\subsection{Microprocessor selection}
+The proposed project will use the NEORV32\footnote[1]{See: https://github.com/stnolting/neorv32} RISC-V softcore microprocessor. This microprocessor will then 
+run FreeRTOS with the FreeRTOS-Plus-TCP network stack to handle the control of the packet filter and host a web server. Additional libraries such as the 
+FreeRTOS-Plus-FAT will also be used to store web content such as HTML files. 
+
 
 
 \section{Aims}
