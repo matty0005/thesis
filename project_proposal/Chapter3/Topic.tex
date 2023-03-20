@@ -5,18 +5,23 @@
 
 \section{Topic}
 
-While there is no single solution that will fully protect an edge network, a common and effective way to reduce the unauthorised/unwanted network 
-traffic is by simply filtering out the potentially malicious packets. While this may seem overly complex, in reality a few simple rules can be followed
-to decide on whether to forward or deny/drop/block packets from entering or exiting a network. These packet filters (pf) are a type of firewall that do 
-not follow any complex rules and keep state between packets or use deep packet inspection to check the contents of the payload to ensure it's not 
-malicious. 
 
-The proposed project consists of making a hardware implementation of a pf with custom Ethernet Media Access Controllers (MAC) connected to a hardware
-based filtering block which is all controlled by a RISC-V softcore processor. This will then also have a web interface so that a user can configure
-the rules for the pf.
+
+
+
+While there is no single solution that will fully protect an edge network, a common and effective way to reduce the unauthorised/unwanted network 
+traffic is by simply filtering out the potentially malicious packets. The proposed thesis project aims to eleviate some of these potential security issues by 
+designing a customised FPGA packet filter with a customised Etherent MAC and web server on a RISC-V processor.  By accelerating the filtering in hardware, 
+new levels of parallism, latency and efficiency can be gained over current software implementations. The packet filter will then selectively based on various 
+criteria that the end user configured throught the customised web interface running on the RISC-V softcore processor. Additionally, this web interface will also 
+present current statistics.  This project will have significant practical applications in the field of edge network security.
+
 
 \section{System Overview}
 
+The proposed system consists of two inputs and outputs, namely two ethernet interfaces which can be seen in figure \ref{fig:sys-overview}. This project uses the 
+Xilinx Artix 7 XC7A100T FPGA and two LAN8720A RMII interface chips. The Interface on the left of figure \ref{fig:sys-overview} is where the internal/private 
+network is attached. The right Ethernet interface is where the external/public network connects. 
 
 \begin{figure}[h]
     \centering
@@ -25,7 +30,20 @@ the rules for the pf.
     \label{fig:sys-overview}
 \end{figure}
 
+\newpage
 
+The hardware packet filter will be connected along with the two Ethernet PHY interfaces to the RISC-V softcore processor using the Wishbone B4 classic interface. 
+The two ethernet PHYs will be connected throught the packet filter using a custom high speed interface to reduce the depenance of the microprocessor in the 
+filtering of IP packets. 
+
+\subsection{Implications}
+
+Only the internal Ethernet interface is connected to the microprocessor which limits the web page access to devices on the private network. This is proposed to 
+increase the security and only allow configuration of the packet filter from a computer within the protected network.
+
+
+\subsection{Packet filtering algorithms}
+Todo - This section needs more research to base ideas off of. 
 
 
 \section{Aims}
