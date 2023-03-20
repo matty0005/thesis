@@ -10,10 +10,10 @@
 
 
 While there is no single solution that will fully protect an edge network, a common and effective way to reduce the unauthorised/unwanted network 
-traffic is by simply filtering out the potentially malicious packets. The proposed thesis project aims to eleviate some of these potential security issues by 
+traffic is by simply filtering out the potentially malicious packets. The proposed thesis project aims to alleviate some of these potential security issues by 
 designing a customised FPGA packet filter with a customised Etherent MAC and web server on a RISC-V processor.  By accelerating the filtering in hardware, 
-new levels of parallism, latency and efficiency can be gained over current software implementations. The packet filter will then selectively based on various 
-criteria that the end user configured throught the customised web interface running on the RISC-V softcore processor. Additionally, this web interface will also 
+new levels of parallelism, latency and efficiency can be gained over current software implementations. The packet filter will then selectively filter based on various 
+criteria that the end user configured through the customised web interface running on the RISC-V softcore processor. Additionally, this web interface will also 
 present current statistics.  This project will have significant practical applications in the field of edge network security.
 
 
@@ -33,7 +33,7 @@ network is attached. The right Ethernet interface is where the external/public n
 \newpage
 
 The hardware packet filter will be connected along with the two Ethernet PHY interfaces to the RISC-V softcore processor using the Wishbone B4 classic interface. 
-The two ethernet PHYs will be connected throught the packet filter using a custom high speed interface to reduce the depenance of the microprocessor in the 
+The two Ethernet PHYs will be connected through the packet filter using a custom high speed interface to reduce the dependance of the microprocessor in the 
 filtering of IP packets. 
 
 \subsection{Implications}
@@ -76,16 +76,38 @@ The proposed project will \textbf{not}
 
 
 \section{Performance Indicators}
+The key performance indicators gauge a level of success for the project and are as follows: 
+
+\begin{itemize}
+    \item Throughput at which the packet filter can work,
+    \item Added latency to the network,
+    \item Resource utilisation,
+    \item Web server access on a remote machine, and
+    \item Web server concurrency - multiple connections
+\end{itemize}
 
 
 
-\section{Required Equiptment}
-While the hardware design will be developed in such a way that it is vendor agnostic, to test the design a Digilent Nexys A7-100T developement board will be used.
-Importantly, this board has a RJ45 connector and LAN8720 RMII interface chip which allows for a regular fast ethernet connection to be directly connected 
+\section{Required Equipment}
+While the hardware design will be developed in such a way that it is vendor-agnostic, to test the design a Digilent Nexys A7-100T development board will be used.
+Importantly, this board has a RJ45 connector and LAN8720 RMII interface chip which allows for a regular Fast Ethernet connection to be directly connected 
 to the FPGA board. An additional LAN8720 ETH board from Waveshare is also required to obtain the secondary interface. 
 
 To validate the functionality and effectiveness of the design, it will be compared with a Raspberry Pi Compute Module 4 (CM4) with a Waveshare CM4-DUAL-ETH-MINI 
-daughterboard which contains two 1GbE interfaces. This will act as a baseline. 
+daughterboard which contains two 1GbE interfaces. This will act as a baseline. A summary of the required items can be seen below.
+
+\begin{itemize}
+    \item Digilent Nexys A7 100T FPGA board,
+    \item Waveshare LAN8720A ETH Board,
+    \item Waveshare CM4-DUAL-ETH-MINI Router board,
+    \item Raspberry Pi Compute Module 4,
+    \item 32GB MicroSD card,
+    \item USB Power supply,
+    \item An assortment of Cat 5e or better Ethernet cables
+    \item Target/Victim Computer
+    \item Attacking Computer
+\end{itemize}
+
 
 \section{Technology Readiness Level}
 
