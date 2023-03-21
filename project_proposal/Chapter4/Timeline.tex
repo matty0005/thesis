@@ -20,21 +20,26 @@ This section of the report details the plan and timeline of the proposed project
 
 % ********* Enter your text below this line: ********
 The TRL benchmark provides a breakdown of the phases of development, the milestones table ~\ref{table:milestones} below highlights the different design 
-stages and tasks throughout the project. The expected durations of these are also presented.
+stages and tasks throughout the project. The expected durations of these are also presented. \textit{Note: * delimits assessable items}.
   
 
 \begin{table}[hbt!]
 \centering%
 % \begin{tabularx}{lll}
-    \begin{tabularx}{\textwidth}{ lXl }
+    \begin{tabularx}{\textwidth}{ lXll }
         \hline
-        Task                            & Details & Duration  \\ \hline
-        Create MAC                      &  Create custom Layer 2 Ethernet hardware based on the IEEE 802.3 standard      & 3-4 Weeks \\
-        Wishbone Interface              &  Connect the Ethernet MAC to the NEORV32 RISC-V Processor using the wishbone interface and access it via software       & 2 Weels   \\
-        TCP/IP Stack + Webserver        &  Create and Get the webserver working on the NEORV32 Processor. Web page should be accessed from another computer       & 5-6 Weeks \\ 
-        Firewall Hardware               &  Create the hardware between 2 Ethernet MACs to filter out packets based on rules      & 3-4 Weeks \\ 
-        Integration with software       &  Add functionality to the server to be able to configure the firewall rules       & 1 Week \\ 
-        Measure and Compare             &  Compare to pre-existing solutions       & 1 Week \\ 
+        Task                            & Details & Due & Duration  \\ \hline
+        *Proposal                        & Write up project proposal & 27/04 & \\
+        Create Wishbone MAC             &  Create custom Layer 2 Ethernet hardware based on the IEEE 802.3 standard with a wishbone b4 interface & 01/05  & 30h \\
+        *Seminar                         & Create Seminar material and present & 08/05 & \\
+        Create software drivers         & Create drivers for the MAC hardware and prepare driver for packet filter & 20/05 & 25h \\
+        TCP/IP stack + web server       &  Create the web server on the NEORV32 Processor. Web page should be accessed from another computer  & 15/08     & 75h \\ 
+        Firewall hardware               &  Create the packet filter hardware to filter based on a ruleset & 24/09    & 20h \\ 
+        Software integration            &  Add functionality to the server to be able to configure the firewall rules & 01/10  & 10h \\ 
+        Measure and Compare             &  Compare to pre-existing solutions  & 09/10     & 15h \\ 
+
+        *Demonstration                   & Demonstrate thesis project & 20/10 & \\
+        *Thesis                          & Write thesis itself & 06/11 & \\
         \hline
         \end{tabularx}
 \caption{ Milestones for the proposed project}\label{table:milestones}
