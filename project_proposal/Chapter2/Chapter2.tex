@@ -44,9 +44,26 @@ to achieve a throughput of 950Mbps with a latency of 61.266us. A conference proc
 fields of the IP header obtained a filtering rate of 500,000 packets per second. 
 
 The enabling concept behind the above FPGA based firewalls is SoC design which involves integrating multiple components into a single package, or in this case a 
-single FPGA. Often these will include small softcore microprocessors and some custom Ethernet hardware like the proposed packet filters in \cite{LwIPFPGAFirewall}.
-Softcore processors are configurable and can be modelled in a hardware description language (HDL) which can then be synthesised onto ASICs or FPGAs hardware 
-\cite{SoftcoreBasedEmbeddedSystems}. Recently, the royalty free RISC-V based cores are a popular softcore architecture used on SoC design.
+single FPGA. Often these will include small softcore microprocessor and some custom Ethernet hardware like the proposed packet filters in \cite{LwIPFPGAFirewall}.
+Having a microprocessor in the FPGA design can significantly reduce the complexity of the design and allow for quick and easy development in software instead of 
+hardware \cite{SoftcoreBasedEmbeddedSystems}. In FPGA design, softcore processors are configurable and can be modelled in a hardware description language (HDL) 
+which can then be synthesised onto ASICs or FPGAs hardware \cite{SoftcoreBasedEmbeddedSystems}. There are several softcore processors available for FPGA 
+designs including ARM Cortex, Nios II, MicroBlaze, and RISC-V. 
+ 
+While recently the royalty free RISC-V based cores have been popular amongst many SoC designs, other older processors are still common in the literature. The two 
+big FPGA vendors, Xilinx (now AMD) and Altera (now Intel) have their own RISC based softcores. Janik et al. \cite{LwIPMicroblaze} used Xilinx's MicroBlaze processor 
+as a media converter between optical (SFP interface) and copper (Ethernet) networks. Likewise, Altera's Nios II can be found in a variety of research papers 
+including an embedded web server which significantly simplified the design \cite{NiosIIWebserver}. 
+
+
+
+
+
+
+
+
+
+
 
 
 \section{RISC-V processor}
@@ -67,7 +84,6 @@ external bus interface. A Wishbone B4 (or just 'wishbone') interconnection is de
 SoC into the memory mapped 32bit address space in the processor \cite{WishboneSpec}. This approach has the benefit of not needing to create custom 
 instructions for the microprocessor. 
 
-\newpage
 
 \section{Ethernet MAC}
 
