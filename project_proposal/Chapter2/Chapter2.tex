@@ -8,6 +8,38 @@ Some of the concepts behind the proposed project, such as an Ethernet MAC or RIS
 in these areas. This part of the proposal will explore the prior work related to the project. 
 
 
+\section{Field Programmable Gate Arrays}
+\label{subsection:fpga}	
+First introduced by Xilinx in 1984, field programmable gate arrays (FPGAs) allowed for large custom logic designs to be recognised without the need for 
+expensive application specific integrated circuits (ASICs). More importantly, FPGAs did not suffer from the same scalability issues that
+programmable array logic (PAL) encountered and has allowed for larger and more complex designs \cite{30YearsOfFPGA}. 
+
+A big advantage to custom logic is the ability to create highly parallelised designs while also with a lower latency than software based serialised algorithms. This comes down to 
+having a great degree of freedom when it comes to designing the architecture and ability to optimise for specific tasks.
+As such, FPGAs became ubiquitous in both digital signal processing and for accelerating an assortment of computing architectures and processes \cite{FPGAComputing}.
+System on chip (SoC) design with custom hardware acceleration modules is an active area research. As \cite{FPGAComputing} points out, there is a focus towards 
+using both hardware and software in \textit{edge} devices due to growing numbers of IoT devices.
+
+
+Several other papers, \cite{LwIPFPGAFirewall} \cite{IPFPGAFirewall2000} \cite{packetFilteringFPGA}, have proposed a range of other related FPGA based firewalls. All have 
+different properties and focus on different optimisations. The key benefit to these firewalls is their high performance - namely, low latency, and high throughput. 
+Article \cite{LwIPFPGAFirewall} proposed an Ethernet firewall using LwIP with five-tuple binding (the five parameters filtered on) 
+to achieve a throughput of 950Mbps with a latency of 61.266us. A conference proceeding in 2000 \cite{IPFPGAFirewall2000} which used a comparator unit to check the 
+fields of the IP header obtained a filtering rate of 500,000 packets per second. 
+
+
+The enabling concept behind the above FPGA based firewalls is SoC design which involves integrating multiple components into a single package, or in this case a 
+single FPGA. Often these will include small softcore microprocessor and some custom Ethernet hardware like the proposed packet filters in \cite{LwIPFPGAFirewall}.
+Having a microprocessor in the FPGA design can significantly reduce the complexity of the design and allow for quick and easy development in software instead of 
+hardware \cite{SoftcoreBasedEmbeddedSystems}. In FPGA design, softcore processors are configurable and can be modelled in a hardware description language (HDL) 
+which can then be synthesised onto ASICs or FPGAs hardware \cite{SoftcoreBasedEmbeddedSystems}. There are several softcore processors available for FPGA 
+designs including ARM Cortex, Nios II, MicroBlaze, and RISC-V. 
+ 
+While recently the royalty free RISC-V based cores have been popular amongst many SoC designs, other older processors are still common in the literature. The two 
+big FPGA vendors, Xilinx (now AMD) and Altera (now Intel) have their own RISC based softcores. Janik et al. \cite{LwIPMicroblaze} used Xilinx's MicroBlaze processor 
+as a media converter between optical (SFP interface) and copper (Ethernet) networks. Likewise, Altera's Nios II can be found in a variety of research papers 
+including an embedded web server which significantly simplified the design \cite{NiosIIWebserver}. 
+
 
 
 \section{Packet Filter Firewall}
@@ -24,46 +56,32 @@ hardware \cite{BuildingInternetFirewalls}. The book, \cite{BuildingInternetFirew
 to suppress sophisticated attacks and in some cases can be challenging to properly configure. More advanced firewalls can perform deep packet inspection and 
 explore the contents of the higher layers to better evaluate a packets true intention \cite{FirewallsBook}. 
 
+While firewalls such as \textit{iptables} in Linux are software based, hardware acceleration can vastly improve the performance of a packet filter. As stated in section 
+\ref{subsection:fpga}, hardware acceleration allows for parallelised algorithms to be executed independently of a central processing unit (CPU). Wicaksana and Sasongko, 
+\cite{FastRecongifFPGAFirewall}, proposed a packet classification engine as shown in figure \ref{fig:fast-fpga-classifier}. To obtain a fast and reconfigurable packet 
+classifier, the authors of \cite{FastRecongifFPGAFirewall} used a hierarchical tree-based algorithm that inspects the multidimensional fields of the IP header through 
+the use of parallel decision trees.
+
+Essentially, the architecture in figure \ref{fig:fast-fpga-classifier} employs memory to store the ruleset and uses a multiplexer and a comparator to evaluate each of the fields 
+in the header. As an optimisation step, the authors opted for a \textit{default-deny} ruleset to prevent any unwanted traffic. 
 
 
-
-\section{Field Programmable Gate Arrays}
-First introduced by Xilinx in 1984, field programmable gate arrays (FPGAs) allowed for large custom logic designs to be recognised without the need for 
-expensive application specific integrated circuits (ASICs). More importantly, FPGAs did not suffer from the same scalability issues that
-programmable array logic (PAL) encountered and has allowed for larger and more complex designs \cite{30YearsOfFPGA}. 
-
-A big advantage to custom logic is the ability to create highly parallelised designs while also with a lower latency than software based serialised algorithms. 
-As such, FPGAs became ubiquitous in both digital signal processing and for accelerating an assortment of computing architectures and processes \cite{FPGAComputing}.
-System on chip (SoC) design with custom hardware acceleration modules is an active area research. As \cite{FPGAComputing} points out, there is a focus towards 
-using both hardware and software in \textit{edge} devices due to growing numbers of IoT devices.
-
-Several papers, \cite{LwIPFPGAFirewall} \cite{IPFPGAFirewall2000} \cite{packetFilteringFPGA}, have proposed a range of related FPGA based firewalls, all having 
-slightly different properties and using different classification mechanisms. Each of the proposed firewalls in the aforementioned papers use custom hardware 
-to first detect and then handle the incoming network packet. The key benefit to these firewalls is their high 
-performance - namely, low latency, and high throughput. Article \cite{LwIPFPGAFirewall} proposed an Ethernet firewall using LwIP and five-tuple binding 
-to achieve a throughput of 950Mbps with a latency of 61.266us. A conference proceeding in 2000 \cite{IPFPGAFirewall2000} which used a comparator unit to check the 
-fields of the IP header obtained a filtering rate of 500,000 packets per second. 
-
-The enabling concept behind the above FPGA based firewalls is SoC design which involves integrating multiple components into a single package, or in this case a 
-single FPGA. Often these will include small softcore microprocessor and some custom Ethernet hardware like the proposed packet filters in \cite{LwIPFPGAFirewall}.
-Having a microprocessor in the FPGA design can significantly reduce the complexity of the design and allow for quick and easy development in software instead of 
-hardware \cite{SoftcoreBasedEmbeddedSystems}. In FPGA design, softcore processors are configurable and can be modelled in a hardware description language (HDL) 
-which can then be synthesised onto ASICs or FPGAs hardware \cite{SoftcoreBasedEmbeddedSystems}. There are several softcore processors available for FPGA 
-designs including ARM Cortex, Nios II, MicroBlaze, and RISC-V. 
- 
-While recently the royalty free RISC-V based cores have been popular amongst many SoC designs, other older processors are still common in the literature. The two 
-big FPGA vendors, Xilinx (now AMD) and Altera (now Intel) have their own RISC based softcores. Janik et al. \cite{LwIPMicroblaze} used Xilinx's MicroBlaze processor 
-as a media converter between optical (SFP interface) and copper (Ethernet) networks. Likewise, Altera's Nios II can be found in a variety of research papers 
-including an embedded web server which significantly simplified the design \cite{NiosIIWebserver}. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Images/packetFilterHardware.png}
+    \caption{Packet classifier \cite{FastRecongifFPGAFirewall}}
+    \label{fig:fast-fpga-classifier}
+\end{figure}
 
 
+\newpage
 
-
-
-
-
-
-
+Wasti \cite{Wasti2001HardwareAP} presents several other classification algorithms for both hardware and software packet filters. \textit{'Sequential matching'} provides the most 
+trivial solution as it matches each rule to the incoming packet. While simple, this design has scalability issues as more rules get added. Another method proposed in 
+\cite{Wasti2001HardwareAP} is by using a \textit{'Grid of tries'} which uses tries (a type of tree datastructure) to help pattern match, but fails to extend to multiple fields. 
+Hardware algorithms using \textit{Ternary CAMs} (stores words with 3-valued-digits - namely '0', '1' and '*') and \textit{Bit-parallelism} were also discussed. Both of these 
+exploited the parallelised nature of hardware design. One limiting factor with the classification methods cited in \cite{Wasti2001HardwareAP} is their configurability and 
+expandability. 
 
 
 

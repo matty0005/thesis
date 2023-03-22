@@ -482,3 +482,26 @@ author = {Joshi, N.N. and Dakhole, P.K. and Zode, P.P.},
 keywords = {Application software ; Computer architecture ; Computer networks ; Costs ; Field programmable gate arrays ; Network servers ; Reduced instruction set computing ; Service oriented architecture ; Web pages ; Web server},
 }
 
+
+
+@inproceedings{FastRecongifFPGAFirewall,
+issn = {2155-6822},
+abstract = {In data communication via internet, security is becoming one of the most influential aspects. One way to support it is by classifying and filtering ethernet packets within network devices. Packet classification is a fundamental task for network devices such as routers, firewalls, and intrusion detection systems. In this paper we present architecture of fast and reconfigurable Packet Classification Engine (PCE). This engine is used in FPGA-based firewall. Our PCE inspects multi-dimensional field of packet header sequentially based on tree-based algorithm. This algorithm simplifies overall system to a lower scale and leads to a more secure system. The PCE works with an adaptation of single cycle processor architecture in the system. Ethernet packet is examined with PCE based on Source IP Address, Destination IP Address, Source Port, Destination Port, and Protocol fields of the packet header. These are basic fields to know whether it is a dangerous or normal packet before inspecting the content. Using implementation of tree-based algorithm in the architecture, firewall rules are rebuilt into 24-bit sub-rules which are read as processor instruction in the inspection process. The inspection process is comparing one sub-rule with input field of header every clock cycle. The proposed PCE shows 91 MHz clock frequency in Cyclone II EP2C70F896C6 with 13 clocks throughput average from input to output generation. The use of tree-based algorithm simplifies the multidimensional packet inspection and gives us reconfigurable as well as scalable system. The architecture is fast, reliable, and adaptable and also can maximize the advantages of the algorithm very well. Although the PCE has high frequency and little amount of clock, filtering speed of a firewall also depends on the other components, such as packet FIFO buffer. Fast and reliable FIFO buffer is needed to support the PCE. This PCE also is not completed with rule update mechanism yet. This proposed PCE is tested as a component of FPGA-based firewall to filter Ethernet packet with FPGA DE2 Board using NIOS II platform.},
+pages = {1--6},
+publisher = {IEEE},
+booktitle = {Proceedings of the 2011 International Conference on Electrical Engineering and Informatics},
+isbn = {1457707535},
+year = {2016},
+title = {Fast and reconfigurable packet classification engine in FPGA-based firewall},
+copyright = {2016. This work is published under http://arxiv.org/licenses/nonexclusive-distrib/1.0/ (the “License”). Notwithstanding the ProQuest Terms and Conditions, you may use this content in accordance with the terms of the License.},
+language = {eng},
+address = {Ithaca},
+author = {Wicaksana, A. and Sasongko, A.},
+keywords = {Algorithms ; Buffers ; Classification ; Classification algorithms ; Clocks ; Computer Science ; Computer security ; Cyclones ; Electronic devices ; Engines ; Ethernet ; Field programmable gate arrays ; Filtration ; Fires ; Firewalls ; Hardware Architecture ; Inspection ; Intrusion ; IP (Internet Protocol) ; IP networks ; Microprocessors ; Networking and Internet Architecture ; Packet Classification Engine ; Processor Architecture ; Protocols ; Reconfiguration ; Routers ; Tree-Based Algorithm},
+}
+
+@inproceedings{Wasti2001HardwareAP,
+  title={Hardware Assisted Packet Filtering Firewall},
+  author={Shubhash Wasti},
+  year={2001}
+}
