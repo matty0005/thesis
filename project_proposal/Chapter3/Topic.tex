@@ -9,12 +9,13 @@
 
 
 
-While there is no single solution that will fully protect an edge network, a common and effective way to reduce the unauthorised/unwanted network 
-traffic is by simply filtering out the potentially malicious packets. The proposed thesis project aims to alleviate some of these potential security issues by 
-designing a customised FPGA packet filter with a customised Etherent MAC and web server on a RISC-V processor.  By accelerating the filtering in hardware, 
-new levels of parallelism, latency and efficiency can be gained over current software implementations. The packet filter will then selectively filter based on various 
-criteria that the end user configured through the customised web interface running on the RISC-V softcore processor. Additionally, this web interface will also 
-present current statistics.  This project will have significant practical applications in the field of edge network security.
+While no single solution can completely safeguard an edge network, an effective approach to mitigating unauthorised/unwanted network 
+traffic is by simply filtering out potentially malicious packets. The proposed thesis project aims to alleviate some of these potential security issues by 
+designing a customised FPGA packet filter featuring a customised Etherent MAC and web server on a RISC-V processor.  By accelerating the filtering in hardware, 
+new levels of parallelism, latency and efficiency can be gained compared to current software based implementations. 
+
+The packet filter will selectively filter based on various 
+criteria that can be configured through a customised web interface running on the RISC-V softcore processor. This web interface will also display real-time metrics enabling users to monitor network activity. This project will have potentially significant practical applications in the field of edge network security offering an efficient and cost-effective solution alternative to current options in the market.
 
 
 \section{System Overview}
@@ -48,7 +49,7 @@ in \cite{FastRecongifFPGAFirewall}.
 
 
 \subsection{Microprocessor selection}
-The proposed project will use the NEORV32\footnote[1]{See: https://github.com/stnolting/neorv32} RISC-V softcore microprocessor. This microprocessor will then 
+The proposed project will use the NEORV32\footnote[1]{See: https://github.com/stnolting/neorv32} RISC-V softcore microprocessor. This microprocessor will  
 run FreeRTOS with the FreeRTOS-Plus-TCP network stack to handle the control of the packet filter and host a web server. Additional libraries such as the 
 FreeRTOS-Plus-FAT will also be used to store web content such as HTML files. 
 
