@@ -52,10 +52,17 @@ entity hardware_top is
     rstn_i      : in  std_ulogic; -- global reset, low-active, async
     -- GPIO --
     gpio_o      : out std_ulogic_vector(7 downto 0); -- parallel output
-    gpio_o2     : inout std_logic_vector(15 downto 0); -- parallel output
     -- UART0 --
     uart0_txd_o : out std_ulogic; -- UART0 send data
-    uart0_rxd_i : in  std_ulogic  -- UART0 receive data
+    uart0_rxd_i : in  std_ulogic;  -- UART0 receive data
+    
+    -- Ethernet --
+    eth_o_txd : out std_logic_vector(1 downto 0);
+    eth_o_txen : out std_logic;
+    eth_i_rxd : in std_logic_vector(1 downto 0);
+    eth_i_rxderr : in std_logic;
+    eth_o_refclk : out std_logic;
+    eth_i_intn : in std_logic
   );
 end entity;
 
@@ -65,9 +72,6 @@ architecture neorv32_test_setup_bootloader_rtl of hardware_top is
 
 
 component wb_ethernet 
-generic (
-    dat_sz  : natural := 16
-);
 port (
     clk_i  : in  std_logic;
     rst_i  : in  std_logic;
@@ -87,9 +91,12 @@ port (
     stall_o: out std_logic;
     stb_i  : in  std_logic;
     --
-    -- GPIO Interface
-    --
-    gp_io  : inout std_logic_vector((dat_sz - 1) downto 0)
+     -- Ethernet --
+    eth_o_txd : out std_logic_vector(1 downto 0);
+    eth_o_txen : out std_logic;
+    eth_i_rxd : in std_logic_vector(1 downto 0);
+    eth_i_rxderr : in std_logic;
+    eth_o_refclk : out std_logic
 );
 end component;
 
@@ -111,17 +118,22 @@ signal wb_dat_o8 : std_logic_vector(15 downto 0);
 signal wb_sel : std_ulogic_vector(3 downto 0);
 
 
+signal wb_eth_o_tx : std_logic_vector(1 downto 0);
+signal wb_eth_i_rx : std_logic_vector(1 downto 0);
+
+signal wb_eth_o_txen : std_logic;
+signal wb_eth_i_rxderr : std_logic;
+signal wb_eth_i_txen : std_logic;
+signal wb_eth_o_refclk : std_logic;
+
 begin
 
 wb_dat_i8 <= std_logic_vector(wb_dat_i(15 downto 0));
 wb_dat_o <= x"0000" & wb_dat_o8;
 
-gpio_o2 <= "0000000" & clk_i & "00000000";
+--gpio_o2 <= "0000000" & clk_i & "00000000";
 
-wb_ethernet : wb_ethernet
-    generic map(
-        dat_sz  => 16
-    )
+ethernet_mac : wb_ethernet
     port map (
         clk_i  => clk_i,
         rst_i  => rstn_i,
@@ -143,7 +155,12 @@ wb_ethernet : wb_ethernet
         --
         -- GPIO Interface
         --
-        gp_io  => open
+         -- Ethernet --
+        eth_o_txd => wb_eth_o_tx,
+        eth_o_txen => wb_eth_o_txen,
+        eth_i_rxd => wb_eth_i_rx,
+        eth_i_rxderr => wb_eth_i_rxderr,
+        eth_o_refclk => wb_eth_o_refclk
     );
     
   -- The Core Of The Problem ----------------------------------------------------------------
