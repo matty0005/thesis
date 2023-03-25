@@ -76,6 +76,7 @@ architecture Behavioral of wb_ethernet is
     
     component rmii is
     port (
+        rmii_i_rst      : in std_logic;
         -- From ethernet MAC
         rmii_i_tx_ready : in std_logic;
         rmii_i_tx_dat   : in std_logic_vector(7 downto 0);
@@ -107,6 +108,8 @@ begin
     
     rmii_int : rmii
     port map (
+        rmii_i_rst => rst_i,
+        
         rmii_i_tx_ready => eth_tx_dat_pres_o,
         rmii_i_tx_dat => eth_tx_dat_o,
         rmii_i_tx_clk => clk_i,
