@@ -78,8 +78,8 @@ port (
     --
     -- Whishbone Interface
     --
-    wb_dat_i  : in  std_logic_vector((dat_sz - 1) downto 0);
-    wb_dat_o  : out std_logic_vector((dat_sz - 1) downto 0);
+    wb_dat_i  : in  std_logic_vector(31 downto 0);
+    wb_dat_o  : out std_logic_vector(31 downto 0);
     wb_adr_i  : in  std_logic_vector(31 downto 0);
     wb_cyc_i  : in  std_logic;
     wb_lock_i : in  std_logic;
@@ -99,6 +99,18 @@ port (
     eth_o_refclk : out std_logic
 );
 end component;
+
+component clk_master is
+  Port ( 
+    clk_100 : out std_logic;
+    clk_50 : out std_logic;
+    reset : in std_logic;
+    locked : out std_logic;
+    clk_in : in std_logic
+  );
+end component;
+  
+  
 
 signal wb_lock : std_logic := '0';
 signal wb_rty : std_logic := '0';
@@ -126,6 +138,11 @@ signal wb_eth_i_rxderr : std_logic;
 signal wb_eth_i_txen : std_logic;
 signal wb_eth_o_refclk : std_logic;
 
+-- Clock master signals
+signal clk_100 : std_logic := '0';
+signal clk_50 : std_logic := '0';
+signal clk_locked : std_logic := '0';
+
 begin
 
 wb_dat_i8 <= std_logic_vector(wb_dat_i(15 downto 0));
@@ -133,9 +150,19 @@ wb_dat_o <= x"0000" & wb_dat_o8;
 
 --gpio_o2 <= "0000000" & clk_i & "00000000";
 
+
+clk_control : clk_master
+    port map (
+        clk_100 => clk_100,
+        clk_50 => clk_50,
+        reset => rstn_i,
+        locked => clk_locked,
+        clk_in => clk_i
+    );
+
 ethernet_mac : wb_ethernet
     port map (
-        clk_i  => clk_i,
+        clk_i  => clk_100,
         rst_i  => rstn_i,
         --
         -- Whishbone Interface
@@ -160,7 +187,7 @@ ethernet_mac : wb_ethernet
         eth_o_txen => wb_eth_o_txen,
         eth_i_rxd => wb_eth_i_rx,
         eth_i_rxderr => wb_eth_i_rxderr,
-        eth_o_refclk => wb_eth_o_refclk
+        eth_o_refclk => clk_50
     );
     
   -- The Core Of The Problem ----------------------------------------------------------------

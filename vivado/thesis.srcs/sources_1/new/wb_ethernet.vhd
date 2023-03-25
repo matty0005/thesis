@@ -42,7 +42,7 @@ port (
     eth_o_txen : out std_logic;
     eth_i_rxd : in std_logic_vector(1 downto 0);
     eth_i_rxderr : in std_logic;
-    eth_o_refclk : out std_logic
+    eth_i_refclk : in std_logic
 );
 end wb_ethernet;
 
@@ -73,6 +73,23 @@ architecture Behavioral of wb_ethernet is
         ); 
     end component;
     
+    
+    component rmii is
+    port (
+        -- From ethernet MAC
+        rmii_i_tx_ready : in std_logic;
+        rmii_i_tx_dat   : in std_logic_vector(7 downto 0);
+        rmii_i_tx_clk   : in std_logic;
+        
+        
+        -- RMII interface itself
+        rmii_o_txd      : out std_logic_vector(1 downto 0);
+        rmii_o_txen     : out std_logic; 
+        rmii_i_clk      : in std_logic   
+    );
+    end component; 
+    
+    
     -- Transmit FIFO 
     signal eth_tx_dat_pres_o : std_logic;
     signal eth_tx_dat_o : std_logic_vector(7 downto 0);
@@ -86,6 +103,18 @@ begin
     wb_err_o   <= '0';
     wb_stall_o <= '0';
     
+    
+    
+    rmii_int : rmii
+    port map (
+        rmii_i_tx_ready => eth_tx_dat_pres_o,
+        rmii_i_tx_dat => eth_tx_dat_o,
+        rmii_i_tx_clk => clk_i,
+        
+        rmii_o_txd => eth_o_txd,
+        rmii_o_txen => eth_o_txen,
+        rmii_i_clk => eth_i_refclk
+    );
     
   
     eth_tx : eth_tx_mac
