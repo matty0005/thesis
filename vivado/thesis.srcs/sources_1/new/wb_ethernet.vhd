@@ -24,18 +24,18 @@ port (
     --
     -- Whishbone Interface
     --
-    dat_i  : in  std_logic_vector(31 downto 0);
-    dat_o  : out std_logic_vector(31 downto 0);
-    adr_i  : in  std_logic_vector(31 downto 0);
-    cyc_i  : in  std_logic;
-    lock_i : in  std_logic;
-    sel_i  : in  std_logic;
-    we_i   : in  std_logic;
-    ack_o  : out std_logic;
-    err_o  : out std_logic;
-    rty_o  : out std_logic;
-    stall_o: out std_logic;
-    stb_i  : in  std_logic;
+    wb_dat_i  : in  std_logic_vector(31 downto 0);
+    wb_dat_o  : out std_logic_vector(31 downto 0);
+    wb_adr_i  : in  std_logic_vector(31 downto 0);
+    wb_cyc_i  : in  std_logic;
+    wb_lock_i : in  std_logic;
+    wb_sel_i  : in  std_logic;
+    wb_we_i   : in  std_logic;
+    wb_ack_o  : out std_logic;
+    wb_err_o  : out std_logic;
+    wb_rty_o  : out std_logic;
+    wb_stall_o: out std_logic;
+    wb_stb_i  : in  std_logic;
     
     -- Ethernet --
     eth_o_txd : out std_logic_vector(1 downto 0);
@@ -72,15 +72,43 @@ architecture Behavioral of wb_ethernet is
             dataOut       : out std_logic_vector(7 downto 0)  
         ); 
     end component;
+    
+    -- Transmit FIFO 
+    signal eth_tx_dat_pres_o : std_logic;
+    signal eth_tx_dat_o : std_logic_vector(7 downto 0);
 
     -- Wishbone accessible Registers
     signal  reg_ena     : std_logic_vector(31 downto 0);
     signal  reg_mask    : std_logic_vector(31 downto 0);
 begin
 
-    rty_o   <= '0';
-    err_o   <= '0';
-    stall_o <= '0';
+    wb_rty_o   <= '0';
+    wb_err_o   <= '0';
+    wb_stall_o <= '0';
+    
+    
+  
+    eth_tx : eth_tx_mac
+    port map (
+        wb_i_dat    => wb_dat_i,
+        wb_o_dat    => wb_dat_o,
+        wb_i_addr   => wb_adr_i,
+        wb_i_cyc    => wb_cyc_i,
+        wb_i_lock   => wb_lock_i,
+        wb_i_sel    => wb_sel_i,
+        wb_i_we     => wb_we_i,
+        wb_o_ack    => wb_ack_o,
+        wb_o_err    => wb_err_o,
+        wb_o_rty    => wb_rty_o,
+        wb_o_stall  => wb_stall_o,
+        wb_i_stb    => wb_stb_i,
+        
+        clk_i       => clk_i,
+        rst_i       => rst_i,
+        start       => clk_i,
+        dataPresent => eth_tx_dat_pres_o,
+        dataOut     => eth_tx_dat_o
+    );
     
     
 

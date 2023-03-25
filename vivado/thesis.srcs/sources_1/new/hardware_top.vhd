@@ -78,18 +78,18 @@ port (
     --
     -- Whishbone Interface
     --
-    dat_i  : in  std_logic_vector((dat_sz - 1) downto 0);
-    dat_o  : out std_logic_vector((dat_sz - 1) downto 0);
-    adr_i  : in  std_logic_vector(31 downto 0);
-    cyc_i  : in  std_logic;
-    lock_i : in  std_logic;
-    sel_i  : in  std_logic;
-    we_i   : in  std_logic;
-    ack_o  : out std_logic;
-    err_o  : out std_logic;
-    rty_o  : out std_logic;
-    stall_o: out std_logic;
-    stb_i  : in  std_logic;
+    wb_dat_i  : in  std_logic_vector((dat_sz - 1) downto 0);
+    wb_dat_o  : out std_logic_vector((dat_sz - 1) downto 0);
+    wb_adr_i  : in  std_logic_vector(31 downto 0);
+    wb_cyc_i  : in  std_logic;
+    wb_lock_i : in  std_logic;
+    wb_sel_i  : in  std_logic;
+    wb_we_i   : in  std_logic;
+    wb_ack_o  : out std_logic;
+    wb_err_o  : out std_logic;
+    wb_rty_o  : out std_logic;
+    wb_stall_o: out std_logic;
+    wb_stb_i  : in  std_logic;
     --
      -- Ethernet --
     eth_o_txd : out std_logic_vector(1 downto 0);
@@ -140,18 +140,18 @@ ethernet_mac : wb_ethernet
         --
         -- Whishbone Interface
         --
-        dat_i    => wb_dat_i8,
-        dat_o    => wb_dat_o8,
-        adr_i    => std_logic_vector(wb_addr),
-        cyc_i    => wb_cyc,
-        lock_i   => wb_lock,
-        sel_i    => wb_sel(0),
-        we_i     => wb_write,
-        ack_o    => wb_ack,
-        err_o    => wb_err,
-        rty_o    => wb_rty,
-        stall_o  => wb_stall,
-        stb_i    => wb_stb,
+        wb_dat_i    => wb_dat_i8,
+        wb_dat_o    => wb_dat_o8,
+        wb_adr_i    => std_logic_vector(wb_addr),
+        wb_cyc_i    => wb_cyc,
+        wb_lock_i   => wb_lock,
+        wb_sel_i    => wb_sel(0),
+        wb_we_i     => wb_write,
+        wb_ack_o    => wb_ack,
+        wb_err_o    => wb_err,
+        wb_rty_o    => wb_rty,
+        wb_stall_o  => wb_stall,
+        wb_stb_i    => wb_stb,
         --
         -- GPIO Interface
         --
