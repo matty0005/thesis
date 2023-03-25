@@ -2,8 +2,8 @@
 # Vivado v2022.2 (64-bit)
 # SW Build 3671981 on Fri Oct 14 05:00:03 MDT 2022
 # IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
-# Start of session at: Sat Mar 25 16:20:08 2023
-# Process ID: 38576
+# Start of session at: Sun Mar 26 01:18:03 2023
+# Process ID: 38656
 # Current directory: C:/Users/Matt/thesis/vivado/thesis.runs/synth_1
 # Command line: vivado.exe -log hardware_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source hardware_top.tcl
 # Log file: C:/Users/Matt/thesis/vivado/thesis.runs/synth_1/hardware_top.vds
@@ -14,44 +14,50 @@ Sourcing tcl script 'C:/Users/Matt/AppData/Roaming/Xilinx/Vivado/Vivado_init.tcl
 source hardware_top.tcl -notrace
 WARNING: [Board 49-91] Board repository path 'C:/Users/Matt/Downloads/vivado-boards-masterivado-boards-master/new/board_files' does not exist, it will not be used to search board files.
 WARNING: [Board 49-91] Board repository path 'C:/Xilinx/Vivado/2022.2data/xhub/boards' does not exist, it will not be used to search board files.
+Command: read_checkpoint -auto_incremental -incremental C:/Users/Matt/thesis/vivado/thesis.srcs/utils_1/imports/synth_1/hardware_top.dcp
+INFO: [Vivado 12-5825] Read reference checkpoint from C:/Users/Matt/thesis/vivado/thesis.srcs/utils_1/imports/synth_1/hardware_top.dcp for incremental synthesis
+INFO: [Vivado 12-7989] Please ensure there are no constraint changes
 Command: synth_design -top hardware_top -part xc7a100tcsg324-1
 Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a100t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a100t'
 INFO: [Device 21-403] Loading part xc7a100tcsg324-1
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
 INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
 INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
-INFO: [Synth 8-7075] Helper process launched with PID 37688
+INFO: [Synth 8-7075] Helper process launched with PID 42516
 INFO: [Synth 8-11241] undeclared symbol 'REGCCE', assumed default net type 'wire' [C:/Xilinx/Vivado/2022.2/data/verilog/src/unimacro/BRAM_SINGLE_MACRO.v:2170]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 1220.152 ; gain = 406.016
+Starting RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 1223.297 ; gain = 408.871
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-638] synthesizing module 'hardware_top' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:69]
-INFO: [Synth 8-3491] module 'clk_master' declared at 'C:/Users/Matt/thesis/vivado/thesis.runs/synth_1/.Xil/Vivado-38576-Squid/realtime/clk_master_stub.v:5' bound to instance 'clk_control' of component 'clk_master' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:148]
-INFO: [Synth 8-6157] synthesizing module 'clk_master' [C:/Users/Matt/thesis/vivado/thesis.runs/synth_1/.Xil/Vivado-38576-Squid/realtime/clk_master_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_master' (0#1) [C:/Users/Matt/thesis/vivado/thesis.runs/synth_1/.Xil/Vivado-38576-Squid/realtime/clk_master_stub.v:5]
+INFO: [Synth 8-3491] module 'clk_master' declared at 'C:/Users/Matt/thesis/vivado/thesis.runs/synth_1/.Xil/Vivado-38656-Squid/realtime/clk_master_stub.v:5' bound to instance 'clk_control' of component 'clk_master' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:148]
+INFO: [Synth 8-6157] synthesizing module 'clk_master' [C:/Users/Matt/thesis/vivado/thesis.runs/synth_1/.Xil/Vivado-38656-Squid/realtime/clk_master_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_master' (0#1) [C:/Users/Matt/thesis/vivado/thesis.runs/synth_1/.Xil/Vivado-38656-Squid/realtime/clk_master_stub.v:5]
 INFO: [Synth 8-3491] module 'wb_ethernet' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/wb_ethernet.vhd:20' bound to instance 'ethernet_mac' of component 'wb_ethernet' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:157]
 INFO: [Synth 8-638] synthesizing module 'wb_ethernet' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/wb_ethernet.vhd:49]
-INFO: [Synth 8-3491] module 'rmii' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:20' bound to instance 'rmii_int' of component 'rmii' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/wb_ethernet.vhd:109]
-INFO: [Synth 8-638] synthesizing module 'rmii' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:36]
+WARNING: [Synth 8-5640] Port 'test' is missing in component declaration [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/wb_ethernet.vhd:78]
+INFO: [Synth 8-3491] module 'rmii' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:20' bound to instance 'rmii_int' of component 'rmii' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/wb_ethernet.vhd:111]
+INFO: [Synth 8-638] synthesizing module 'rmii' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:39]
 	Parameter w bound to: 8 - type: integer 
 	Parameter d bound to: 1525 - type: integer 
-INFO: [Synth 8-3491] module 'fifo' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/fifo.vhd:28' bound to instance 'tx_fifo' of component 'fifo' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:74]
+INFO: [Synth 8-3491] module 'fifo' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/fifo.vhd:28' bound to instance 'tx_fifo' of component 'fifo' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:78]
 INFO: [Synth 8-638] synthesizing module 'fifo' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/fifo.vhd:46]
 	Parameter w bound to: 8 - type: integer 
 	Parameter d bound to: 1525 - type: integer 
 WARNING: [Synth 8-613] shared variable will be implemented as local to architecture [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/fifo.vhd:48]
 WARNING: [Synth 8-613] shared variable will be implemented as local to architecture [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/fifo.vhd:49]
 INFO: [Synth 8-256] done synthesizing module 'fifo' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/fifo.vhd:46]
-INFO: [Synth 8-256] done synthesizing module 'rmii' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:36]
-INFO: [Synth 8-3491] module 'eth_tx_mac' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:28' bound to instance 'eth_tx' of component 'eth_tx_mac' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/wb_ethernet.vhd:123]
-INFO: [Synth 8-638] synthesizing module 'eth_tx_mac' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:53]
-WARNING: [Synth 8-613] shared variable will be implemented as local to architecture [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:88]
-INFO: [Synth 8-3491] module 'CRC' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/crc.vhd:33' bound to instance 'FCS_CRC32' of component 'crc' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:119]
+INFO: [Synth 8-256] done synthesizing module 'rmii' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:39]
+INFO: [Synth 8-3491] module 'eth_tx_mac' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:28' bound to instance 'eth_tx' of component 'eth_tx_mac' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/wb_ethernet.vhd:125]
+INFO: [Synth 8-638] synthesizing module 'eth_tx_mac' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:54]
+WARNING: [Synth 8-613] shared variable will be implemented as local to architecture [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:89]
+INFO: [Synth 8-3491] module 'CRC' declared at 'C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/crc.vhd:33' bound to instance 'FCS_CRC32' of component 'crc' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:120]
 INFO: [Synth 8-638] synthesizing module 'CRC' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/crc.vhd:44]
 INFO: [Synth 8-226] default block is never used [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/crc.vhd:167]
 INFO: [Synth 8-256] done synthesizing module 'CRC' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/crc.vhd:44]
-INFO: [Synth 8-256] done synthesizing module 'eth_tx_mac' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:53]
+INFO: [Synth 8-256] done synthesizing module 'eth_tx_mac' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:54]
 INFO: [Synth 8-256] done synthesizing module 'wb_ethernet' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/wb_ethernet.vhd:49]
 	Parameter CLOCK_FREQUENCY bound to: 100000000 - type: integer 
 	Parameter INT_BOOTLOADER_EN bound to: 1 - type: bool 
@@ -511,7 +517,7 @@ INFO: [Synth 8-638] synthesizing module 'neorv32_sysinfo' [C:/Users/Matt/thesis/
 INFO: [Synth 8-256] done synthesizing module 'neorv32_sysinfo' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/imports/rtl/core/neorv32_sysinfo.vhd:99]
 INFO: [Synth 8-256] done synthesizing module 'neorv32_top' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/imports/rtl/core/neorv32_top.vhd:239]
 INFO: [Synth 8-256] done synthesizing module 'hardware_top' (0#1) [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:69]
-WARNING: [Synth 8-3848] Net rmii_o_txen in module/entity rmii does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:31]
+WARNING: [Synth 8-6014] Unused sequential element tx_fifo_transfer_reg was removed.  [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:104]
 WARNING: [Synth 8-3848] Net wb_o_dat in module/entity eth_tx_mac does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:32]
 WARNING: [Synth 8-3848] Net wb_o_err in module/entity eth_tx_mac does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:39]
 WARNING: [Synth 8-3848] Net wb_o_rty in module/entity eth_tx_mac does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/eth_tx_mac.vhd:40]
@@ -548,7 +554,7 @@ WARNING: [Synth 8-6014] Unused sequential element rstn_ext_sreg_reg was removed.
 WARNING: [Synth 8-6014] Unused sequential element rstn_ext_reg was removed.  [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/imports/rtl/core/neorv32_top.vhd:474]
 WARNING: [Synth 8-3848] Net eth_o_txd in module/entity hardware_top does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:60]
 WARNING: [Synth 8-3848] Net eth_o_txen in module/entity hardware_top does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:61]
-WARNING: [Synth 8-3848] Net wb_eth_i_rx in module/entity hardware_top does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:132]
+WARNING: [Synth 8-3848] Net eth_i_rxd in module/entity hardware_top does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:62]
 WARNING: [Synth 8-3848] Net wb_eth_i_rxderr in module/entity hardware_top does not have driver. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/hardware_top.vhd:135]
 WARNING: [Synth 8-7129] Port addr_i[31] in module neorv32_sysinfo is either unconnected or has no load
 WARNING: [Synth 8-7129] Port addr_i[30] in module neorv32_sysinfo is either unconnected or has no load
@@ -652,18 +658,18 @@ WARNING: [Synth 8-7129] Port addr_i[1] in module neorv32_gpio is either unconnec
 WARNING: [Synth 8-7129] Port addr_i[0] in module neorv32_gpio is either unconnected or has no load
 INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:17 ; elapsed = 00:00:24 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished RTL Elaboration : Time (s): cpu = 00:00:16 ; elapsed = 00:00:19 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:18 ; elapsed = 00:00:25 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:17 ; elapsed = 00:00:20 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:18 ; elapsed = 00:00:25 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:17 ; elapsed = 00:00:20 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
-Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.935 . Memory (MB): peak = 2115.547 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.960 . Memory (MB): peak = 2120.316 ; gain = 0.000
 INFO: [Project 1-570] Preparing netlist for logic optimization
 
 Processing XDC Constraints
@@ -685,21 +691,23 @@ INFO: [Project 1-236] Implementation specific constraints were found while readi
 Resolution: To avoid this warning, move constraints listed in [.Xil/hardware_top_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
 Completed Processing XDC Constraints
 
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.008 . Memory (MB): peak = 2115.547 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.008 . Memory (MB): peak = 2120.316 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
 No Unisim elements were transformed.
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.124 . Memory (MB): peak = 2115.547 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.128 . Memory (MB): peak = 2120.316 ; gain = 0.000
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
 INFO: [Synth 8-11241] undeclared symbol 'REGCCE', assumed default net type 'wire' [C:/Xilinx/Vivado/2022.2/data/verilog/src/unimacro/BRAM_SINGLE_MACRO.v:2170]
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:32 ; elapsed = 00:00:40 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Constraint Validation : Time (s): cpu = 00:00:31 ; elapsed = 00:00:35 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a100tcsg324-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:32 ; elapsed = 00:00:40 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:31 ; elapsed = 00:00:35 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -708,7 +716,7 @@ Applied set_property IO_BUFFER_TYPE = NONE for clk_i. (constraint file  c:/Users
 Applied set_property CLOCK_BUFFER_TYPE = NONE for clk_i. (constraint file  c:/Users/Matt/thesis/vivado/thesis.gen/sources_1/ip/clk_master/clk_master/clk_master_in_context.xdc, line 5).
 Applied set_property KEEP_HIERARCHY = SOFT for clk_control. (constraint file  auto generated constraint).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:32 ; elapsed = 00:00:40 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:31 ; elapsed = 00:00:35 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'currentFCSState_reg' in module 'eth_tx_mac'
 INFO: [Synth 8-802] inferred FSM for state register 'fetch_engine_reg[state]' in module 'neorv32_cpu_control'
@@ -787,7 +795,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'arbiter_reg[state]' using 
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'tx_engine_reg[state]' using encoding 'sequential' in module 'neorv32_uart'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:01:09 ; elapsed = 00:01:23 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:01:05 ; elapsed = 00:01:15 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 RAM Pipeline Warning: Read Address Register Found For RAM imem_ram.mem_ram_b0_reg. We will not be able to pipeline it. This may degrade performance. 
 RAM Pipeline Warning: Read Address Register Found For RAM imem_ram.mem_ram_b1_reg. We will not be able to pipeline it. This may degrade performance. 
@@ -838,7 +846,7 @@ Detailed RTL Component Info :
 	               11 Bit    Registers := 5     
 	               10 Bit    Registers := 2     
 	                9 Bit    Registers := 1     
-	                8 Bit    Registers := 1529  
+	                8 Bit    Registers := 1530  
 	                7 Bit    Registers := 1     
 	                6 Bit    Registers := 1     
 	                5 Bit    Registers := 3     
@@ -874,7 +882,7 @@ Detailed RTL Component Info :
 	   6 Input   11 Bit        Muxes := 1     
 	   2 Input   10 Bit        Muxes := 1     
 	   2 Input    9 Bit        Muxes := 1     
-	   2 Input    8 Bit        Muxes := 4648  
+	   2 Input    8 Bit        Muxes := 4649  
 	   3 Input    8 Bit        Muxes := 68    
 	   4 Input    8 Bit        Muxes := 1     
 	  33 Input    7 Bit        Muxes := 1     
@@ -894,8 +902,8 @@ Detailed RTL Component Info :
 	   6 Input    3 Bit        Muxes := 1     
 	   5 Input    2 Bit        Muxes := 76    
 	   4 Input    2 Bit        Muxes := 2     
-	   2 Input    2 Bit        Muxes := 13    
-	   2 Input    1 Bit        Muxes := 1639  
+	   2 Input    2 Bit        Muxes := 14    
+	   2 Input    1 Bit        Muxes := 1640  
 	   5 Input    1 Bit        Muxes := 3049  
 	   3 Input    1 Bit        Muxes := 18    
 	   8 Input    1 Bit        Muxes := 2     
@@ -919,14 +927,6 @@ Finished Part Resource Summary
 ---------------------------------------------------------------------------------
 Start Cross Boundary and Area Optimization
 ---------------------------------------------------------------------------------
-WARNING: [Synth 8-3332] Sequential element (tx_fifo/isFull_reg) is unused and will be removed from module rmii.
-WARNING: [Synth 8-3332] Sequential element (tx_fifo/isEmpty_reg) is unused and will be removed from module rmii.
-CRITICAL WARNING: [Synth 8-6859] multi-driven net on pin Q with 1st driver pin 'ethernet_mac/rmii_int/tx_sr_reg[7]/Q' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:118]
-CRITICAL WARNING: [Synth 8-6859] multi-driven net on pin Q with 2nd driver pin 'GND' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:118]
-CRITICAL WARNING: [Synth 8-6858] multi-driven net Q is connected to at least one constant driver which has been preserved, other driver is ignored [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:118]
-CRITICAL WARNING: [Synth 8-6859] multi-driven net on pin Q with 1st driver pin 'ethernet_mac/rmii_int/tx_sr_reg[6]/Q' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:118]
-CRITICAL WARNING: [Synth 8-6859] multi-driven net on pin Q with 2nd driver pin 'GND' [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:118]
-CRITICAL WARNING: [Synth 8-6858] multi-driven net Q is connected to at least one constant driver which has been preserved, other driver is ignored [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/new/rmii.vhd:118]
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (crcStart_reg)
 WARNING: [Synth 8-3936] Found unconnected internal register 'tx_engine_fifo_inst/fifo_buffer.fifo_reg[buf]' and it is trimmed from '32' to '8' bits. [C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/imports/rtl/core/neorv32_fifo.vhd:139]
 INFO: [Synth 8-5544] ROM "sysinfo_mem[0]" won't be mapped to Block RAM because address size (3) smaller than threshold (5)
@@ -1071,7 +1071,7 @@ INFO: [Synth 8-3333] propagating constant 0 across sequential element (neorv32_t
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (neorv32_top_inst/\neorv32_uart0_inst_true.neorv32_uart0_inst /\uart_cts_ff_reg[0] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (neorv32_top_inst/\neorv32_uart0_inst_true.neorv32_uart0_inst /\data_o_reg[27] )
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:02:18 ; elapsed = 00:02:40 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:02:07 ; elapsed = 00:02:27 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -1100,13 +1100,13 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:02:22 ; elapsed = 00:02:45 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:02:11 ; elapsed = 00:02:33 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:02:31 ; elapsed = 00:02:55 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Timing Optimization : Time (s): cpu = 00:02:20 ; elapsed = 00:02:43 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -1146,7 +1146,7 @@ INFO: [Synth 8-7052] The timing for the instance neorv32_top_inst/neorv32_int_dm
 INFO: [Synth 8-7052] The timing for the instance neorv32_top_inst/neorv32_int_dmem_inst_true.neorv32_int_dmem_inst/mem_ram_b3_reg (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
 INFO: [Synth 8-7052] The timing for the instance neorv32_top_inst/neorv32_boot_rom_inst_true.neorv32_boot_rom_inst/rdata_reg (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:02:32 ; elapsed = 00:02:56 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Technology Mapping : Time (s): cpu = 00:02:22 ; elapsed = 00:02:44 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start IO Insertion
@@ -1164,37 +1164,37 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:02:36 ; elapsed = 00:03:00 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished IO Insertion : Time (s): cpu = 00:02:24 ; elapsed = 00:02:48 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:02:36 ; elapsed = 00:03:00 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Renaming Generated Instances : Time (s): cpu = 00:02:24 ; elapsed = 00:02:48 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:36 ; elapsed = 00:03:00 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:25 ; elapsed = 00:02:48 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:02:36 ; elapsed = 00:03:00 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Renaming Generated Ports : Time (s): cpu = 00:02:25 ; elapsed = 00:02:48 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:02:36 ; elapsed = 00:03:00 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Handling Custom Attributes : Time (s): cpu = 00:02:25 ; elapsed = 00:02:48 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:02:36 ; elapsed = 00:03:00 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Renaming Generated Nets : Time (s): cpu = 00:02:25 ; elapsed = 00:02:48 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1229,31 +1229,31 @@ Report Cell Usage:
 |18    |FDSE       |    21|
 |19    |IBUF       |     2|
 |20    |OBUF       |    10|
-|21    |OBUFT      |     3|
+|21    |OBUFT      |     5|
 +------+-----------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:02:36 ; elapsed = 00:03:00 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Finished Writing Synthesis Report : Time (s): cpu = 00:02:25 ; elapsed = 00:02:48 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 ---------------------------------------------------------------------------------
-Synthesis finished with 0 errors, 6 critical warnings and 113 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:02:09 ; elapsed = 00:02:52 . Memory (MB): peak = 2115.547 ; gain = 1301.410
-Synthesis Optimization Complete : Time (s): cpu = 00:02:36 ; elapsed = 00:03:01 . Memory (MB): peak = 2115.547 ; gain = 1301.410
+Synthesis finished with 0 errors, 0 critical warnings and 111 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:02:00 ; elapsed = 00:02:40 . Memory (MB): peak = 2120.316 ; gain = 1305.891
+Synthesis Optimization Complete : Time (s): cpu = 00:02:25 ; elapsed = 00:02:49 . Memory (MB): peak = 2120.316 ; gain = 1305.891
 INFO: [Project 1-571] Translating synthesized netlist
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.048 . Memory (MB): peak = 2115.547 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.050 . Memory (MB): peak = 2120.316 ; gain = 0.000
 INFO: [Netlist 29-17] Analyzing 158 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-140] Inserted 1 IBUFs to IO ports without IO buffers.
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2115.547 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2120.316 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
 No Unisim elements were transformed.
 
-Synth Design complete, checksum: bbdbcba0
+Synth Design complete, checksum: eca70750
 INFO: [Common 17-83] Releasing license: Synthesis
-252 Infos, 167 Warnings, 15 Critical Warnings and 0 Errors encountered.
+258 Infos, 166 Warnings, 9 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:02:39 ; elapsed = 00:03:05 . Memory (MB): peak = 2115.547 ; gain = 1697.062
+synth_design: Time (s): cpu = 00:02:28 ; elapsed = 00:02:53 . Memory (MB): peak = 2120.316 ; gain = 1700.375
 INFO: [runtcl-6] Synthesis results are not added to the cache due to CRITICAL_WARNING
 INFO: [Common 17-1381] The checkpoint 'C:/Users/Matt/thesis/vivado/thesis.runs/synth_1/hardware_top.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file hardware_top_utilization_synth.rpt -pb hardware_top_utilization_synth.pb
-INFO: [Common 17-206] Exiting Vivado at Sat Mar 25 16:23:19 2023...
+INFO: [Common 17-206] Exiting Vivado at Sun Mar 26 01:21:02 2023...

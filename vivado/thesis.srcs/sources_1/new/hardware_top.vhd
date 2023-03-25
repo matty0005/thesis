@@ -59,7 +59,7 @@ entity hardware_top is
     -- Ethernet --
     eth_o_txd : out std_logic_vector(1 downto 0);
     eth_o_txen : out std_logic;
-    eth_i_rxd : in std_logic_vector(1 downto 0);
+    eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
     eth_i_rxderr : in std_logic;
     eth_o_refclk : out std_logic;
     eth_i_intn : in std_logic
@@ -94,7 +94,7 @@ port (
      -- Ethernet --
     eth_o_txd : out std_logic_vector(1 downto 0);
     eth_o_txen : out std_logic;
-    eth_i_rxd : in std_logic_vector(1 downto 0);
+    eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
     eth_i_rxderr : in std_logic;
     eth_i_refclk : in std_logic
 );

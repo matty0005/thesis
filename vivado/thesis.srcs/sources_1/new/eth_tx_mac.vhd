@@ -46,7 +46,8 @@ entity eth_tx_mac is
         rst_i  : in  std_logic := '0';
         start         : in std_logic := '0';
         dataPresent   : out std_logic := '0';
-        dataOut       : out std_logic_vector(7 downto 0)  
+        dataOut       : out std_logic_vector(7 downto 0);
+        status        : out std_logic_vector(1 downto 0)  
     );
 end eth_tx_mac;
 
@@ -148,6 +149,7 @@ begin
                         
                         -- Initialise the buffers.
                         if wb_i_dat(0) = '1' then
+                            status <= "01";
                             -- Set preamble + SFD
                             for i in 0 to 7 loop
                                 FRAME_BUFFER(i) := preambleSFD((8 * i) + 7 downto (8 * i));
@@ -178,6 +180,8 @@ begin
                         FRAME_BUFFER(9) := wb_i_dat(23 downto 16);
                         FRAME_BUFFER(10) := wb_i_dat(15 downto 8);
                         FRAME_BUFFER(11) :=  wb_i_dat(7 downto 0);
+                        
+                        status <= "00";
                     
                     
                     -- Set destination MAC address. (LOW)               
@@ -197,6 +201,7 @@ begin
                         
                      -- Setting payload
                      when others =>
+                     status <= "10";
                         
                         -- Check to make sure we are in the safe memory range.
                         if wb_i_addr >= x"13371003" and wb_i_addr <= x"1337117A" then
@@ -241,6 +246,7 @@ begin
                 end if;
           
             when TRANSMIT =>
+                status <= "11";
                 dataPresent <= '1';
                 dataOut <= FRAME_BUFFER(sentAmount);
                 sentAmount := sentAmount + 1;

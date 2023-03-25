@@ -40,7 +40,7 @@ port (
     -- Ethernet --
     eth_o_txd : out std_logic_vector(1 downto 0);
     eth_o_txen : out std_logic;
-    eth_i_rxd : in std_logic_vector(1 downto 0);
+    eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
     eth_i_rxderr : in std_logic;
     eth_i_refclk : in std_logic
 );
@@ -69,7 +69,8 @@ architecture Behavioral of wb_ethernet is
             rst_i  : in  std_logic := '0';
             start         : in std_logic := '0';
             dataPresent   : out std_logic := '0';
-            dataOut       : out std_logic_vector(7 downto 0)  
+            dataOut       : out std_logic_vector(7 downto 0);
+            status        : out std_logic_vector(1 downto 0)        
         ); 
     end component;
     
@@ -98,13 +99,14 @@ architecture Behavioral of wb_ethernet is
     -- Wishbone accessible Registers
     signal  reg_ena     : std_logic_vector(31 downto 0);
     signal  reg_mask    : std_logic_vector(31 downto 0);
+    
+    
 begin
 
     wb_rty_o   <= '0';
     wb_err_o   <= '0';
     wb_stall_o <= '0';
-    
-    
+       
     
     rmii_int : rmii
     port map (
@@ -139,7 +141,10 @@ begin
         rst_i       => rst_i,
         start       => clk_i,
         dataPresent => eth_tx_dat_pres_o,
-        dataOut     => eth_tx_dat_o
+        dataOut     => eth_tx_dat_o,
+        
+        
+        status => eth_i_rxd
     );
     
     

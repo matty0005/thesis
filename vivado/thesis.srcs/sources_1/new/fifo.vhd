@@ -32,7 +32,7 @@ entity fifo is
     );
     Port (  
             clk_i_read        :   in  std_logic;
-            clk_i_wrtie       :   in  std_logic;
+            clk_i_write       :   in  std_logic;
             i_rst             :   in  std_logic;
             i_read            :   in  std_logic;
             i_write           :   in  std_logic;
@@ -57,9 +57,9 @@ shared variable RAM_STORE : ramType;
 
 begin
 
-HEAD_POINTER : process(clk_i_wrtie)
+HEAD_POINTER : process(clk_i_write)
 begin
-    if rising_edge(clk_i_wrtie) then
+    if rising_edge(clk_i_write) then
         if i_rst = '1' then
             writeCounter := 0;
         else 
@@ -95,9 +95,9 @@ begin
 end process;
 
 
-SET_LIMITS : process(clk_i_read, clk_i_wrtie)
+SET_LIMITS : process(clk_i_read, clk_i_write)
 begin
-    if rising_edge(clk_i_read) or rising_edge(clk_i_wrtie) then
+    if rising_edge(clk_i_read) or rising_edge(clk_i_write) then
         -- May need to account for lag -> +1
         if writeCounter = (readCounter) then
             isFull <= '0';

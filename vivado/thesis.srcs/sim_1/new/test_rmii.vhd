@@ -49,14 +49,17 @@ component rmii is
     -- RMII interface itself
     rmii_o_txd      : out std_logic_vector(1 downto 0);
     rmii_o_txen     : out std_logic; 
-    rmii_i_clk      : in std_logic  
+    rmii_i_clk      : in std_logic;
+    
+    test   : out std_logic_vector(7 downto 0)
   );
 end component;
   
   
-signal rst : std_logic := '0';
+signal rst : std_logic := '1';
 signal tx_ready : std_logic := '0';
 signal tx_dat : std_logic_vector(7 downto 0) := x"00";
+signal test : std_logic_vector(7 downto 0) := x"00";
 signal tx_clk : std_logic := '0';
 signal rmii_o_txd : std_logic_vector(1 downto 0) := "00";
 signal rmii_o_txen : std_logic := '0';
@@ -69,15 +72,46 @@ port map (
     rmii_i_rst => rst,
     rmii_i_tx_ready => tx_ready,
     rmii_i_tx_dat => tx_dat,
-    rmii_i_tx_clk => tx_ready,
+    rmii_i_tx_clk => tx_clk,
+    
     rmii_o_txd => rmii_o_txd,
     rmii_o_txen => rmii_o_txen,
-    rmii_i_clk => rmii_i_clk
+    rmii_i_clk => rmii_i_clk,
+    test => test
 );
 
 
 test_rmii : process 
 begin
+    tx_ready <= '1';
+    tx_dat <= x"BE";
+    wait for 1ps;
+    tx_clk <= '1';
+    wait for 1ps;
+    tx_ready <= '0';
+    tx_clk <= '0';
+    wait for 1ps;
+    
+    tx_dat <= x"EF";
+    tx_ready <= '1';
+    wait for 1ps;
+    tx_clk <= '1';
+    wait for 1ps;
+    tx_clk <= '0';
+    tx_ready <= '0';
+    wait for 1ps;
+    
+    for i in 10 downto 0 loop
+    
+        rmii_i_clk <= '1';
+        wait for 1ps;
+        rmii_i_clk <= '0';
+        wait for 1ps;
+    end loop;
+    
+    wait;
+    
+    
     
 end process;
 

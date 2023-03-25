@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2022.2 (win64) Build 3671981 Fri Oct 14 05:00:03 MDT 2022
-| Date             : Sat Mar 25 16:24:49 2023
+| Date             : Sun Mar 26 01:22:13 2023
 | Host             : Squid running 64-bit major release  (build 9200)
 | Command          : report_power -file hardware_top_power_routed.rpt -pb hardware_top_power_summary_routed.pb -rpx hardware_top_power_routed.rpx
 | Design           : hardware_top
@@ -62,7 +62,7 @@ Table of Contents
 | Signals        |     0.013 |     3087 |       --- |             --- |
 | Block RAM      |     0.017 |        8 |       135 |            5.93 |
 | MMCM           |     0.106 |        1 |         6 |           16.67 |
-| I/O            |     0.007 |       16 |       210 |            7.62 |
+| I/O            |     0.007 |       18 |       210 |            8.57 |
 | Static Power   |     0.098 |          |           |                 |
 | Total          |     0.260 |          |           |                 |
 +----------------+-----------+----------+-----------+-----------------+
