@@ -88,7 +88,7 @@ type ramType is array (1526 - 1 downto 0) of std_logic_vector(8 - 1 downto 0);
 shared variable FRAME_BUFFER : ramType;
 
 -- Used for Main fsm.
-type state is (IDLE, INITIALISE, DEST, DATA, FCS, TRANSMIT, LENGTH);
+type state is (IDLE, FCS, TRANSMIT);
 signal currentState : state := IDLE;
 
 -- Used for FCS fsm.
@@ -190,7 +190,7 @@ begin
                      
                      -- Set the payload length
                      when MAC_LEN =>                          
-                        payloadLen <= wb_i_dat;      
+                        payloadLen <= wb_i_dat(15 downto 0);      
                                                    
                         FRAME_BUFFER(21) := wb_i_dat(7 downto 0);
                         FRAME_BUFFER(20) := "00000" & wb_i_dat(10 downto 8);
@@ -233,9 +233,7 @@ begin
         case currentState is 
             when IDLE =>
                 dataOut <= (others => '0');
-                if start = '1' then
-                    currentState <= INITIALISE;
-                elsif crcFinished = '1' then
+                if crcFinished = '1' then
                     sentAmount := 0;
                     currentState <= FCS;
                 else 
