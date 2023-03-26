@@ -96,6 +96,7 @@ port (
     eth_o_txen : out std_logic;
     eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
     eth_i_rxderr : in std_logic;
+    eth_o_refclk : out std_logic;
     eth_i_refclk : in std_logic
 );
 end component;
@@ -143,8 +144,6 @@ signal clk_locked : std_logic := '0';
 
 begin
 
-eth_o_refclk <= clk_50;
-
 clk_control : clk_master
     port map (
         clk_100 => clk_100,
@@ -177,11 +176,12 @@ ethernet_mac : wb_ethernet
         -- GPIO Interface
         --
          -- Ethernet --
-        eth_o_txd => wb_eth_o_tx,
-        eth_o_txen => wb_eth_o_txen,
-        eth_i_rxd => wb_eth_i_rx,
-        eth_i_rxderr => wb_eth_i_rxderr,
-        eth_i_refclk => clk_50
+        eth_o_txd => eth_o_txd,
+        eth_o_txen => eth_o_txen,
+        eth_i_rxd => eth_i_rxd,
+        eth_i_rxderr => eth_i_rxderr,
+        eth_i_refclk => clk_50,
+        eth_o_refclk => eth_o_refclk
     );
     
   -- The Core Of The Problem ----------------------------------------------------------------

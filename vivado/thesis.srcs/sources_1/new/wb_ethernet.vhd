@@ -42,6 +42,7 @@ port (
     eth_o_txen : out std_logic;
     eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
     eth_i_rxderr : in std_logic;
+    eth_o_refclk : out std_logic;
     eth_i_refclk : in std_logic
 );
 end wb_ethernet;
@@ -106,6 +107,8 @@ begin
     wb_rty_o   <= '0';
     wb_err_o   <= '0';
     wb_stall_o <= '0';
+    
+    eth_o_refclk <= eth_i_refclk;
        
     
     rmii_int : rmii
@@ -121,7 +124,9 @@ begin
         rmii_i_clk => eth_i_refclk
     );
     
-  
+--    eth_o_txen <= eth_tx_dat_pres_o;
+--    eth_o_txd <= eth_tx_dat_o(1 downto 0);
+    
     eth_tx : eth_tx_mac
     port map (
         wb_i_dat    => wb_dat_i,

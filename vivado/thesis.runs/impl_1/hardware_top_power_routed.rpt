@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2022.2 (win64) Build 3671981 Fri Oct 14 05:00:03 MDT 2022
-| Date             : Sun Mar 26 01:22:13 2023
+| Date             : Sun Mar 26 23:16:43 2023
 | Host             : Squid running 64-bit major release  (build 9200)
 | Command          : report_power -file hardware_top_power_routed.rpt -pb hardware_top_power_summary_routed.pb -rpx hardware_top_power_routed.rpx
 | Design           : hardware_top
@@ -30,14 +30,14 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.260        |
+| Total On-Chip Power (W)  | 0.321        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.162        |
+| Dynamic (W)              | 0.223        |
 | Device Static (W)        | 0.098        |
 | Effective TJA (C/W)      | 4.6          |
-| Max Ambient (C)          | 83.8         |
-| Junction Temperature (C) | 26.2         |
+| Max Ambient (C)          | 83.5         |
+| Junction Temperature (C) | 26.5         |
 | Confidence Level         | Medium       |
 | Setting File             | ---          |
 | Simulation Activity File | ---          |
@@ -52,19 +52,20 @@ Table of Contents
 +----------------+-----------+----------+-----------+-----------------+
 | On-Chip        | Power (W) | Used     | Available | Utilization (%) |
 +----------------+-----------+----------+-----------+-----------------+
-| Clocks         |     0.009 |        7 |       --- |             --- |
-| Slice Logic    |     0.011 |     3971 |       --- |             --- |
-|   LUT as Logic |     0.010 |     1913 |     63400 |            3.02 |
-|   CARRY4       |    <0.001 |      143 |     15850 |            0.90 |
-|   Register     |    <0.001 |     1463 |    126800 |            1.15 |
-|   F7/F8 Muxes  |    <0.001 |        5 |     63400 |           <0.01 |
-|   Others       |     0.000 |       47 |       --- |             --- |
-| Signals        |     0.013 |     3087 |       --- |             --- |
-| Block RAM      |     0.017 |        8 |       135 |            5.93 |
+| Clocks         |     0.044 |        7 |       --- |             --- |
+| Slice Logic    |     0.018 |    57827 |       --- |             --- |
+|   LUT as Logic |     0.017 |    34480 |     63400 |           54.38 |
+|   CARRY4       |    <0.001 |      274 |     15850 |            1.73 |
+|   Register     |    <0.001 |    14552 |    126800 |           11.48 |
+|   BUFG         |    <0.001 |        2 |        32 |            6.25 |
+|   F7/F8 Muxes  |    <0.001 |     2407 |     63400 |            3.80 |
+|   Others       |     0.000 |       55 |       --- |             --- |
+| Signals        |     0.024 |    43008 |       --- |             --- |
+| Block RAM      |     0.018 |      8.5 |       135 |            6.30 |
 | MMCM           |     0.106 |        1 |         6 |           16.67 |
-| I/O            |     0.007 |       18 |       210 |            8.57 |
+| I/O            |     0.013 |       18 |       210 |            8.57 |
 | Static Power   |     0.098 |          |           |                 |
-| Total          |     0.260 |          |           |                 |
+| Total          |     0.321 |          |           |                 |
 +----------------+-----------+----------+-----------+-----------------+
 
 
@@ -74,9 +75,9 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.064 |       0.048 |      0.016 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.119 |       0.103 |      0.016 |       NA    | Unspecified | NA         |
 | Vccaux    |       1.800 |     0.077 |       0.059 |      0.018 |       NA    | Unspecified | NA         |
-| Vcco33    |       3.300 |     0.006 |       0.002 |      0.004 |       NA    | Unspecified | NA         |
+| Vcco33    |       3.300 |     0.008 |       0.004 |      0.004 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -147,19 +148,24 @@ Table of Contents
 +------------------------------------------------------+-----------+
 | Name                                                 | Power (W) |
 +------------------------------------------------------+-----------+
-| hardware_top                                         |     0.162 |
+| hardware_top                                         |     0.223 |
 |   clk_control                                        |     0.107 |
 |     inst                                             |     0.107 |
-|   neorv32_top_inst                                   |     0.047 |
-|     neorv32_cpu_inst                                 |     0.030 |
+|   ethernet_mac                                       |     0.034 |
+|     eth_tx                                           |     0.030 |
+|     rmii_int                                         |     0.004 |
+|       tx_fifo                                        |     0.003 |
+|   neorv32_top_inst                                   |     0.069 |
+|     neorv32_cpu_inst                                 |     0.032 |
 |       neorv32_cpu_alu_inst                           |     0.006 |
-|       neorv32_cpu_bus_inst                           |     0.002 |
-|       neorv32_cpu_control_inst                       |     0.014 |
+|       neorv32_cpu_bus_inst                           |     0.003 |
+|       neorv32_cpu_control_inst                       |     0.015 |
 |       neorv32_cpu_regfile_inst                       |     0.008 |
 |     neorv32_int_dmem_inst_true.neorv32_int_dmem_inst |     0.004 |
 |     neorv32_int_imem_inst_true.neorv32_int_imem_inst |     0.008 |
 |     neorv32_mtime_inst_true.neorv32_mtime_inst       |     0.002 |
-|     neorv32_uart0_inst_true.neorv32_uart0_inst       |     0.001 |
+|     neorv32_uart0_inst_true.neorv32_uart0_inst       |     0.002 |
+|     neorv32_wishbone_inst_true.neorv32_wishbone_inst |     0.018 |
 +------------------------------------------------------+-----------+
 
 

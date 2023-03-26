@@ -70,9 +70,11 @@ proc create_report { reportName command } {
   }
 }
 OPTRACE "synth_1" START { ROLLUP_AUTO }
+set_param checkpoint.writeSynthRtdsInDcp 1
 set_param chipscope.maxJobs 6
 set_param xicom.use_bs_reader 1
-set_msg_config -id {Common 17-41} -limit 10000000
+set_msg_config -id {Synth 8-256} -limit 10000
+set_msg_config -id {Synth 8-638} -limit 10000
 OPTRACE "Creating in-memory project" START { }
 create_project -in_memory -part xc7a100tcsg324-1
 
@@ -142,7 +144,7 @@ read_vhdl -library neorv32 {
   C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/imports/rtl/core/neorv32_xip.vhd
   C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/imports/rtl/core/neorv32_xirq.vhd
 }
-read_ip -quiet c:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/ip/clk_master/clk_master.xci
+read_ip -quiet C:/Users/Matt/thesis/vivado/thesis.srcs/sources_1/ip/clk_master/clk_master.xci
 set_property used_in_implementation false [get_files -all c:/Users/Matt/thesis/vivado/thesis.gen/sources_1/ip/clk_master/clk_master_board.xdc]
 set_property used_in_implementation false [get_files -all c:/Users/Matt/thesis/vivado/thesis.gen/sources_1/ip/clk_master/clk_master.xdc]
 set_property used_in_implementation false [get_files -all c:/Users/Matt/thesis/vivado/thesis.gen/sources_1/ip/clk_master/clk_master_ooc.xdc]
