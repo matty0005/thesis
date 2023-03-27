@@ -47,7 +47,8 @@ entity eth_tx_mac is
         start         : in std_logic := '0';
         dataPresent   : out std_logic := '0';
         dataOut       : out std_logic_vector(7 downto 0);
-        status        : out std_logic_vector(1 downto 0)  
+        status        : out std_logic_vector(1 downto 0)
+--        statusa        : out std_logic_vector(1 downto 0)  
     );
 end eth_tx_mac;
 
@@ -176,6 +177,7 @@ begin
                         elsif wb_i_dat(1) = '1' then
 --                            setStateFromOutside <= TRANSMIT;
                             startTx <= '1';
+                            status <= "00";
                         end if;
                         
                         
@@ -235,47 +237,62 @@ end process;
 
 
 
-MAIN_TRANSITIONS : process (clk_i, rst_i)
-begin
-    -- Remember active low
-    if rst_i = '0' then
-        currentState <= IDLE;
-    elsif rising_edge(clk_i) then
-        currentState <= nextState;
-    end if;
-end process;
+--MAIN_TRANSITIONS : process (clk_i, rst_i)
+--begin
+--    -- Remember active low
+--    if rst_i = '0' then
+--        currentState <= IDLE;
+--    elsif rising_edge(clk_i) then
+--        currentState <= nextState;
+--    end if;
+--end process;
 
 
-MAIN_FSM: process(currentState)
+MAIN_FSM: process(clk_i)
 
 variable sentAmount : integer := 0;
 
 begin
-    case currentState is 
-        when IDLE =>
-            startTxAck <= '0';
-            dataOut <= (others => '0');
-            sentAmount := 0;
-            if crcFinished = '1' then
-                nextState <= FCS;
-            elsif startTx ='1' then
-                nextState <= TRANSMIT;
-            else
-                nextState <= IDLE;
-            end if;
-      
-        when TRANSMIT =>
-            startTxAck <= '1';
-            dataPresent <= '1';
-            dataOut <= FRAME_BUFFER(sentAmount);
-            sentAmount := sentAmount + 1;
-            
-            crcStart <= '0';
-
-
-            -- Add 22 to account for mac header
-            if to_integer(unsigned(payloadLen)) < 46 then
-                if sentAmount = 68 then
+    if rst_i = '0' then
+        nextState <= IDLE;
+    elsif rising_edge(clk_i) then
+        case nextState is 
+            when IDLE =>
+--                statusa <= "0" & startTx;
+                startTxAck <= '0';
+                dataOut <= (others => '0');
+                sentAmount := 0;
+                if crcFinished = '1' then
+                    nextState <= FCS;
+                elsif startTx ='1' then
+                    nextState <= TRANSMIT;
+                else
+                    nextState <= IDLE;
+                end if;
+          
+            when TRANSMIT =>
+--                statusa <= "10";
+                startTxAck <= '1';
+                dataPresent <= '1';
+                dataOut <= FRAME_BUFFER(sentAmount);
+                sentAmount := sentAmount + 1;
+                
+                crcStart <= '0';
+    
+    
+                -- Add 22 to account for mac header
+                if to_integer(unsigned(payloadLen)) < 46 then
+                    if sentAmount = 68 then
+                        sentAmount := 0;
+                        dataPresent <= '0';
+                        if crcFinished = '1' then
+                            sentAmount := 0;
+                            nextState <= FCS;
+                        else 
+                            nextState <= IDLE;
+                        end if;
+                    end if;
+                elsif (to_integer(unsigned(payloadLen)) + 22) = sentAmount then
                     sentAmount := 0;
                     dataPresent <= '0';
                     if crcFinished = '1' then
@@ -285,37 +302,30 @@ begin
                         nextState <= IDLE;
                     end if;
                 end if;
-            elsif (to_integer(unsigned(payloadLen)) + 22) = sentAmount then
-                sentAmount := 0;
-                dataPresent <= '0';
-                if crcFinished = '1' then
+                
+    
+            when FCS =>
+--                statusa <= "11";
+                -- Calculate the CRC32 and add it to the FRAME_BUFFER
+                startTxAck <= '0';
+                crcAck <= '1';
+                dataPresent <= '1';
+                dataOut <= crcResult((8 * sentAmount) + 7 downto (8 * sentAmount));
+                sentAmount := sentAmount + 1;
+                
+                if sentAmount = 4 then
+                    crcAck <= '0';
                     sentAmount := 0;
-                    nextState <= FCS;
-                else 
+                    dataPresent <= '0';
                     nextState <= IDLE;
+                else 
+                    nextState <= FCS;
                 end if;
-            end if;
-            
-
-        when FCS =>
-            -- Calculate the CRC32 and add it to the FRAME_BUFFER
-            startTxAck <= '0';
-            crcAck <= '1';
-            dataPresent <= '1';
-            dataOut <= crcResult((8 * sentAmount) + 7 downto (8 * sentAmount));
-            sentAmount := sentAmount + 1;
-            
-            if sentAmount = 4 then
-                crcAck <= '0';
-                sentAmount := 0;
-                dataPresent <= '0';
-                nextState <= IDLE;
-            else 
-                nextState <= FCS;
-            end if;
-
-   
-    end case;
+    
+       
+        end case;
+        
+        end if;
 
 end process;
 
