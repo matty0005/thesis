@@ -255,8 +255,8 @@ begin
         when IDLE =>
             startTxAck <= '0';
             dataOut <= (others => '0');
+            sentAmount := 0;
             if crcFinished = '1' then
-                sentAmount := 0;
                 nextState <= FCS;
             elsif startTx ='1' then
                 nextState <= TRANSMIT;
