@@ -1,10 +1,10 @@
 -- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2022.2 (win64) Build 3671981 Fri Oct 14 05:00:03 MDT 2022
--- Date        : Sat Mar 25 13:29:37 2023
+-- Date        : Sun Apr  2 00:11:16 2023
 -- Host        : Squid running 64-bit major release  (build 9200)
--- Command     : write_vhdl -force -mode funcsim -rename_top clk_master -prefix
---               clk_master_ clk_master_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim
+--               c:/Users/Matt/thesis/vivado/thesis.gen/sources_1/ip/clk_master/clk_master_sim_netlist.vhdl
 -- Design      : clk_master
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -14,7 +14,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
-entity clk_master_clk_master_clk_wiz is
+entity clk_master_clk_wiz is
   port (
     clk_100 : out STD_LOGIC;
     clk_50 : out STD_LOGIC;
@@ -22,9 +22,9 @@ entity clk_master_clk_master_clk_wiz is
     locked : out STD_LOGIC;
     clk_in : in STD_LOGIC
   );
-end clk_master_clk_master_clk_wiz;
+end clk_master_clk_wiz;
 
-architecture STRUCTURE of clk_master_clk_master_clk_wiz is
+architecture STRUCTURE of clk_master_clk_wiz is
   signal clk_100_clk_master : STD_LOGIC;
   signal clk_50_clk_master : STD_LOGIC;
   signal clk_in_clk_master : STD_LOGIC;
@@ -196,7 +196,7 @@ end clk_master;
 
 architecture STRUCTURE of clk_master is
 begin
-inst: entity work.clk_master_clk_master_clk_wiz
+inst: entity work.clk_master_clk_wiz
      port map (
       clk_100 => clk_100,
       clk_50 => clk_50,

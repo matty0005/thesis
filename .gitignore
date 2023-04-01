@@ -9,5 +9,10 @@
 *.synctex.gz
 *.toc
 *.out
+*.dcp
+*.bin
+*.o
+*.elf
 
-thesis.runs
+vivado/thesis.cache
+vivado/thesis.runs
