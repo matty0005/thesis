@@ -59,8 +59,8 @@ component eth_tx_mac is
         start         : in std_logic := '0';
         dataPresent   : out std_logic := '0';
         dataOut       : out std_logic_vector(7 downto 0);
-        status        : out std_logic_vector(1 downto 0);
-        statusa        : out std_logic_vector(1 downto 0)  
+        status        : out std_logic_vector(1 downto 0)
+--        statusa        : out std_logic_vector(1 downto 0)  
 
     );
 end component;
@@ -132,7 +132,15 @@ begin
     
 
     wb_i_addr <= MAC_DEST_ADDR_HIGH;
-    wb_i_dat <= x"deadbeef";
+    wb_i_dat <= x"12345678";
+    
+    wait for 1ps;
+    clk_i <= '1';
+    wait for 1ps;
+    clk_i <= '0';
+    
+    wb_i_addr <= MAC_DEST_ADDR_LOW;
+    wb_i_dat <= x"00998877";
     
     wait for 1ps;
     clk_i <= '1';

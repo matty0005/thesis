@@ -69,6 +69,7 @@ signal tx_fifo_output : std_logic_vector(7 downto 0) := x"00";
 signal tx_fifo_read_clk : std_logic := '0';
 signal tx_fifo_transfer: std_logic := '0';
 
+signal tmp_sr : std_logic_vector(7 downto 0) := x"00";
 
 -- Output shift register
 signal tx_sr : std_logic_vector(7 downto 0) := x"00";
@@ -96,15 +97,30 @@ begin
 -- To div clk by 4, you can simply just toggle the output every 2 clocks
 clk_div_4 : process(rmii_i_clk) 
 variable toggle : std_logic := '0';
+variable xfer : natural := 0;
 begin
     if rising_edge(rmii_i_clk) then
+        
+        if xfer = 0 then
+            tx_fifo_transfer <= '1';
+            xfer := xfer + 1;
+        elsif xfer = 3 then
+            xfer := 0;
+            tx_fifo_transfer <= '0';
+        else 
+            tx_fifo_transfer <= '0';
+            xfer := xfer + 1;
+        end if;
+        
+        
+        
         if toggle = '0' then
             toggle := '1';            
             tx_fifo_read_clk <= not tx_fifo_read_clk;
-            tx_fifo_transfer <= '1';
+            
         elsif toggle = '1' then
             toggle := '0';
-            tx_fifo_transfer <= '0';
+--            tx_fifo_transfer <= '0';
         end if;
     end if;
 end process;
@@ -112,24 +128,21 @@ end process;
 
 
 rmii_tx_out : process(rmii_i_clk) 
-variable tmp_sr : std_logic_vector(7 downto 0) := x"00";
 begin
     if rising_edge(rmii_i_clk) then
     
         if tx_fifo_transfer = '1' then
-            tmp_sr := tx_fifo_output;
+            tmp_sr <= tx_fifo_output;
         else
-            tmp_sr(1 downto 0) := tmp_sr(3 downto 2);
-            tmp_sr(3 downto 2) := tmp_sr(5 downto 4);
-            tmp_sr(5 downto 4) := tmp_sr(7 downto 6);
-            tmp_sr(7 downto 6) := "00";
+            tmp_sr(5 downto 0) <= tmp_sr(7 downto 2);
+            tmp_sr(7 downto 6) <= "00";
         end if;
         rmii_o_txd <= tmp_sr(1 downto 0); 
         
     end if;
 end process;
 tx_fifo_read <= '1';
-test <= tx_fifo_output;
+test <= tmp_sr;
 rmii_o_txen <= tx_fifo_transfer;
 rst <= not rmii_i_rst;
 end Behavioral;

@@ -92,7 +92,7 @@ begin
     tx_clk <= '0';
     wait for 1ps;
     
-    tx_dat <= x"EF";
+    tx_dat <= x"AB";
     tx_ready <= '1';
     wait for 1ps;
     tx_clk <= '1';
@@ -101,7 +101,25 @@ begin
     tx_ready <= '0';
     wait for 1ps;
     
-    for i in 10 downto 0 loop
+    tx_dat <= x"CA";
+    tx_ready <= '1';
+    wait for 1ps;
+    tx_clk <= '1';
+    wait for 1ps;
+    tx_clk <= '0';
+    tx_ready <= '0';
+    wait for 1ps;
+    
+    tx_dat <= x"FE";
+    tx_ready <= '1';
+    wait for 1ps;
+    tx_clk <= '1';
+    wait for 1ps;
+    tx_clk <= '0';
+    tx_ready <= '0';
+    wait for 1ps;
+    
+    for i in 20 downto 0 loop
     
         rmii_i_clk <= '1';
         wait for 1ps;

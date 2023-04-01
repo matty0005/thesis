@@ -191,17 +191,17 @@ begin
                         FRAME_BUFFER(10) := wb_i_dat(15 downto 8);
                         FRAME_BUFFER(11) :=  wb_i_dat(7 downto 0);
                         
+                        FRAME_BUFFER(12) := x"aa";
+                        FRAME_BUFFER(13) :=  x"bb";
+                        
                         status <= "00";
                     
                     
                     -- Set destination MAC address. (LOW)               
-                     when MAC_DEST_ADDR_LOW =>                           
-                                                                   
-                        FRAME_BUFFER(12) := wb_i_dat(15 downto 8);
-                        FRAME_BUFFER(13) :=  wb_i_dat(7 downto 0);
+                     when x"13372000" =>                           
+                        FRAME_BUFFER(12) := x"ca";
+                        FRAME_BUFFER(13) :=  x"fe";
                         
-                     
-                     
                      -- Set the payload length
                      when MAC_LEN =>                          
                         payloadLen <= wb_i_dat(15 downto 0);      
@@ -218,10 +218,11 @@ begin
                             status <= "10";
                             
                             -- 322375680 = 0x13371000.
-                            FRAME_BUFFER(22 + to_integer(unsigned(wb_i_addr)) - 322375680) := wb_i_dat(31 downto 24);
-                            FRAME_BUFFER(23 + to_integer(unsigned(wb_i_addr)) - 322375680) := wb_i_dat(23 downto 16);
-                            FRAME_BUFFER(24 + to_integer(unsigned(wb_i_addr)) - 322375680) := wb_i_dat(15 downto 8);
-                            FRAME_BUFFER(25 + to_integer(unsigned(wb_i_addr)) - 322375680) := wb_i_dat(7 downto 0);
+                            -- Could change the address to do a left shift of 2 bits instead of x4
+                            FRAME_BUFFER(22 + to_integer(4 * (unsigned(wb_i_addr(11 downto 0))) - 3)) := wb_i_dat(31 downto 24);
+                            FRAME_BUFFER(23 + to_integer(4 * (unsigned(wb_i_addr(11 downto 0))) - 3)) := wb_i_dat(23 downto 16);
+                            FRAME_BUFFER(24 + to_integer(4 * (unsigned(wb_i_addr(11 downto 0))) - 3)) := wb_i_dat(15 downto 8);
+                            FRAME_BUFFER(25 + to_integer(4 * (unsigned(wb_i_addr(11 downto 0))) - 3)) := wb_i_dat(7 downto 0);
                             
                         end if;
                         
