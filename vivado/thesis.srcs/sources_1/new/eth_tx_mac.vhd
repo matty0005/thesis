@@ -48,7 +48,8 @@ entity eth_tx_mac is
         dataPresent   : out std_logic := '0';
         dataOut       : out std_logic_vector(7 downto 0);
         status        : out std_logic_vector(1 downto 0)
---        statusa        : out std_logic_vector(1 downto 0)  
+--        statusa        : out std_logic_vector(1 downto 0);  
+--        statusb        : out std_logic_vector(7 downto 0)
     );
 end eth_tx_mac;
 
@@ -105,6 +106,7 @@ signal crcLoadInit  : std_logic := '0';
 signal crcCalc      : std_logic := '0';
 signal crcDValid    : std_logic := '0';
 signal crcData      : std_logic_vector(7 downto 0);
+signal crcReg    : std_logic_vector(31 downto 0);
 signal crcResult    : std_logic_vector(31 downto 0);
 
 signal crcStart     : std_logic := '0';
@@ -113,6 +115,8 @@ signal crcAck       : std_logic := '0';
 
 signal startTx      : std_logic := '0';
 signal startTxAck      : std_logic := '0';
+
+signal crcIdle      : std_logic := '0';
 
 
 signal payloadLen : std_logic_vector(15 downto 0) := (others => '0');
@@ -129,20 +133,20 @@ port map (
     LOAD_INIT => crcLoadInit,
     CALC => crcCalc,
     D_VALID => crcDValid,
-    CRC_REG => crcResult
+    CRC_REG => crcReg
 );
 -- -- END COMPONENT MAPPINGS
 
 crcClk <= clk_i;
 
 WB_MAIN_TX : process(clk_i)
+variable virtAddr : integer := 0;
 begin
     if rising_edge(clk_i) then
         
         -- Only handle data when strobe
         if startTxAck = '1' then
             startTx <= '0';
-            status <= "11";
         end if;
         
         if wb_i_stb = '1' then 
@@ -157,7 +161,6 @@ begin
                         
                         -- Initialise the buffers.
                         if wb_i_dat(0) = '1' then
-                            status <= "01";
                             -- Set preamble + SFD
                             for i in 0 to 7 loop
                                 FRAME_BUFFER(i) := preambleSFD((8 * i) + 7 downto (8 * i));
@@ -177,7 +180,6 @@ begin
                         elsif wb_i_dat(1) = '1' then
 --                            setStateFromOutside <= TRANSMIT;
                             startTx <= '1';
-                            status <= "00";
                         end if;
                         
                         
@@ -190,16 +192,14 @@ begin
                         FRAME_BUFFER(9) := wb_i_dat(23 downto 16);
                         FRAME_BUFFER(10) := wb_i_dat(15 downto 8);
                         FRAME_BUFFER(11) :=  wb_i_dat(7 downto 0);
-
-                        status <= "00";
                     
                     
                     -- Set destination MAC address. (LOW)               
                      when MAC_DEST_ADDR_LOW =>                           
---                        FRAME_BUFFER(12) := wb_i_dat(31 downto 24);
---                        FRAME_BUFFER(13) :=  wb_i_dat(23 downto 16);
-                        FRAME_BUFFER(12) := x"aa";
-                        FRAME_BUFFER(13) := x"bb";
+                        FRAME_BUFFER(12) := wb_i_dat(31 downto 24);
+                        FRAME_BUFFER(13) :=  wb_i_dat(23 downto 16);
+--                        FRAME_BUFFER(12) := x"aa";
+--                        FRAME_BUFFER(13) := x"bb";
                      -- Set the payload length
                      when MAC_LEN =>                          
                         payloadLen <= wb_i_dat(15 downto 0);      
@@ -212,14 +212,14 @@ begin
                         
                         -- Check to make sure we are in the safe memory range.
                         if wb_i_addr >= x"13371003" and wb_i_addr <= x"1337117A" then
-                            status <= "10";
                             
                             -- 322375680 = 0x13371000.
-                            -- Could change the address to do a left shift of 2 bits instead of x4
-                            FRAME_BUFFER(22 + to_integer(4 * (unsigned(wb_i_addr(11 downto 0)) - 3))) := wb_i_dat(31 downto 24);
-                            FRAME_BUFFER(23 + to_integer(4 * (unsigned(wb_i_addr(11 downto 0)) - 3))) := wb_i_dat(23 downto 16);
-                            FRAME_BUFFER(24 + to_integer(4 * (unsigned(wb_i_addr(11 downto 0)) - 3))) := wb_i_dat(15 downto 8);
-                            FRAME_BUFFER(25 + to_integer(4 * (unsigned(wb_i_addr(11 downto 0)) - 3))) := wb_i_dat(7 downto 0);
+                            virtAddr := to_integer(4 * (unsigned(wb_i_addr(11 downto 0)) - 3));
+                            
+                            FRAME_BUFFER(22 + virtAddr) := wb_i_dat(31 downto 24);
+                            FRAME_BUFFER(23 + virtAddr) := wb_i_dat(23 downto 16);
+                            FRAME_BUFFER(24 + virtAddr) := wb_i_dat(15 downto 8);
+                            FRAME_BUFFER(25 + virtAddr) := wb_i_dat(7 downto 0);
                             
                         end if;
                         
@@ -264,27 +264,35 @@ begin
                     nextState <= FCS;
                 elsif startTx ='1' then
                     nextState <= TRANSMIT;
+                    startTxAck <= '1';
                 else
                     nextState <= IDLE;
                 end if;
           
             when TRANSMIT =>
---                statusa <= "10";
-                startTxAck <= '1';
+--                statusa <= "01";
+                
                 dataPresent <= '1';
                 dataOut <= FRAME_BUFFER(sentAmount);
                 sentAmount := sentAmount + 1;
                 
-                crcStart <= '0';
+                if crcIdle = '1' then
+                    crcStart <= '1';
+                else 
+                    crcStart <= '0';
+                end if;
     
     
                 -- Add 22 to account for mac header
                 if to_integer(unsigned(payloadLen)) < 46 then
+                    
                     if sentAmount = 68 then
+--                    statusa <= "10";
                         sentAmount := 0;
                         dataPresent <= '0';
                         if crcFinished = '1' then
                             sentAmount := 0;
+--                            statusa <= "11";
                             nextState <= FCS;
                         else 
                             nextState <= IDLE;
@@ -308,7 +316,8 @@ begin
                 startTxAck <= '0';
                 crcAck <= '1';
                 dataPresent <= '1';
-                dataOut <= crcResult((8 * sentAmount) + 7 downto (8 * sentAmount));
+                dataOut <= crcResult(7 downto 0);
+--                dataOut <= crcResult((8 * sentAmount) + 7 downto (8 * sentAmount));
                 sentAmount := sentAmount + 1;
                 
                 if sentAmount = 4 then
@@ -328,80 +337,90 @@ begin
 end process;
 
 
-FCS_TRANSITIONS : process (clk_i, rst_i)
-begin
-    -- Remember active low
-    if rst_i = '0' then
-        currentFCSState <= IDLE;
-    elsif rising_edge(clk_i) then
-        currentFCSState <= nextFCSState;
-    end if;
-end process;
 
-FCS_FSM: process(currentFCSState) 
+FCS_FSM: process(clk_i, rst_i) 
 variable bytesAnalysed : integer := 0;
 
 begin
-    case currentFCSState is 
-        when IDLE =>
-            if crcStart = '1' then
-                nextFCSState <= FCS_START;
-            else
-                nextFCSState <= IDLE;
-            end if;
-            
-        when FCS_START =>
-            
-            crcDValid <= '0';
-            crcLoadInit <= '0';
-            bytesAnalysed := 0;
-            crcCalc <= '0';
-            crcRst <= '1';
-            crcFinished <= '0';
-            nextFCSState <= LOAD;
-        
-        when LOAD =>
-            crcRst <= '0';
-            crcLoadInit <= '1';
-            nextFCSState <= CALC;
-        when CALC => 
-            crcLoadInit <= '0';
-            crcCalc <= '1';
-            nextFCSState <= DATA;
-
-        when DATA =>
-            crcData <= FRAME_BUFFER(bytesAnalysed + 8);
-            crcDValid <= '1';
-            
-            bytesAnalysed := bytesAnalysed + 1;
-
-            -- Only change states after added all packets.
-            if to_integer(unsigned(payloadLen)) < 46 then
-                if bytesAnalysed = 60 then -- Remember to not include preamble or SFD
-                    bytesAnalysed := 0;
-                    nextFCSState <= RESULT;
+    if rst_i = '0' then
+        currentFCSState <= IDLE;
+    elsif rising_edge(clk_i) then
+        case currentFCSState is 
+            when IDLE =>
+                if crcStart = '1' then
+                    currentFCSState <= FCS_START;
+                    crcIdle <= '0';
+                else
+                    currentFCSState <= IDLE;
+                    crcIdle <= '1';
                 end if;
-            elsif (to_integer(unsigned(payloadLen)) + 14) = bytesAnalysed then
+                
+            when FCS_START =>
+                
+                status <= "01";
+                
+                crcDValid <= '0';
+                crcLoadInit <= '0';
                 bytesAnalysed := 0;
-                nextFCSState <= RESULT;
-            end if;
-           
-
-        when RESULT =>
-            crcCalc <= '0';
-            crcDValid <= '0';
-            crcFinished <= '1';
-            nextFCSState <= FCS_ACK;
-            
-        when FCS_ACK =>
-            if crcAck = '1' then
+                crcCalc <= '0';
+                crcRst <= '1';
                 crcFinished <= '0';
-                nextFCSState <= IDLE;
-            end if;
-
-        when others => -- Should never reach here, but incase
-            nextFCSState <= IDLE;
-    end case;
+                currentFCSState <= LOAD;
+            
+            when LOAD =>
+                crcRst <= '0';
+                crcLoadInit <= '1';
+                currentFCSState <= CALC;
+            when CALC => 
+                crcLoadInit <= '0';
+                crcCalc <= '1';
+                currentFCSState <= DATA;
+                crcData <= FRAME_BUFFER(bytesAnalysed + 8);
+                bytesAnalysed := 1;
+            when DATA =>
+                crcData <= FRAME_BUFFER(bytesAnalysed + 8);
+                crcDValid <= '1';
+                
+                bytesAnalysed := bytesAnalysed + 1;
+                status <= "10";
+    
+                -- Only change states after added all packets.
+                if to_integer(unsigned(payloadLen)) < 46 then
+                    if bytesAnalysed = 60 then -- Remember to not include preamble or SFD
+                        bytesAnalysed := 0;
+                        currentFCSState <= RESULT;
+                    end if;
+                elsif (to_integer(unsigned(payloadLen)) + 14) = bytesAnalysed then
+                    bytesAnalysed := 0;
+                    currentFCSState <= RESULT;
+                    
+                end if;
+               
+    
+            when RESULT =>
+                status <= "11";
+                crcCalc <= '0';
+                crcDValid <= '0';
+                crcFinished <= '1';
+                crcResult <= crcReg;
+                currentFCSState <= FCS_ACK;
+                
+            when FCS_ACK =>
+                if crcAck = '1' then
+                    status <= "00";
+    
+                    crcFinished <= '0';
+                    currentFCSState <= IDLE;
+                end if;
+    
+            when others => -- Should never reach here, but incase
+                currentFCSState <= IDLE;
+        end case;
+    end if;
+    
+    
+    
+    
 
 end process;
 

@@ -60,7 +60,8 @@ component eth_tx_mac is
         dataPresent   : out std_logic := '0';
         dataOut       : out std_logic_vector(7 downto 0);
         status        : out std_logic_vector(1 downto 0)
---        statusa        : out std_logic_vector(1 downto 0)  
+--        statusa        : out std_logic_vector(1 downto 0);  
+--        statusb        : out std_logic_vector(7 downto 0)  
 
     );
 end component;
@@ -70,7 +71,8 @@ signal wb_i_cyc, wb_i_lock, wb_i_sel,wb_i_we, wb_o_ack,wb_o_err,wb_o_rty, wb_o_s
 
 signal clk_i, rst_i , start, dataPresent : std_logic := '0';
 signal dataOut : std_logic_vector(7 downto 0) := (others => '0');
-signal status, statusa : std_logic_vector(1 downto 0) := (others => '0');
+signal status : std_logic_vector(1 downto 0) := (others => '0');
+--signal statusb : std_logic_vector(7 downto 0) := (others => '0');
 
 
 
@@ -105,7 +107,8 @@ port map (
     dataPresent => dataPresent,
     dataOut => dataOut,
     status => status
---    statusa => statusa
+--    statusa => statusa,
+--    statusb => statusb
 );
 
 test : process 
@@ -147,8 +150,32 @@ begin
     wait for 1ps;
     clk_i <= '0';
     
+    wb_i_addr <= MAC_LEN;
+    wb_i_dat <= x"00000010";
+    
+    wait for 1ps;
+    clk_i <= '1';
+    wait for 1ps;
+    clk_i <= '0';
+    
     wb_i_addr <= x"13371003";
     wb_i_dat <= x"1337beef";
+    
+    wait for 1ps;
+    clk_i <= '1';
+    wait for 1ps;
+    clk_i <= '0';
+    
+    wb_i_addr <= x"13371004";
+    wb_i_dat <= x"cafe1234";
+    
+    wait for 1ps;
+    clk_i <= '1';
+    wait for 1ps;
+    clk_i <= '0';
+    
+    wb_i_addr <= x"13371005";
+    wb_i_dat <= x"0000beef";
     
     wait for 1ps;
     clk_i <= '1';
@@ -164,7 +191,7 @@ begin
     wb_i_dat <= x"00000002";
     
     
-    for i in 0 to 50 loop
+    for i in 0 to 400 loop
         wait for 1ps;
         clk_i <= '1';
         wait for 1ps;
