@@ -37,7 +37,22 @@ void task_ethernet_daemon(void *pvParameters) {
         // init the ethernet mac.
         ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
-        
+        // set the destination mac
+        ETH_MAC->DEST[0] = 0xaabbccdd;
+        ETH_MAC->DEST[1] = 0xeeff0000;
+
+        // set the length of the packet.
+        ETH_MAC->LEN = 0x00000010;
+
+        // set the data of the packet.
+        ETH_MAC->DATA[0] = 0xbeefcafe;
+        ETH_MAC->DATA[1] = 0x11223344;
+        ETH_MAC->DATA[2] = 0x55667788;
+        ETH_MAC->DATA[3] = 0x99aabbcc;
+
+
+        // send a packet.
+        ETH_MAC_CMD = ETH_MAC_CMD_START_TX;
 
         vTaskDelay(1000);
     }
