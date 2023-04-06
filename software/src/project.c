@@ -30,7 +30,7 @@
  * @brief Creates a task that controls the ethernet mac.
  * 
  */
-void task_ethernet_daemon(void *pvParameters) {
+void tsk_ethernet(void *pvParameters) {
 
     for(;;) {
         
@@ -54,18 +54,20 @@ void task_ethernet_daemon(void *pvParameters) {
         // send a packet.
         ETH_MAC_CMD = ETH_MAC_CMD_START_TX;
 
+        // Need to set the idle state. Otherwise packet gets sent again.
+        ETH_MAC_CMD = ETH_MAC_CMD_IDLE;
+
         vTaskDelay(1000);
     }
 }
 
 
-void main_project( void )
-{
+/**
+* @brief Creates the tasks and starts the scheduler.
+*/  
+void main_project( void ) {
 
-    xTaskCreate(task_ethernet_daemon, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL );
+    xTaskCreate(tsk_ethernet, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL );
 
-
-    /* Start the tasks and timer running. */
-    vTaskStartScheduler();
 }
 

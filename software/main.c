@@ -50,6 +50,9 @@ int main( void )
 
   main_project();
 
+  /* Start the tasks and timer running. */
+  vTaskStartScheduler();
+
 }
 
 

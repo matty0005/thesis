@@ -24,6 +24,7 @@
 
 #define ETH_MAC_CMD_INIT 0x1
 #define ETH_MAC_CMD_START_TX 0x2
+#define ETH_MAC_CMD_IDLE 0x00
 
 
 
