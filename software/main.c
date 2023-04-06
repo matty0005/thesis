@@ -12,7 +12,7 @@
 #define BAUD_RATE 19200
 
 
-extern void main_blinky( void );
+extern void main_project( void );
 
 
 extern void freertos_risc_v_trap_handler( void );
@@ -48,7 +48,7 @@ int main( void )
     /* say hi */
   neorv32_uart0_printf("FreeRTOS %s on NEORV32 Demo\n\n", tskKERNEL_VERSION_NUMBER);
 
-  main_blinky();
+  main_project();
 
 }
 

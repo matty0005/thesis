@@ -24,8 +24,6 @@ USER_FLAGS ?=
 # -----------------------------------------------------------------------------
 # FreeRTOS
 # -----------------------------------------------------------------------------
-ifneq (,$(findstring RUN_FREERTOS_DEMO,$(USER_FLAGS)))
-# FreeRTOS home folder (adapt this!)
 FREERTOS_HOME ?= /home/matt/FreeRTOS
 
 # FreeRTOS RISC-V specific
@@ -40,16 +38,6 @@ APP_SRC += $(wildcard $(FREERTOS_HOME)/FreeRTOS/Source/portable/MemMang/heap_4.c
 
 APP_INC += -I $(FREERTOS_HOME)/FreeRTOS/Source/include
 
-# FreeRTOS sources for the full_demo
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS/Demo/Common/Minimal/blocktim.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS/Demo/Common/Minimal/dynamic.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS/Demo/Common/Minimal/EventGroupsDemo.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS/Demo/Common/Minimal/GenQTest.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS/Demo/Common/Minimal/recmutex.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS/Demo/Common/Minimal/TaskNotify.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS/Demo/Common/Minimal/TaskNotifyArray.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS/Demo/Common/Minimal/TimerDemo.c
-
 APP_INC += -I $(FREERTOS_HOME)/FreeRTOS/Demo/Common/include
 
 # NEORV32 specific
@@ -59,9 +47,8 @@ APP_INC += -I chip_specific_extensions/neorv32
 
 ASM_INC += -I chip_specific_extensions/neorv32
 
-# Demo application
-APP_SRC += blinky_demo/main_blinky.c
-endif
+
+
 
 # -----------------
 # FreeRTOS-Plus-CLI
@@ -93,5 +80,7 @@ endif
 
 # Modify this variable to fit your NEORV32 setup (neorv32 home folder)
 NEORV32_HOME ?= /home/matt/riscv/neorv32
+
+include ./filelist.mk
 
 include $(NEORV32_HOME)/sw/common/common.mk
