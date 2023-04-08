@@ -45,8 +45,38 @@ int main( void )
 {
   prvSetupHardware();
 
+  
     /* say hi */
-  neorv32_uart0_printf("FreeRTOS %s on NEORV32 Demo\n\n", tskKERNEL_VERSION_NUMBER);
+  /*
+ _____  _____  _____  _____           ______ _                        _ _ 
+|  __ \|_   _|/ ____|/ ____|         |  ____(_)                      | | |
+| |__) | | | | (___ | |    _   _     | |__   _ _ __ _____      ____ _| | |
+|  _  /  | |  \___ \| |   | | | |    |  __| | | '__/ _ \ \ /\ / / _` | | |
+| | \ \ _| |_ ____) | |___| |_| |    | |    | | | |  __/\ V  V / (_| | | |
+|_|  \_\_____|_____/ \_____\__, |    |_|    |_|_|  \___| \_/\_/ \__,_|_|_|
+                            __/ |                                         
+                           |___/                                          
+  */
+
+  // print above ASCII art
+  neorv32_uart0_printf(" _____  _____  _____  _____           ______ _                        _ _ \n");
+  neorv32_uart0_printf("|  __ \\|_   _|/ ____|/ ____|         |  ____(_)                      | | |\n");
+  neorv32_uart0_printf("| |__) | | | | (___ | |    _   _     | |__   _ _ __ _____      ____ _| | |\n");
+  neorv32_uart0_printf("|  _  /  | |  \\___ \\| |   | | | |    |  __| | | '__/ _ \\ \\ /\\ / / _` | | |\n");
+  neorv32_uart0_printf("| | \\ \\ _| |_ ____) | |___| |_| |    | |    | | | |  __/\\ V  V / (_| | | |\n");
+  neorv32_uart0_printf("|_|  \\_\\_____|_____/ \\_____\\__, |    |_|    |_|_|  \\___| \\_/\\_/ \\__,_|_|_|\n");
+  neorv32_uart0_printf("                           __/ |                                         \n");
+  neorv32_uart0_printf("                          |___/                                          \n");
+
+  
+  // Print author name
+  neorv32_uart0_printf("Author: Matthew Gilpin\n\n");
+
+  neorv32_uart0_printf("FreeRTOS %s on NEORV32\n", tskKERNEL_VERSION_NUMBER);
+  // print some system info
+  neorv32_uart0_printf("CPU clock: %u MHz\n\n", NEORV32_SYSINFO.CLK / 1000000);
+  
+
 
   main_project();
 

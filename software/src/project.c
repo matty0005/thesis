@@ -34,6 +34,8 @@ void tsk_ethernet(void *pvParameters) {
 
     for(;;) {
         
+        // Enter critical section to prevent the ethernet mac from being used by another task.
+        taskENTER_CRITICAL();
         // init the ethernet mac.
         ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
@@ -56,6 +58,9 @@ void tsk_ethernet(void *pvParameters) {
 
         // Need to set the idle state. Otherwise packet gets sent again.
         ETH_MAC_CMD = ETH_MAC_CMD_IDLE;
+
+        // Exit critical section.
+        taskEXIT_CRITICAL();
 
         vTaskDelay(1000);
     }
