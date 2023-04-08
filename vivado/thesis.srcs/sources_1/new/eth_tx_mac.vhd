@@ -59,15 +59,15 @@ architecture Behavioral of eth_tx_mac is
 -- CONSTANTS
 constant preambleSFD : std_logic_vector(63 downto 0) := x"ABAAAAAAAAAAAAAA";
 constant sourceAddr  : std_logic_vector (47 downto 0) := x"BEBAEFBEADDE"; --DEADBEEFBABE
-constant padding     : std_logic_vector(7 downto 0) := x"A5";
+constant padding     : std_logic_vector(7 downto 0) := x"00"; -- Can change to A5
 
 -- MAC COMMANDS
 constant MAC_CONFIG             : std_logic_vector(31 downto 0) := x"13370000";
 
 -- REGISTERS
 constant MAC_DEST_ADDR_HIGH     : std_logic_vector(31 downto 0) := x"13371000";
-constant MAC_DEST_ADDR_LOW      : std_logic_vector(31 downto 0) := x"13371001";
-constant MAC_LEN                : std_logic_vector(31 downto 0) := x"13371002";
+constant MAC_DEST_ADDR_LOW      : std_logic_vector(31 downto 0) := x"13371004";
+constant MAC_LEN                : std_logic_vector(31 downto 0) := x"13371008";
 
 
 
@@ -153,7 +153,34 @@ begin
             wb_o_ack <= '1';
             
             -- Ensure write enable is set.
-            if wb_i_we = '1' then
+            if wb_i_we = '0' then
+                
+                case wb_i_addr is 
+                    when MAC_DEST_ADDR_HIGH =>
+                    
+                        wb_o_dat <= FRAME_BUFFER(8) & FRAME_BUFFER(9) & FRAME_BUFFER(10) & FRAME_BUFFER(11);
+                    
+                    when MAC_DEST_ADDR_LOW =>
+                        wb_o_dat <= FRAME_BUFFER(12) & FRAME_BUFFER(13) & x"0000";
+
+                    when MAC_LEN =>
+                    
+                        wb_o_dat <= x"0000" & FRAME_BUFFER(21) & FRAME_BUFFER(20);
+                        
+                    when others =>
+                    
+                        if wb_i_addr >= x"13371003" and wb_i_addr <= x"1337117A" then
+                            
+                            -- 322375680 = 0x13371000.
+                            virtAddr := to_integer(4 * (unsigned(wb_i_addr(11 downto 0)) - 3));
+                            
+                            wb_o_dat <= FRAME_BUFFER(22 + virtAddr) &  FRAME_BUFFER(23 + virtAddr) & FRAME_BUFFER(24 + virtAddr) & FRAME_BUFFER(25 + virtAddr);
+                            
+                        end if;
+                        
+                end case;
+
+            elsif wb_i_we = '1' then
                 case wb_i_addr is 
                 
                     -- Configure hardware.
@@ -211,10 +238,10 @@ begin
                      when others =>
                         
                         -- Check to make sure we are in the safe memory range.
-                        if wb_i_addr >= x"13371003" and wb_i_addr <= x"1337117A" then
+                        if wb_i_addr >= x"1337100C" and wb_i_addr <= x"1337640C" then
                             
                             -- 322375680 = 0x13371000.
-                            virtAddr := to_integer(4 * (unsigned(wb_i_addr(11 downto 0)) - 3));
+                            virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4108));
                             
                             FRAME_BUFFER(22 + virtAddr) := wb_i_dat(31 downto 24);
                             FRAME_BUFFER(23 + virtAddr) := wb_i_dat(23 downto 16);
@@ -232,19 +259,6 @@ begin
     
     end if;
 end process;
-
-
-
---MAIN_TRANSITIONS : process (clk_i, rst_i)
---begin
---    -- Remember active low
---    if rst_i = '0' then
---        currentState <= IDLE;
---    elsif rising_edge(clk_i) then
---        currentState <= nextState;
---    end if;
---end process;
-
 
 MAIN_FSM: process(clk_i)
 
@@ -331,11 +345,9 @@ begin
     
        
         end case;
-        
+     
         end if;
-
 end process;
-
 
 
 FCS_FSM: process(clk_i, rst_i) 
@@ -392,11 +404,9 @@ begin
                     end if;
                 elsif (to_integer(unsigned(payloadLen)) + 14) = bytesAnalysed then
                     bytesAnalysed := 0;
-                    currentFCSState <= RESULT;
-                    
+                    currentFCSState <= RESULT;     
                 end if;
                
-    
             when RESULT =>
                 status <= "11";
                 crcCalc <= '0';
@@ -417,15 +427,7 @@ begin
                 currentFCSState <= IDLE;
         end case;
     end if;
-    
-    
-    
-    
-
+       
 end process;
-
-
-
-
 
 end Behavioral;

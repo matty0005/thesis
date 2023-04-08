@@ -75,6 +75,32 @@ architecture Behavioral of wb_ethernet is
         ); 
     end component;
     
+--    component eth_rx_mac is 
+--        Port ( 
+--            -- WISHBONE b4 classic
+--            wb_i_dat        : in  std_logic_vector(31 downto 0);
+--            wb_o_dat        : out std_logic_vector(31 downto 0);
+--            wb_i_addr       : in  std_logic_vector(31 downto 0);
+--            wb_i_cyc        : in  std_logic;
+--            wb_i_lock       : in  std_logic;
+--            wb_i_sel        : in  std_logic;
+--            wb_i_we         : in  std_logic;
+--            wb_o_ack        : out std_logic;
+--            wb_o_err        : out std_logic;
+--            wb_o_rty        : out std_logic;
+--            wb_o_stall      : out std_logic;
+--            wb_i_stb        : in  std_logic;
+        
+--            -- Interface
+--            clk_i  : in  std_logic;
+--            rst_i  : in  std_logic := '0';
+--            start         : in std_logic := '0';
+--            dataPresent   : out std_logic := '0';
+--            dataOut       : out std_logic_vector(7 downto 0);
+--            status        : out std_logic_vector(1 downto 0)        
+--        ); 
+--    end component;
+    
     
     component rmii is
     port (
@@ -96,6 +122,10 @@ architecture Behavioral of wb_ethernet is
     -- Transmit FIFO 
     signal eth_tx_dat_pres_o : std_logic;
     signal eth_tx_dat_o : std_logic_vector(7 downto 0);
+    
+    -- Rx FIFO 
+--    signal eth_rx_dat_pres_o : std_logic;
+--    signal eth_rx_dat_o : std_logic_vector(7 downto 0);
 
     -- Wishbone accessible Registers
     signal  reg_ena     : std_logic_vector(31 downto 0);
@@ -151,6 +181,31 @@ begin
         
         status => eth_i_rxd
     );
+    
+--    eth_rx : eth_rx_mac
+--    port map (
+--        wb_i_dat    => wb_dat_i,
+--        wb_o_dat    => wb_dat_o,
+--        wb_i_addr   => wb_adr_i,
+--        wb_i_cyc    => wb_cyc_i,
+--        wb_i_lock   => wb_lock_i,
+--        wb_i_sel    => wb_sel_i,
+--        wb_i_we     => wb_we_i,
+--        wb_o_ack    => wb_ack_o,
+--        wb_o_err    => wb_err_o,
+--        wb_o_rty    => wb_rty_o,
+--        wb_o_stall  => wb_stall_o,
+--        wb_i_stb    => wb_stb_i,
+        
+--        clk_i       => clk_i,
+--        rst_i       => rst_i,
+--        start       => clk_i,
+--        dataPresent => eth_rx_dat_pres_o,
+--        dataOut     => eth_rx_dat_o,
+        
+        
+--        status => eth_i_rxd
+--    );
     
     
 
