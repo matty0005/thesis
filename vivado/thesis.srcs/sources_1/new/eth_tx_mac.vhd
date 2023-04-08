@@ -207,6 +207,8 @@ begin
                         elsif wb_i_dat(1) = '1' then
 --                            setStateFromOutside <= TRANSMIT;
                             startTx <= '1';
+                        elsif wb_i_dat = x"00000000" then
+                            startTx <= '0';
                         end if;
                         
                         
@@ -330,8 +332,8 @@ begin
                 startTxAck <= '0';
                 crcAck <= '1';
                 dataPresent <= '1';
-                dataOut <= crcResult(7 downto 0);
---                dataOut <= crcResult((8 * sentAmount) + 7 downto (8 * sentAmount));
+--                dataOut <= crcResult(7 downto 0);
+                dataOut <= crcResult((8 * sentAmount) + 7 downto (8 * sentAmount));
                 sentAmount := sentAmount + 1;
                 
                 if sentAmount = 4 then

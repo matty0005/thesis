@@ -81,8 +81,8 @@ constant MAC_CONFIG             : std_logic_vector(31 downto 0) := x"13370000";
 
 -- REGISTERS
 constant MAC_DEST_ADDR_HIGH     : std_logic_vector(31 downto 0) := x"13371000";
-constant MAC_DEST_ADDR_LOW      : std_logic_vector(31 downto 0) := x"13371001";
-constant MAC_LEN                : std_logic_vector(31 downto 0) := x"13371002";
+constant MAC_DEST_ADDR_LOW      : std_logic_vector(31 downto 0) := x"13371004";
+constant MAC_LEN                : std_logic_vector(31 downto 0) := x"13371008";
 
 
 begin
@@ -135,7 +135,7 @@ begin
     
 
     wb_i_addr <= MAC_DEST_ADDR_HIGH;
-    wb_i_dat <= x"12345678";
+    wb_i_dat <= x"aabbccdd";
     
     wait for 1ps;
     clk_i <= '1';
@@ -143,7 +143,7 @@ begin
     clk_i <= '0';
     
     wb_i_addr <= MAC_DEST_ADDR_LOW;
-    wb_i_dat <= x"00998877";
+    wb_i_dat <= x"55667788";
     
     wait for 1ps;
     clk_i <= '1';
@@ -151,31 +151,39 @@ begin
     clk_i <= '0';
     
     wb_i_addr <= MAC_LEN;
-    wb_i_dat <= x"00000010";
+    wb_i_dat <= x"0000000F";
     
     wait for 1ps;
     clk_i <= '1';
     wait for 1ps;
     clk_i <= '0';
     
-    wb_i_addr <= x"13371003";
-    wb_i_dat <= x"1337beef";
+    wb_i_addr <= x"1337100C";
+    wb_i_dat <= x"beefcafe";
     
     wait for 1ps;
     clk_i <= '1';
     wait for 1ps;
     clk_i <= '0';
     
-    wb_i_addr <= x"13371004";
-    wb_i_dat <= x"cafe1234";
+    wb_i_addr <= x"13371010";
+    wb_i_dat <= x"11223344";
     
     wait for 1ps;
     clk_i <= '1';
     wait for 1ps;
     clk_i <= '0';
     
-    wb_i_addr <= x"13371005";
-    wb_i_dat <= x"0000beef";
+    wb_i_addr <= x"13371014";
+    wb_i_dat <= x"55667788";
+    
+    wait for 1ps;
+    clk_i <= '1';
+    wait for 1ps;
+    clk_i <= '0';
+    
+    wb_i_addr <= x"13371018";
+    wb_i_dat <= x"99aabbcc";
     
     wait for 1ps;
     clk_i <= '1';
