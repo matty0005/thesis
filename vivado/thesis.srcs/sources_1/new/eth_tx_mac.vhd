@@ -80,7 +80,9 @@ component crc
         LOAD_INIT           :   in  std_logic;
         CALC                :   in  std_logic;
         D_VALID             :   in  std_logic;
-        CRC_REG             :   out std_logic_vector(31 downto 0)
+        CRC_REG             :   out std_logic_vector(31 downto 0);
+        CRC                 :   out std_logic_vector(7 downto 0);
+        CRC_VALID           :   out std_logic
     );
 end component;
 -- END COMPONENTS
@@ -91,7 +93,7 @@ type ramType is array (1526 - 1 downto 0) of std_logic_vector(8 - 1 downto 0);
 shared variable FRAME_BUFFER : ramType;
 
 -- Used for Main fsm.
-type state is (IDLE, FCS, TRANSMIT);
+type state is (IDLE, FCS, TRANSMIT, RESET_FCS, LOAD_FCS);
 signal currentState, nextState, setStateFromOutside : state := IDLE;
 
 -- Used for FCS fsm.
@@ -105,7 +107,9 @@ signal crcRst       : std_logic := '0';
 signal crcLoadInit  : std_logic := '0';
 signal crcCalc      : std_logic := '0';
 signal crcDValid    : std_logic := '0';
+signal crcValid    : std_logic := '0';
 signal crcData      : std_logic_vector(7 downto 0);
+signal crcReg8      : std_logic_vector(7 downto 0);
 signal crcReg    : std_logic_vector(31 downto 0);
 signal crcResult    : std_logic_vector(31 downto 0);
 
@@ -121,6 +125,10 @@ signal crcIdle      : std_logic := '0';
 
 signal payloadLen : std_logic_vector(15 downto 0) := (others => '0');
 
+
+signal nextCrcData      : std_logic_vector(7 downto 0);
+
+
 begin
 
 
@@ -133,7 +141,9 @@ port map (
     LOAD_INIT => crcLoadInit,
     CALC => crcCalc,
     D_VALID => crcDValid,
-    CRC_REG => crcReg
+    CRC_REG => crcReg,
+    CRC => crcReg8,
+    CRC_VALID => crcValid
 );
 -- -- END COMPONENT MAPPINGS
 
@@ -262,6 +272,9 @@ begin
     end if;
 end process;
 
+
+status <= crcReg(1 downto 0);
+
 MAIN_FSM: process(clk_i)
 
 variable sentAmount : integer := 0;
@@ -279,65 +292,79 @@ begin
                 if crcFinished = '1' then
                     nextState <= FCS;
                 elsif startTx ='1' then
-                    nextState <= TRANSMIT;
+                    nextState <= RESET_FCS;
                     startTxAck <= '1';
                 else
                     nextState <= IDLE;
                 end if;
           
+            when RESET_FCS => 
+                crcDValid <= '0';
+                crcLoadInit <= '0';
+                crcCalc <= '0';
+                crcRst <= '1';
+                nextState <= LOAD_FCS;
+                
+            when LOAD_FCS =>
+                crcRst <= '0';
+                crcLoadInit <= '1';
+                nextState <= TRANSMIT;
+                
+                   
             when TRANSMIT =>
---                statusa <= "01";
+                
+                -- Ignore preamble + SFD
+                crcData <= FRAME_BUFFER(sentAmount);
+                if sentAmount > 8 then
+                    crcLoadInit <= '0';
+                    crcCalc <= '1';
+                    
+                    crcDValid <= '1';
+                end if;
                 
                 dataPresent <= '1';
                 dataOut <= FRAME_BUFFER(sentAmount);
                 sentAmount := sentAmount + 1;
                 
-                if crcIdle = '1' then
-                    crcStart <= '1';
-                else 
-                    crcStart <= '0';
-                end if;
     
     
                 -- Add 22 to account for mac header
                 if to_integer(unsigned(payloadLen)) < 46 then
                     
                     if sentAmount = 68 then
---                    statusa <= "10";
                         sentAmount := 0;
                         dataPresent <= '0';
-                        if crcFinished = '1' then
-                            sentAmount := 0;
---                            statusa <= "11";
-                            nextState <= FCS;
-                        else 
-                            nextState <= IDLE;
-                        end if;
+                        crcCalc <= '0';
+
+                        nextState <= FCS;
+       
                     end if;
                 elsif (to_integer(unsigned(payloadLen)) + 22) = sentAmount then
                     sentAmount := 0;
                     dataPresent <= '0';
-                    if crcFinished = '1' then
-                        sentAmount := 0;
-                        nextState <= FCS;
-                    else 
-                        nextState <= IDLE;
-                    end if;
+                    crcCalc <= '0';
+                    
+                    nextState <= FCS;                    
                 end if;
+                
+                nextCrcData <= crcReg8;
                 
     
             when FCS =>
---                statusa <= "11";
+
                 -- Calculate the CRC32 and add it to the FRAME_BUFFER
                 startTxAck <= '0';
-                crcAck <= '1';
                 dataPresent <= '1';
---                dataOut <= crcResult(7 downto 0);
-                dataOut <= crcResult((8 * sentAmount) + 7 downto (8 * sentAmount));
+                
+                crcDValid <= '1';
+                crcCalc <= '0';
+                
+                dataOut <= nextCrcData;
+                
+                nextCrcData <= crcReg8;
                 sentAmount := sentAmount + 1;
                 
                 if sentAmount = 4 then
-                    crcAck <= '0';
                     sentAmount := 0;
                     dataPresent <= '0';
                     nextState <= IDLE;
@@ -351,85 +378,5 @@ begin
         end if;
 end process;
 
-
-FCS_FSM: process(clk_i, rst_i) 
-variable bytesAnalysed : integer := 0;
-
-begin
-    if rst_i = '0' then
-        currentFCSState <= IDLE;
-    elsif rising_edge(clk_i) then
-        case currentFCSState is 
-            when IDLE =>
-                if crcStart = '1' then
-                    currentFCSState <= FCS_START;
-                    crcIdle <= '0';
-                else
-                    currentFCSState <= IDLE;
-                    crcIdle <= '1';
-                end if;
-                
-            when FCS_START =>
-                
-                status <= "01";
-                
-                crcDValid <= '0';
-                crcLoadInit <= '0';
-                bytesAnalysed := 0;
-                crcCalc <= '0';
-                crcRst <= '1';
-                crcFinished <= '0';
-                currentFCSState <= LOAD;
-            
-            when LOAD =>
-                crcRst <= '0';
-                crcLoadInit <= '1';
-                currentFCSState <= CALC;
-            when CALC => 
-                crcLoadInit <= '0';
-                crcCalc <= '1';
-                currentFCSState <= DATA;
-                crcData <= FRAME_BUFFER(bytesAnalysed + 8);
-                bytesAnalysed := 1;
-            when DATA =>
-                crcData <= FRAME_BUFFER(bytesAnalysed + 8);
-                crcDValid <= '1';
-                
-                bytesAnalysed := bytesAnalysed + 1;
-                status <= "10";
-    
-                -- Only change states after added all packets.
-                if to_integer(unsigned(payloadLen)) < 46 then
-                    if bytesAnalysed = 60 then -- Remember to not include preamble or SFD
-                        bytesAnalysed := 0;
-                        currentFCSState <= RESULT;
-                    end if;
-                elsif (to_integer(unsigned(payloadLen)) + 14) = bytesAnalysed then
-                    bytesAnalysed := 0;
-                    currentFCSState <= RESULT;     
-                end if;
-               
-            when RESULT =>
-                status <= "11";
-                crcCalc <= '0';
-                crcDValid <= '0';
-                crcFinished <= '1';
-                crcResult <= crcReg;
-                currentFCSState <= FCS_ACK;
-                
-            when FCS_ACK =>
-                if crcAck = '1' then
-                    status <= "00";
-    
-                    crcFinished <= '0';
-                    currentFCSState <= IDLE;
-                end if;
-    
-            when others => -- Should never reach here, but incase
-                currentFCSState <= IDLE;
-        end case;
-    end if;
-       
-end process;
 
 end Behavioral;
