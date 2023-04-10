@@ -17,7 +17,7 @@ MARCH ?= rv32i
 MABI  ?= ilp32
 
 # User flags for additional configuration (will be added to compiler flags)
-USER_FLAGS ?=
+USER_FLAGS ?=  "-Wl,--defsym,__neorv32_ram_size=32k,--defsym,__neorv32_rom_size=128k"
 # *****************************************************************************
 
 
@@ -53,11 +53,9 @@ ASM_INC += -I chip_specific_extensions/neorv32
 # -----------------
 # FreeRTOS-Plus-CLI
 # -----------------
-ifneq (,$(findstring FREERTOS_PLUS_CLI,$(USER_FLAGS)))
 APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-CLI/FreeRTOS_CLI.c
-
 APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-CLI
-endif
+
 
 # -----------------
 # FreeRTOS-Plus-TCP

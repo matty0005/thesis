@@ -19,8 +19,10 @@
 #include "task.h"
 #include "queue.h"
 
+#include <neorv32.h>
 
 #include "ethernet.h"
+#include "cli.h"
 
 /* Priorities used by the tasks. */
 #define ETH_TASK_PRIORITY ( tskIDLE_PRIORITY + 1 )
@@ -41,10 +43,11 @@ void tsk_ethernet(void *pvParameters) {
 
         // set the destination mac
         ETH_MAC->DEST[0] = 0xaabbccdd;
-        ETH_MAC->DEST[1] = 0xeeff0000;
+        ETH_MAC->DEST[1] = 0x55667788;
 
         // set the length of the packet.
-        ETH_MAC->LEN = 0x00000010;
+        ETH_MAC->LEN = 0x0000000F;
+        // neorv32_uart0_printf("LEN: %x\n", ETH_MAC->LEN);
 
         // set the data of the packet.
         ETH_MAC->DATA[0] = 0xbeefcafe;
@@ -71,7 +74,8 @@ void tsk_ethernet(void *pvParameters) {
 * @brief Creates the tasks and starts the scheduler.
 */  
 void main_project( void ) {
-
+    
+    cli_init();
     xTaskCreate(tsk_ethernet, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL );
 
 }

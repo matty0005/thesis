@@ -119,6 +119,7 @@
 #define configGENERATE_RUN_TIME_STATS	0
 #define configTASK_NOTIFICATION_ARRAY_ENTRIES 4
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+#define configCOMMAND_INT_MAX_OUTPUT_SIZE 1024
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 			0
