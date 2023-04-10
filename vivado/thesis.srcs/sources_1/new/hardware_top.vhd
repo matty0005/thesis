@@ -42,8 +42,8 @@ use neorv32.neorv32_package.all;
 entity hardware_top is
   generic (
     -- adapt these for your setup --
-    CLOCK_FREQUENCY   : natural := 100000000; -- clock frequency of clk_i in Hz
-    MEM_INT_IMEM_SIZE : natural := 128*1024;   -- size of processor-internal instruction memory in bytes
+    CLOCK_FREQUENCY   : natural := 50000000; -- clock frequency of clk_i in Hz
+    MEM_INT_IMEM_SIZE : natural := 256*1024;   -- size of processor-internal instruction memory in bytes
     MEM_INT_DMEM_SIZE : natural := 32*1024;     -- size of processor-internal data memory in bytes
     CUSTOM_ID : std_ulogic_vector(31 downto 0) := x"00000000" -- custom user-defined ID
   );
@@ -61,9 +61,9 @@ entity hardware_top is
     eth_o_txd : out std_logic_vector(1 downto 0);
     eth_o_txen : out std_logic;
     eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
-    eth_i_rxderr : in std_logic;
+    eth_i_rxderr : out std_logic;
     eth_o_refclk : out std_logic;
-    eth_i_intn : in std_logic
+    eth_i_intn : out std_logic
   );
 end entity;
 
@@ -96,9 +96,10 @@ port (
     eth_o_txd : out std_logic_vector(1 downto 0);
     eth_o_txen : out std_logic;
     eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
-    eth_i_rxderr : in std_logic;
+    eth_i_rxderr : out std_logic;
     eth_o_refclk : out std_logic;
-    eth_i_refclk : in std_logic
+    eth_i_refclk : in std_logic;
+    eth_o_intn   : out std_logic
 );
 end component;
 
@@ -156,7 +157,7 @@ clk_control : clk_master
 
 ethernet_mac : wb_ethernet
     port map (
-        clk_i  => clk_100,
+        clk_i  => clk_50,
         rst_i  => rstn_i,
         --
         -- Whishbone Interface
@@ -182,7 +183,9 @@ ethernet_mac : wb_ethernet
         eth_i_rxd => eth_i_rxd,
         eth_i_rxderr => eth_i_rxderr,
         eth_i_refclk => clk_50,
-        eth_o_refclk => eth_o_refclk
+        eth_o_refclk => eth_o_refclk,
+        
+        eth_o_intn => eth_i_intn
     );
     
   -- The Core Of The Problem ----------------------------------------------------------------
@@ -219,7 +222,7 @@ ethernet_mac : wb_ethernet
   )
   port map (
     -- Global control --
-    clk_i       => clk_i,       -- global clock, rising edge
+    clk_i       => clk_50,       -- global clock, rising edge
     rstn_i      => rstn_i,      -- global reset, low-active, async
     -- GPIO (available if IO_GPIO_EN = true) --
     gpio_o      => con_gpio_o,  -- parallel output

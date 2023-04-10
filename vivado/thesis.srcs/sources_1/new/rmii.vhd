@@ -12,9 +12,11 @@
 --
 --------------------------------------------------------------------------------
 
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.STD_LOGIC_ARITH.all;
+use ieee.STD_LOGIC_UNSIGNED.all;
 
 
 entity rmii is
@@ -23,126 +25,92 @@ entity rmii is
     -- From ethernet MAC
     rmii_i_tx_ready : in std_logic;
     rmii_i_tx_dat   : in std_logic_vector(7 downto 0);
-    rmii_i_tx_clk   : in std_logic;
+--    rmii_i_tx_clk   : in std_logic;
+    rmii_i_tx_start   : in std_logic;
     
     
     -- RMII interface itself
     rmii_o_txd      : out std_logic_vector(1 downto 0) := "00";
     rmii_o_txen     : out std_logic; 
-    rmii_i_clk      : in std_logic;
+    clk_i_write : in STD_LOGIC;
+    clk_i_read : in STD_LOGIC;
     
-    test   : out std_logic_vector(7 downto 0)
+    eth_i_rxderr    : out std_logic;
+    status          : out std_logic_vector(1 downto 0)
+    
+--    test   : out std_logic_vector(7 downto 0)
 
   );
 end rmii;
 
+
+
 architecture Behavioral of rmii is
 
-constant FIFO_DEPTH : natural := 1526 - 1;
-
-component fifo is
-    Generic (
-        w : integer := 8; -- width
-        d : integer := 64 -- depth
-    );
-    Port (  
-        clk_i_read        :   in  std_logic;
-        clk_i_write       :   in  std_logic;
-        i_rst             :   in  std_logic;
-        i_read            :   in  std_logic;
-        i_write           :   in  std_logic;
-        o_full            :   out  std_logic;
-        o_empty           :   out  std_logic;
-        i_datIn           :   in  std_logic_vector(w - 1 downto 0);
-        o_datOut          :   out  std_logic_vector(w - 1 downto 0) := (others => '0')
-     );
-end component;
-         
-         
-signal rst : std_logic := '0';
-
-signal tx_fifo_read : std_logic := '0';
-signal tx_fifo_write : std_logic := '0';
-signal tx_fifo_full : std_logic := '0';
-signal tx_fifo_empty : std_logic := '0';
-signal tx_fifo_output : std_logic_vector(7 downto 0) := x"00";
-signal tx_fifo_read_clk : std_logic := '0';
-signal tx_fifo_transfer: std_logic := '0';
-
-signal tmp_sr : std_logic_vector(7 downto 0) := x"00";
-
--- Output shift register
-signal tx_sr : std_logic_vector(7 downto 0) := x"00";
-
+    signal data_in_valid : std_logic := '1';
+    constant FIFO_DEPTH : integer := 1600;
+    type fifo_mem is array (FIFO_DEPTH downto 0) of STD_LOGIC_VECTOR (7 downto 0);
+    signal fifo : fifo_mem;
+    signal read_ptr, write_ptr : integer := 0;
+    signal fifo_full, fifo_empty : boolean := false;
+    signal current_read_byte : STD_LOGIC_VECTOR (7 downto 0) := x"00";
+    signal byte_idx : integer := 0;
+    signal bit_idx : integer := 0;
+        
 begin
+    process(clk_i_write, rmii_i_rst)
+    begin
+        if rmii_i_rst = '0' then -- active low
+            write_ptr <= 0;
+            fifo_full <= false;
+        elsif rising_edge(clk_i_write) then
+            -- Write to FIFO
+            if data_in_valid = '1' and not fifo_full then
+                fifo(write_ptr) <= rmii_i_tx_dat;
+                write_ptr <= (write_ptr + 1) mod FIFO_DEPTH;
+            end if;
 
-    tx_fifo : fifo
-    generic map (
-        w => 8,
-        d => FIFO_DEPTH
-    )
-    port map (
-        clk_i_read      => tx_fifo_read_clk,
-        clk_i_write     => rmii_i_tx_clk,
-        i_rst           => rst,
-        i_read          => tx_fifo_read,
-        i_write         => rmii_i_tx_ready,
-        o_full          => tx_fifo_full,
-        o_empty         => tx_fifo_empty,
-        i_datIn         => rmii_i_tx_dat,
-        o_datOut        => tx_fifo_output
-    );
+            -- Update FIFO full status
+            fifo_full <= (write_ptr + 1) mod FIFO_DEPTH = read_ptr;
+        end if;
+    end process;
     
     
--- To div clk by 4, you can simply just toggle the output every 2 clocks
-clk_div_4 : process(rmii_i_clk) 
-variable toggle : std_logic := '0';
-variable xfer : natural := 0;
-begin
-    if rising_edge(rmii_i_clk) then
-        
-        if xfer = 0 then
-            tx_fifo_transfer <= '1';
-            xfer := xfer + 1;
-        elsif xfer = 3 then
-            xfer := 0;
-            tx_fifo_transfer <= '0';
-        else 
-            tx_fifo_transfer <= '0';
-            xfer := xfer + 1;
-        end if;
-        
-        
-        
-        if toggle = '0' then
-            toggle := '1';            
-            tx_fifo_read_clk <= not tx_fifo_read_clk;
-            
-        elsif toggle = '1' then
-            toggle := '0';
---            tx_fifo_transfer <= '0';
-        end if;
-    end if;
-end process;
-
-
-
-rmii_tx_out : process(rmii_i_clk) 
-begin
-    if rising_edge(rmii_i_clk) then
     
-        if tx_fifo_transfer = '1' then
-            tmp_sr <= tx_fifo_output;
-        else
-            tmp_sr(5 downto 0) <= tmp_sr(7 downto 2);
-            tmp_sr(7 downto 6) <= "00";
+    
+    
+    process(clk_i_read, rmii_i_rst)
+    begin
+        if rmii_i_rst = '0' then
+            read_ptr <= 0;
+            fifo_empty <= true;
+            bit_idx <= 0;
+            current_read_byte <= (others => '0');
+        elsif rising_edge(clk_i_read) then
+            -- Read from FIFO
+            if not fifo_empty then
+                if bit_idx = 0 then
+                    current_read_byte <= fifo(read_ptr);
+                    rmii_o_txd <= fifo(read_ptr)(1 downto 0);
+                else
+                    rmii_o_txd <= current_read_byte((1 + bit_idx) downto (bit_idx));
+                end if;
+                
+                if bit_idx = 6 then
+                    read_ptr <= (read_ptr + 1) mod FIFO_DEPTH;
+                end if;
+                bit_idx <= (bit_idx + 2) mod 8;
+                
+            else 
+                rmii_o_txd <= "00";
+            end if;
+
+            -- Update FIFO empty status
+            fifo_empty <= write_ptr = read_ptr;
         end if;
-        rmii_o_txd <= tmp_sr(1 downto 0); 
-        
-    end if;
-end process;
-tx_fifo_read <= '1';
-test <= tmp_sr;
-rmii_o_txen <= tx_fifo_transfer;
-rst <= not rmii_i_rst;
+    end process;
+
+    rmii_o_txen <= '1' when not fifo_empty else '0'; --data out valid
 end Behavioral;
+
+

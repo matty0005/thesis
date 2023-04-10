@@ -41,9 +41,10 @@ port (
     eth_o_txd : out std_logic_vector(1 downto 0);
     eth_o_txen : out std_logic;
     eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
-    eth_i_rxderr : in std_logic;
+    eth_i_rxderr : out std_logic;
     eth_o_refclk : out std_logic;
-    eth_i_refclk : in std_logic
+    eth_i_refclk : in std_logic;
+    eth_o_intn   : out std_logic
 );
 end wb_ethernet;
 
@@ -68,10 +69,9 @@ architecture Behavioral of wb_ethernet is
             -- Interface
             clk_i  : in  std_logic;
             rst_i  : in  std_logic := '0';
-            start         : in std_logic := '0';
+            start         : out std_logic := '0';
             dataPresent   : out std_logic := '0';
-            dataOut       : out std_logic_vector(7 downto 0);
-            status        : out std_logic_vector(1 downto 0)        
+            dataOut       : out std_logic_vector(7 downto 0)
         ); 
     end component;
     
@@ -108,18 +108,25 @@ architecture Behavioral of wb_ethernet is
         -- From ethernet MAC
         rmii_i_tx_ready : in std_logic;
         rmii_i_tx_dat   : in std_logic_vector(7 downto 0);
-        rmii_i_tx_clk   : in std_logic;
-        
+        rmii_i_tx_start  : in std_logic;
         
         -- RMII interface itself
         rmii_o_txd      : out std_logic_vector(1 downto 0);
         rmii_o_txen     : out std_logic; 
-        rmii_i_clk      : in std_logic   
+        status        : out std_logic_vector(1 downto 0);
+
+        eth_i_rxderr    : out std_logic;
+        
+        -- From ethernet MAC
+        
+        clk_i_write : in STD_LOGIC;
+        clk_i_read : in STD_LOGIC
     );
     end component; 
     
     
     -- Transmit FIFO 
+    signal eth_tx_start : std_logic;
     signal eth_tx_dat_pres_o : std_logic;
     signal eth_tx_dat_o : std_logic_vector(7 downto 0);
     
@@ -147,16 +154,24 @@ begin
         
         rmii_i_tx_ready => eth_tx_dat_pres_o,
         rmii_i_tx_dat => eth_tx_dat_o,
-        rmii_i_tx_clk => clk_i,
+        
+        rmii_i_tx_start => eth_tx_start,
         
         rmii_o_txd => eth_o_txd,
         rmii_o_txen => eth_o_txen,
-        rmii_i_clk => eth_i_refclk
+        
+        clk_i_write => clk_i,
+        clk_i_read => eth_i_refclk,
+        
+        
+        eth_i_rxderr => eth_i_rxderr,
+        status => eth_i_rxd
+
     );
     
 --    eth_o_txen <= eth_tx_dat_pres_o;
 --    eth_o_txd <= eth_tx_dat_o(1 downto 0);
-    
+    eth_o_intn <= clk_i;
     eth_tx : eth_tx_mac
     port map (
         wb_i_dat    => wb_dat_i,
@@ -174,12 +189,11 @@ begin
         
         clk_i       => clk_i,
         rst_i       => rst_i,
-        start       => clk_i,
+        start       => eth_tx_start,
         dataPresent => eth_tx_dat_pres_o,
-        dataOut     => eth_tx_dat_o,
+        dataOut     => eth_tx_dat_o
+                
         
-        
-        status => eth_i_rxd
     );
     
 --    eth_rx : eth_rx_mac
