@@ -77,9 +77,23 @@ uint8_t eth_init();
 uint8_t eth_send(uint8_t *data, size_t len);
 
 /**
+ * @brief Gets the size of the packet in the receive buffer.
+ * 
+ * @return size_t 
+ */
+size_t eth_recv_size();
+
+/**
+ * @brief Receive a packet from the ethernet mac.
+ * 
+ * @param buffer 
+ */
+void eth_recv(uint8_t *buffer);
+
+/**
  * @brief Sends a demo packet over the ethernet mac.
  * 
  */
-void eth_send_demo() 
+void eth_send_demo();
 
 #endif

@@ -1,3 +1,17 @@
+/**
+ * @file NetworkInterface.c
+ * @author Matthew Gilpin (matt@gilpin.au)
+ * @brief FreeRTOS Plus TCP Network Interface for NeoRV32 + VHDL Ethernet MAC
+ * @version 0.1
+ * @date 2023-04-12
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ * Useful link
+ * https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/Embedded_Ethernet_Porting.html
+ * 
+ */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,13 +33,17 @@
 #include "ethernet.h"
 
 
+/**
+ * @brief The TCP/IP stack calls xNetworkInterfaceInitialise() when the network is ready to be used (or re-used after a disconnect).
+ * 
+ * @return BaseType_t 
+ */
 BaseType_t xNetworkInterfaceInitialise( void ) 
 {
 
-    if (eth_init()) {
-
+    if (eth_init() != ETH_ERR_OK)
         return pdFAIL;
-    }
+    
 
     return pdPASS;
 }
@@ -58,18 +76,89 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescripto
 
     // pxDescriptor->pucEthernetBuffer is just a pointer to the start of the buffer. (uint8_t *)
     // pxDescriptor->xDataLength is the length of the buffer. (size_t)
-    if (eth_send(pxDescriptor->pucEthernetBuffer, pxDescriptor->xDataLength)) {
-
-        xReturn = pdFAIL;
-    } else {
-
+    if (eth_send(pxDescriptor->pucEthernetBuffer, pxDescriptor->xDataLength) == ETH_ERR_OK) 
         xReturn = pdPASS;
-    }
+    
 
-    if (xReleaseAfterSend != pdFALSE) {
-
+    if (xReleaseAfterSend != pdFALSE)
         vReleaseNetworkBufferAndDescriptor(pxDescriptor);
-    }
+    
 
     return xReturn;
+}
+
+
+
+static void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) 
+{
+    NetworkBufferDescriptor_t *pxBufferDescriptor;
+    size_t xBytesReceived;
+
+    /* Used to indicate that xSendEventStructToIPTask() is being called because
+    of an Ethernet receive event. */
+    IPStackEvent_t xRxEvent;
+
+    for( ;; ) 
+    {
+        /* Wait for the Ethernet MAC interrupt to indicate that another packet
+        has been received.  ulTaskNotifyTake() is used in place of the
+        standard queue receive function as the interrupt handler cannot directly
+        write to a queue. */
+        ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
+
+        /* Obtain the size of the packet and put it into the "length" member of
+        the pxBufferDescriptor structure. */
+        xBytesReceived = eth_recv_size();
+
+        if (xBytesReceived > 0) 
+        {
+            /* Obtain a network buffer descriptor.  This call will block
+            indefinitely if a network buffer is not available. */
+            pxBufferDescriptor = pxGetNetworkBufferWithDescriptor( xBytesReceived, 0 );
+
+            if( pxBufferDescriptor != NULL ) 
+            {
+                /* Set the actual length of the packet. */
+                pxBufferDescriptor->xDataLength = xBytesReceived;
+
+                /* Obtain the packet into the buffer pointed to by the
+                pxBufferDescriptor structure. */
+                eth_recv(pxBufferDescriptor->pucEthernetBuffer);
+                pxBufferDescriptor->xDataLength = xBytesReceived;
+
+                if (eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer) == eProcessBuffer) 
+                {
+
+                    // The event about to be sent to the TCP/IP is an Rx event.
+                    xRxEvent.eEventType = eNetworkRxEvent;
+
+                    xRxEvent.pvData = (void *) pxBufferDescriptor;
+
+                    /* Pass the received packet to the TCP/IP stack. */
+                    if( xSendEventStructToIPTask( &xRxEvent, 0 ) == pdFALSE ) 
+                    {
+                        /* The buffer could not be sent to the IP task so the buffer must be released. */
+                        vReleaseNetworkBufferAndDescriptor( pxBufferDescriptor );
+                        iptraceETHERNET_RX_EVENT_LOST();
+                    }
+                    else 
+                    {
+                        iptraceNETWORK_INTERFACE_RECEIVE();
+                    }
+
+                }
+                else 
+                {
+                    // The Ethernet frame can be dropped, but the Ethernet buffer must be released.
+                    vReleaseNetworkBufferAndDescriptor( pxBufferDescriptor );
+                }
+                
+            }
+            else 
+            {
+                /* The buffer could not be obtained so the packet must be dropped. */
+                iptraceETHERNET_RX_EVENT_LOST();
+            }
+        }
+    }
 }

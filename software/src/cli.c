@@ -115,7 +115,7 @@ static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, 
     
     taskENTER_CRITICAL();
     
-    eth_send_demo(0)
+    eth_send_demo();
 
     taskEXIT_CRITICAL();
 

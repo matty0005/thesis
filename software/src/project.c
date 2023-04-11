@@ -39,7 +39,7 @@ void tsk_ethernet(void *pvParameters) {
         // Enter critical section to prevent the ethernet mac from being used by another task.
         taskENTER_CRITICAL();
 
-        eth_send_demo()
+        eth_send_demo();
 
         // Exit critical section.
         taskEXIT_CRITICAL();
