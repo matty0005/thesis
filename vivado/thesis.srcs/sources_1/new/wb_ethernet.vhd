@@ -20,7 +20,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity wb_ethernet is
 port (
     clk_i  : in  std_logic;
-    rst_i  : in  std_logic;
+    rstn_i  : in  std_logic;
     --
     -- Whishbone Interface
     --
@@ -40,11 +40,17 @@ port (
     -- Ethernet --
     eth_o_txd : out std_logic_vector(1 downto 0);
     eth_o_txen : out std_logic;
-    eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
+    eth_io_rxd : inout std_logic_vector(1 downto 0); -- Change to in
     eth_i_rxderr : out std_logic;
     eth_o_refclk : out std_logic;
     eth_i_refclk : in std_logic;
-    eth_o_intn   : out std_logic
+    eth_i_intn   : in std_logic;
+    
+    eth_io_crs_dv   : inout std_logic;
+    eth_io_mdc   : inout std_logic;
+    eth_io_mdio   : inout std_logic;
+    eth_o_rstn   : out std_logic;
+    eth_o_exti : out std_logic_vector(3 downto 0)
 );
 end wb_ethernet;
 
@@ -66,12 +72,16 @@ architecture Behavioral of wb_ethernet is
             wb_o_stall      : out std_logic;
             wb_i_stb        : in  std_logic;
         
+            status        : out std_logic_vector(1 downto 0);
+        
+        
             -- Interface
             clk_i  : in  std_logic;
             rst_i  : in  std_logic := '0';
             start         : out std_logic := '0';
             dataPresent   : out std_logic := '0';
             dataOut       : out std_logic_vector(7 downto 0)
+            
         ); 
     end component;
     
@@ -113,7 +123,7 @@ architecture Behavioral of wb_ethernet is
         -- RMII interface itself
         rmii_o_txd      : out std_logic_vector(1 downto 0);
         rmii_o_txen     : out std_logic; 
-        status        : out std_logic_vector(1 downto 0);
+        
 
         eth_i_rxderr    : out std_logic;
         
@@ -137,7 +147,18 @@ architecture Behavioral of wb_ethernet is
     -- Wishbone accessible Registers
     signal  reg_ena     : std_logic_vector(31 downto 0);
     signal  reg_mask    : std_logic_vector(31 downto 0);
+        
+        
+    signal wb_tx_ack, wb_ctrl_ack : std_logic;
+    signal ctrl_start_rst : std_logic := '0';
+    signal ctrl_rst_ack : std_logic := '0';
+
+    -- Controller constants ---- 
+    constant CTRL_PHY_MODE : std_logic_vector(31 downto 0) := x"13370100";
     
+    type ctrl_state is (IDLE, RESET_START, RESET_1, RESET_2);
+    signal currentCtrlState: ctrl_state := IDLE;
+
     
 begin
 
@@ -150,7 +171,7 @@ begin
     
     rmii_int : rmii
     port map (
-        rmii_i_rst => rst_i,
+        rmii_i_rst => rstn_i,
         
         rmii_i_tx_ready => eth_tx_dat_pres_o,
         rmii_i_tx_dat => eth_tx_dat_o,
@@ -164,14 +185,12 @@ begin
         clk_i_read => eth_i_refclk,
         
         
-        eth_i_rxderr => eth_i_rxderr,
-        status => eth_i_rxd
+        eth_i_rxderr => eth_i_rxderr
 
     );
     
 --    eth_o_txen <= eth_tx_dat_pres_o;
 --    eth_o_txd <= eth_tx_dat_o(1 downto 0);
-    eth_o_intn <= clk_i;
     eth_tx : eth_tx_mac
     port map (
         wb_i_dat    => wb_dat_i,
@@ -181,19 +200,17 @@ begin
         wb_i_lock   => wb_lock_i,
         wb_i_sel    => wb_sel_i,
         wb_i_we     => wb_we_i,
-        wb_o_ack    => wb_ack_o,
+        wb_o_ack    => wb_tx_ack,
         wb_o_err    => wb_err_o,
         wb_o_rty    => wb_rty_o,
         wb_o_stall  => wb_stall_o,
         wb_i_stb    => wb_stb_i,
         
         clk_i       => clk_i,
-        rst_i       => rst_i,
+        rst_i       => rstn_i,
         start       => eth_tx_start,
         dataPresent => eth_tx_dat_pres_o,
         dataOut     => eth_tx_dat_o
-                
-        
     );
     
 --    eth_rx : eth_rx_mac
@@ -221,19 +238,78 @@ begin
 --        status => eth_i_rxd
 --    );
     
+wb_ack_o <= wb_tx_ack or wb_ctrl_ack;
+
+-------------------------------------------
+-- Controller - looks after the Phy chip --
+-------------------------------------------
+
+CONTROLLER : process(clk_i, rstn_i)
+begin
+    if rising_edge(clk_i) then
+        
+        if ctrl_rst_ack = '1' then
+            ctrl_start_rst <= '0';
+        end if;
+        
+        -- Only handle data when strobe
+        if wb_stb_i = '1' and wb_adr_i = CTRL_PHY_MODE then 
+            wb_ctrl_ack <= '1';
+            
+            -- Ensure write enable is set.
+            if wb_we_i = '0' then -- Read
+                
+
+            elsif wb_we_i = '1' then -- Write
+            
+                if wb_adr_i(0) = '1' then --reset chip
+                    ctrl_start_rst <= '1';
+                    
+               
+                end if;
+                
+            end if;
+        end if;
+    end if;
+
+end process;
+
+
+PHY_FSM : process(clk_i, rstn_i)
+begin 
+
+    if rising_edge(clk_i) then 
+        case currentCtrlState is
+            when IDLE =>
+                if ctrl_start_rst = '1' then
+                    ctrl_rst_ack <= '1';
+                    currentCtrlState <= RESET_START;
+                else
+                    currentCtrlState <= IDLE;
+                    ctrl_rst_ack <= '0';
+                end if;
+                
+            when RESET_START => 
+                eth_io_crs_dv <= '0'; 
+                eth_io_rxd <= "11"; -- Set mode to 011
+                eth_o_rstn <= '0'; -- active low
+            
+                currentCtrlState <= RESET_1;
+                
+            when RESET_1 =>
+                eth_o_rstn <= '0'; -- active low
+                currentCtrlState <= RESET_2;
+                
+            when RESET_2 =>
+                eth_io_crs_dv <= 'Z'; -- Set to high impeadance - now this is an input.
+                eth_io_rxd <= "ZZ";
+                currentCtrlState <= IDLE;
+
+        end case;
+    end if;
     
+end process;
 
---    sync : process
---    begin
---        wait until rising_edge(clk_i);
 
---        if (stb_i = '1') then
---            ack_o <= '1';
-            
-            
---        else
---            ack_o <= '0';
---        end if;
---    end process sync;
 end Behavioral;
 
