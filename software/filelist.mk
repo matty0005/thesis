@@ -9,3 +9,4 @@ APP_SRC += $(wildcard $(LIB_PATH)/*.c)
 # Actual application
 APP_SRC += src/project.c
 APP_SRC += src/cli.c
+APP_SRC += lib/FreeRTOS-TCP/NetworkInterface.c

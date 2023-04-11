@@ -17,7 +17,7 @@ MARCH ?= rv32i
 MABI  ?= ilp32
 
 # User flags for additional configuration (will be added to compiler flags)
-USER_FLAGS ?=  "-Wl,--defsym,__neorv32_ram_size=32k,--defsym,__neorv32_rom_size=128k"
+USER_FLAGS ?=  "-Wl,--defsym,__neorv32_ram_size=32k,--defsym,__neorv32_rom_size=256k"
 # *****************************************************************************
 
 
@@ -34,7 +34,7 @@ APP_INC += -I $(FREERTOS_HOME)/FreeRTOS/Source/portable/GCC/RISC-V
 
 # FreeRTOS core
 APP_SRC += $(wildcard $(FREERTOS_HOME)/FreeRTOS/Source/*.c)
-APP_SRC += $(wildcard $(FREERTOS_HOME)/FreeRTOS/Source/portable/MemMang/heap_4.c)
+APP_SRC += $(wildcard $(FREERTOS_HOME)/FreeRTOS/Source/portable/MemMang/heap_4.c) # Can change to heap 5 if needed
 
 APP_INC += -I $(FREERTOS_HOME)/FreeRTOS/Source/include
 
@@ -60,20 +60,39 @@ APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-CLI
 # -----------------
 # FreeRTOS-Plus-TCP
 # -----------------
-ifneq (,$(findstring FREERTOS_PLUS_TCP,$(USER_FLAGS)))
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_ARP.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_DHCP.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_DNS.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_IP.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_Sockets.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_Stream_Buffer.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_TCP_IP.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_TCP_WIN.c
-APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IP.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_ARP.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_DHCP.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_IP.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_Sockets.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_Stream_Buffer.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_IP.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_WIN.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IP.c
 
-APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/include
-APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/portable/Compiler/GCC
-endif
+
+
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Cache.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Callback.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Networking.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Parser.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_ICMP.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_IP_Timers.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_IP_Utils.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_StreamBuffer.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Reception.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS_Plus_TCP/source/FreeRTOS_TCP_State_Handling.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS_Plus_TCP/source/FreeRTOS_TCP_Transmission.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS_Plus_TCP/source/FreeRTOS_TCP_Utils.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_Tiny_TCP.c
+
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/portable/BufferManagement/BufferAllocation_2.c
+
+APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/include
+APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/portable/Compiler/GCC
+
+
+
 
 
 # Modify this variable to fit your NEORV32 setup (neorv32 home folder)

@@ -38,29 +38,8 @@ void tsk_ethernet(void *pvParameters) {
         
         // Enter critical section to prevent the ethernet mac from being used by another task.
         taskENTER_CRITICAL();
-        // init the ethernet mac.
-        ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
-        // set the destination mac
-        ETH_MAC->DEST[0] = 0xaabbccdd;
-        ETH_MAC->DEST[1] = 0x55667788;
-
-        // set the length of the packet.
-        ETH_MAC->LEN = 0x0000000F;
-        // neorv32_uart0_printf("LEN: %x\n", ETH_MAC->LEN);
-
-        // set the data of the packet.
-        ETH_MAC->DATA[0] = 0xbeefcafe;
-        ETH_MAC->DATA[1] = 0x11223344;
-        ETH_MAC->DATA[2] = 0x55667788;
-        ETH_MAC->DATA[3] = 0x99aabbcc;
-
-
-        // send a packet.
-        ETH_MAC_CMD = ETH_MAC_CMD_START_TX;
-
-        // Need to set the idle state. Otherwise packet gets sent again.
-        ETH_MAC_CMD = ETH_MAC_CMD_IDLE;
+        eth_send_demo()
 
         // Exit critical section.
         taskEXIT_CRITICAL();
@@ -76,7 +55,7 @@ void tsk_ethernet(void *pvParameters) {
 void main_project( void ) {
     
     cli_init();
-    xTaskCreate(tsk_ethernet, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL );
+    // xTaskCreate(tsk_ethernet, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL );
 
 }
 

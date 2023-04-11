@@ -12,13 +12,31 @@
 #include "cli.h"
 
 static BaseType_t cli_cmd_usage(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 
-CLI_Command_Definition_t xStill = {	
+CLI_Command_Definition_t xUsage = {	
 	"usage",							
 	"usage:\r\n    Shows current number of tasks running and task states and stack high water-mark usage\r\n\r\n",
 	cli_cmd_usage,
 	0				
 };
+
+CLI_Command_Definition_t xSendDemoPacket = {	
+	"demo",							
+	"demo:\r\n    Send an ethernet packet. \r\n\r\n",
+	cli_cmd_eth_demo,
+	0				
+};
+
+CLI_Command_Definition_t xPhyControl = {	
+	"phy",							
+	"phy [command]:\r\n    Do some command to the phy - valid commands are.\r\n        phy reset \r\n\r\n",
+	cli_cmd_eth_phy,
+	1				
+};
+
+
 
 
 int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseType_t stackUsage) {
@@ -52,6 +70,14 @@ int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseTy
 }
 
 
+/**
+ * @brief CLI command to show the current usage of the system.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
 static BaseType_t cli_cmd_usage(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
 
     int taskCount = uxTaskGetNumberOfTasks();
@@ -74,10 +100,70 @@ static BaseType_t cli_cmd_usage(char *pcWriteBuffer, size_t xWriteBufferLen, con
 }
 
 
+
+/**
+ * @brief CLI command to send a packet.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    sprintf(pcWriteBuffer, "Executed task: %ld\r\n", ETH_MAC->DATA[1]);
+    
+    taskENTER_CRITICAL();
+    
+    eth_send_demo(0)
+
+    taskEXIT_CRITICAL();
+
+	return pdFALSE;
+
+}
+
+/**
+ * @brief CLI command to control the phy.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    // Check to see if the first parameter is "reset"
+    const char *pcParameter;
+    BaseType_t xParameterStringLength;
+
+    // Obtain the first parameter string.
+    pcParameter = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength);
+
+    if (strncmp(pcParameter, "reset", xParameterStringLength) == 0) {
+
+        sprintf(pcWriteBuffer, "Resetting the PHY chip\r\n");
+    
+        ETH_CTRL = ETH_CTRL_RESET;
+
+    } else {
+        sprintf(pcWriteBuffer, "Unknown command\r\n");
+    }
+    
+  
+    return pdFALSE;
+}
+
+
+
+
+
 void tsk_cli_daemon(void *pvParameters) {
 
     /* Register the command with the FreeRTOS+CLI command interpreter. */
-    FreeRTOS_CLIRegisterCommand(&xStill);
+    FreeRTOS_CLIRegisterCommand(&xUsage);
+    FreeRTOS_CLIRegisterCommand(&xSendDemoPacket);
+    FreeRTOS_CLIRegisterCommand(&xPhyControl);
 
 
 	char cRxedChar;
@@ -166,7 +252,6 @@ void tsk_cli_daemon(void *pvParameters) {
 }
 
 void cli_init() {
-    neorv32_uart0_printf("Here: 0\n");
 
     xTaskCreate(tsk_cli_daemon, "CLIDAEMON", CLI_STACK_SIZE, NULL, CLI_TASK_PRIORITY, NULL);
 }

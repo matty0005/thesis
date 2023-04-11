@@ -2,7 +2,8 @@
     "files.associations": {
         "ethernet.h": "c",
         "unistd.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "stdio.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }

@@ -18,6 +18,8 @@
 #include "semphr.h"
 #include "FreeRTOS_CLI.h"
 
+#include "ethernet.h"
+
 #include <neorv32.h>
 #include <stdio.h>
 #include <string.h>

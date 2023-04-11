@@ -13,20 +13,28 @@
 #define ETHERNET_H
 
 #include <stdint.h>
+#include <stddef.h>
+
+// Errors
+#define ETH_ERR_OK 0
+#define ETH_ERR_TOO_BIG 1
+#define ETH_ERR_TOO_SMALL 2
 
 
+#define ETH_CTRL_BASE 0x13370100
 #define ETH_MAC_BASE 0x13371000
 #define ETH_MAC_CMD_BASE 0x13370000
 
 
 #define ETH_MAC_CMD  (*(volatile uint32_t *)ETH_MAC_CMD_BASE)
 #define ETH_MAC ((EthMac *) ETH_MAC_BASE)
+#define ETH_CTRL (*(volatile uint32_t *) ETH_CTRL_BASE)
 
 #define ETH_MAC_CMD_INIT 0x1
 #define ETH_MAC_CMD_START_TX 0x2
 #define ETH_MAC_CMD_IDLE 0x00
 
-
+#define ETH_CTRL_RESET 0x01
 
 // Mem location starts at 0x13371000
 typedef struct __attribute__((__packed__))  {
@@ -58,12 +66,20 @@ typedef struct __attribute__((__packed__))  {
  * @brief Initialise the ethernet mac.
  * 
  */
-void eth_init();
+uint8_t eth_init();
 
 /**
  * @brief Send a packet over the ethernet mac.
  * 
+ * @param data 
+ * @param len 
  */
-void eth_send();
+uint8_t eth_send(uint8_t *data, size_t len);
+
+/**
+ * @brief Sends a demo packet over the ethernet mac.
+ * 
+ */
+void eth_send_demo() 
 
 #endif

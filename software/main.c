@@ -9,7 +9,9 @@
 /* NEORV32 includes. */
 #include <neorv32.h>
 
-#define BAUD_RATE 115200
+// #define BAUD_RATE 4000000
+#define BAUD_RATE 2000000
+// #define BAUD_RATE 115200
 // #define BAUD_RATE 19200
 
 
