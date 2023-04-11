@@ -56,7 +56,7 @@ component eth_tx_mac is
         -- Interface
         clk_i  : in  std_logic;
         rst_i  : in  std_logic := '0';
-        start         : in std_logic := '0';
+        start         : out std_logic := '0';
         dataPresent   : out std_logic := '0';
         dataOut       : out std_logic_vector(7 downto 0);
         status        : out std_logic_vector(1 downto 0)
@@ -198,6 +198,10 @@ begin
     wb_i_addr <= MAC_CONFIG;
     wb_i_dat <= x"00000002";
     
+    wait for 1ps;
+    clk_i <= '1';
+    wait for 1ps;
+    clk_i <= '0';
     
     for i in 0 to 400 loop
         wait for 1ps;
@@ -205,11 +209,6 @@ begin
         wait for 1ps;
         clk_i <= '0';
     end loop;
-    
-    
-    
-    
-    
     
     
     

@@ -44,10 +44,10 @@ entity eth_tx_mac is
         -- Interface
         clk_i  : in  std_logic;
         rst_i  : in  std_logic := '0';
-        start         : in std_logic := '0';
+        start         : out std_logic := '0';
         dataPresent   : out std_logic := '0';
-        dataOut       : out std_logic_vector(7 downto 0);
-        status        : out std_logic_vector(1 downto 0)
+        dataOut       : out std_logic_vector(7 downto 0)
+--        status        : out std_logic_vector(1 downto 0)
 --        statusa        : out std_logic_vector(1 downto 0);  
 --        statusb        : out std_logic_vector(7 downto 0)
     );
@@ -147,7 +147,7 @@ port map (
 );
 -- -- END COMPONENT MAPPINGS
 
-crcClk <= clk_i;
+crcClk <= not clk_i;
 
 WB_MAIN_TX : process(clk_i)
 variable virtAddr : integer := 0;
@@ -209,7 +209,7 @@ begin
                             end loop;
             
                             -- Set the padding - will override if not needed
-                            for i in 0 to 45 loop
+                            for i in 0 to 46 loop
                                 FRAME_BUFFER(22 + i) := padding(7 downto 0);
                             end loop;
                       
@@ -273,8 +273,6 @@ begin
 end process;
 
 
-status <= crcReg(1 downto 0);
-
 MAIN_FSM: process(clk_i)
 
 variable sentAmount : integer := 0;
@@ -287,6 +285,7 @@ begin
             when IDLE =>
 --                statusa <= "0" & startTx;
                 startTxAck <= '0';
+--                status <= "00";
                 dataOut <= (others => '0');
                 sentAmount := 0;
                 if crcFinished = '1' then
@@ -314,8 +313,9 @@ begin
             when TRANSMIT =>
                 
                 -- Ignore preamble + SFD
+                start <= '1';
                 crcData <= FRAME_BUFFER(sentAmount);
-                if sentAmount > 8 then
+                if sentAmount > 7 then
                     crcLoadInit <= '0';
                     crcCalc <= '1';
                     
@@ -331,7 +331,7 @@ begin
                 -- Add 22 to account for mac header
                 if to_integer(unsigned(payloadLen)) < 46 then
                     
-                    if sentAmount = 68 then
+                    if sentAmount = 69 then
                         sentAmount := 0;
                         dataPresent <= '0';
                         crcCalc <= '0';
@@ -351,6 +351,8 @@ begin
                 
     
             when FCS =>
+                -- Transmitting has already started - can disable flag now. 
+                start <= '0';
 
                 -- Calculate the CRC32 and add it to the FRAME_BUFFER
                 startTxAck <= '0';
@@ -360,7 +362,8 @@ begin
                 crcCalc <= '0';
                 
                 dataOut <= nextCrcData;
-                
+--                status <= nextCrcData(7 downto 6);
+     
                 nextCrcData <= crcReg8;
                 sentAmount := sentAmount + 1;
                 
