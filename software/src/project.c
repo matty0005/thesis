@@ -28,6 +28,13 @@
 #define ETH_TASK_PRIORITY ( tskIDLE_PRIORITY + 1 )
 #define ETH_STACK_SIZE ( configMINIMAL_STACK_SIZE * 5 )
 
+
+// ##### External Interupt Handlers #####
+void xirq_handler_ch0(void) {
+    
+}
+
+
 /**
  * @brief Creates a task that controls the ethernet mac.
  * 
@@ -49,13 +56,16 @@ void tsk_ethernet(void *pvParameters) {
 }
 
 
+
 /**
 * @brief Creates the tasks and starts the scheduler.
 */  
 void main_project( void ) {
-    
+
+
     cli_init();
     // xTaskCreate(tsk_ethernet, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL );
 
 }
+
 

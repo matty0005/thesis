@@ -14,6 +14,8 @@
 // #define BAUD_RATE 115200
 // #define BAUD_RATE 19200
 
+#define ETH_RX_INT 0x80000010
+
 
 extern void main_project( void );
 
@@ -95,11 +97,24 @@ int main( void )
 /* Handle NEORV32-specific interrupts */
 void freertos_risc_v_application_interrupt_handler(void) {
 
+  // acknowledge XIRQ (FRIST!)
+  NEORV32_XIRQ.IPR = 0; // clear pending interrupt
+  NEORV32_XIRQ.SCR = 0; // acknowledge XIRQ interrupt
+
   // acknowledge/clear ALL pending interrupt sources here - adapt this for your setup
   neorv32_cpu_csr_write(CSR_MIP, 0);
 
   // debug output - Use the value from the mcause CSR to call interrupt-specific handlers
   neorv32_uart0_printf("\n<NEORV32-IRQ> mcause = 0x%x </NEORV32-IRQ>\n", neorv32_cpu_csr_read(CSR_MCAUSE));
+
+  // Could also check CSR_MIP for pending interrupts here
+
+  // handle XIRQ
+  if (neorv32_cpu_csr_read(CSR_MCAUSE) == ETH_RX_INT) {
+    // handle XIRQ
+    neorv32_uart0_printf("Ethernet Recieve!\n");
+    
+  }
 }
 
 /* Handle NEORV32-specific exceptions */
@@ -115,6 +130,13 @@ static void prvSetupHardware( void )
 {
   // install the freeRTOS trap handler
   neorv32_cpu_csr_write(CSR_MTVEC, (uint32_t)&freertos_risc_v_trap_handler);
+
+  // enable XIRQ channels 0 and 1 (LOW LEVEL!)
+  NEORV32_XIRQ.IPR = 0; // clear all pending IRQs
+  NEORV32_XIRQ.SCR = 0; // acknowledge (clear) XIRQ interrupt
+  NEORV32_XIRQ.IER = 0x00000003UL; // enable channels 0 and 1
+  neorv32_cpu_irq_enable(XIRQ_FIRQ_ENABLE); // enable XIRQ's FIRQ channel
+
 
   // clear GPIO.out port
   neorv32_gpio_port_set(0);

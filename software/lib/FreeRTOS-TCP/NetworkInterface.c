@@ -88,7 +88,8 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescripto
 }
 
 
-
+/* The deferred interrupt handler is a standard RTOS task.  FreeRTOS's centralised
+deferred interrupt handling capabilities can also be used. */
 static void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) 
 {
     NetworkBufferDescriptor_t *pxBufferDescriptor;
