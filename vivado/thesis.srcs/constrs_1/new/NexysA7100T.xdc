@@ -60,3 +60,12 @@ set_property -dict { PACKAGE_PIN A10   IOSTANDARD LVCMOS33 } [get_ports { eth_o_
 set_property -dict { PACKAGE_PIN A8    IOSTANDARD LVCMOS33 } [get_ports { eth_o_txd[1] }]; #IO_L12N_T1_MRCC_16 Sch=eth_txd[1]
 set_property -dict { PACKAGE_PIN D5    IOSTANDARD LVCMOS33 } [get_ports { eth_o_refclk }]; #IO_L11P_T1_SRCC_35 Sch=eth_refclk
 set_property -dict { PACKAGE_PIN B8    IOSTANDARD LVCMOS33 } [get_ports { eth_i_intn }]; #IO_L12P_T1_MRCC_16 Sch=eth_intn
+
+
+#Buttons
+set_property -dict { PACKAGE_PIN N17   IOSTANDARD LVCMOS33 } [get_ports { t_btnc }]; #IO_L9P_T1_DQS_14 Sch=btnc
+set_property -dict { PACKAGE_PIN M17   IOSTANDARD LVCMOS33 } [get_ports { t_btnr }]; #IO_L10N_T1_D15_14 Sch=btnr
+
+
+
+

@@ -50,7 +50,10 @@ port (
     eth_io_mdc   : inout std_logic;
     eth_io_mdio   : inout std_logic;
     eth_o_rstn   : out std_logic;
-    eth_o_exti : out std_logic_vector(3 downto 0)
+    eth_o_exti : out std_logic_vector(3 downto 0);
+    
+    
+    t_eth_io_rxd : out std_logic_vector(1 downto 0)
 );
 end wb_ethernet;
 
@@ -158,6 +161,7 @@ architecture Behavioral of wb_ethernet is
     
     type ctrl_state is (IDLE, RESET_START, RESET_1, RESET_2);
     signal currentCtrlState: ctrl_state := IDLE;
+    
 
     
 begin
@@ -262,7 +266,7 @@ begin
 
             elsif wb_we_i = '1' then -- Write
             
-                if wb_adr_i(0) = '1' then --reset chip
+                if wb_dat_i(0) = '1' then --reset chip
                     ctrl_start_rst <= '1';
                     
                
@@ -276,6 +280,7 @@ end process;
 
 
 PHY_FSM : process(clk_i, rstn_i)
+variable timerCounter : natural range 0 to 200 := 0;
 begin 
 
     if rising_edge(clk_i) then 
@@ -284,6 +289,7 @@ begin
                 if ctrl_start_rst = '1' then
                     ctrl_rst_ack <= '1';
                     currentCtrlState <= RESET_START;
+                    timerCounter := 0;
                 else
                     currentCtrlState <= IDLE;
                     ctrl_rst_ack <= '0';
@@ -293,8 +299,13 @@ begin
                 eth_io_crs_dv <= '0'; 
                 eth_io_rxd <= "11"; -- Set mode to 011
                 eth_o_rstn <= '0'; -- active low
-            
-                currentCtrlState <= RESET_1;
+                t_eth_io_rxd <= "11";
+                
+                timerCounter := timerCounter + 1;
+                if timerCounter = 200 then
+                    currentCtrlState <= RESET_1;
+                    timerCounter := 0;
+                end if;
                 
             when RESET_1 =>
                 eth_o_rstn <= '0'; -- active low
@@ -303,6 +314,7 @@ begin
             when RESET_2 =>
                 eth_io_crs_dv <= 'Z'; -- Set to high impeadance - now this is an input.
                 eth_io_rxd <= "ZZ";
+                t_eth_io_rxd <= "00";
                 currentCtrlState <= IDLE;
 
         end case;
