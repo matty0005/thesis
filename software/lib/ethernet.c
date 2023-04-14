@@ -73,7 +73,7 @@ uint8_t eth_send(uint8_t *data, size_t len) {
  * @return size_t 
  */
 size_t eth_recv_size() {
-    return 1;
+    return 0;
 }
 
 

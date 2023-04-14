@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <neorv32.h>
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
@@ -31,6 +32,11 @@
 #include "NetworkInterface.h"
 
 #include "ethernet.h"
+#include "common.h"
+
+
+static void prvEMACDeferredInterruptHandlerTask( void *pvParameters );
+TaskHandle_t xEMACTaskHandle = NULL;
 
 
 /**
@@ -40,6 +46,20 @@
  */
 BaseType_t xNetworkInterfaceInitialise( void ) 
 {
+
+    if( xEMACTaskHandle == NULL )
+    {
+        /* Create event handler task */
+        xTaskCreate( prvEMACDeferredInterruptHandlerTask, /* Function that implements the task. */
+                     "EMACInt",                           /* Text name for the task. */
+                     256,                                 /* Stack size in words, not bytes. */
+                     ( void * ) 1,                        /* Parameter passed into the task. */
+                     tskIDLE_PRIORITY,                    /* Priority at which the task is created. */
+                     &xEMACTaskHandle );                  /* Used to pass out the created task's handle. */
+
+    }
+
+
 
     if (eth_init() != ETH_ERR_OK)
         return pdFAIL;
@@ -106,6 +126,9 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
         standard queue receive function as the interrupt handler cannot directly
         write to a queue. */
         ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
+
+        neorv32_uart0_printf("Ethernet Recieve!\n");
+
 
         /* Obtain the size of the packet and put it into the "length" member of
         the pxBufferDescriptor structure. */
