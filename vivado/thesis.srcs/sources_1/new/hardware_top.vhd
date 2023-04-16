@@ -80,6 +80,7 @@ entity hardware_top is
     
     
     t_btnc : in std_logic;
+    t_btnl : in std_logic;
     t_btnr : in std_logic
 
   );
@@ -205,7 +206,7 @@ eth_rxerr <= eth_i_rxerr;
 
     
 
-exti_lines(3 downto 0) <= std_ulogic_vector(eth_exti_lines(1 downto 0)) & t_btnc & t_btnr;
+exti_lines(3 downto 0) <= std_ulogic_vector(eth_exti_lines(0 downto 0)) & t_btnl & t_btnc & t_btnr;
 
 ethernet_mac : wb_ethernet
     port map (
@@ -273,7 +274,6 @@ ethernet_mac : wb_ethernet
     -- RISC-V CPU Extensions --
     CPU_EXTENSION_RISCV_C        => true,              -- implement compressed extension?
     CPU_EXTENSION_RISCV_M        => true,              -- implement mul/div extension?
-    CPU_EXTENSION_RISCV_Zicsr    => true,              -- implement CSR system?
     CPU_EXTENSION_RISCV_Zicntr   => true,              -- implement base counters?
     -- Internal Instruction memory --
     MEM_INT_IMEM_EN              => true,              -- implement processor-internal instruction memory
@@ -282,7 +282,7 @@ ethernet_mac : wb_ethernet
     MEM_INT_DMEM_EN              => true,              -- implement processor-internal data memory
     MEM_INT_DMEM_SIZE            => MEM_INT_DMEM_SIZE, -- size of processor-internal data memory in bytes
     -- Processor peripherals --
-    IO_GPIO_EN                   => true,              -- implement general purpose input/output port unit (GPIO)?
+    IO_GPIO_NUM                  => 8,              -- implement general purpose input/output port unit (GPIO)?
     IO_MTIME_EN                  => true,              -- implement machine system timer (MTIME)?
     IO_UART0_EN                  => true,              -- implement primary universal asynchronous receiver/transmitter (UART0)?
     
