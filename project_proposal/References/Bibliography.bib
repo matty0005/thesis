@@ -13,7 +13,7 @@ type = {Standard},
 key = {IEEE 802.3-2012},
 month = dec,
 year = {2012},
-title = {{IEEE Standard for Ethernet}},
+title = {{IEEE 802.3-2012 IEEE Standard for Ethernet}},
 volume = {1},
 address = {New York, USA},
 institution = {The Institute of Electrical and Electronics Engineers, Inc.}
@@ -74,7 +74,7 @@ author = {Caprolu, Maurantonio and Di Pietro, Roberto and Lombardi, Flavio and R
 keywords = {Cloud computing ; Computer architecture ; Containers ; Edge computing ; Fog Computing ; RTOS ; Security ; Servers ; Unikernels ; Virtualization},
 }
 
-@techreport{IHS_iot,
+@misc{IHS_iot,
   author      = {IHS},
   title       = {The Internet of Things: a movement, not a market},
   institution = {IHS Markit},
@@ -83,22 +83,26 @@ keywords = {Cloud computing ; Computer architecture ; Containers ; Edge computin
 }
 
 
-@manual{neorv32Datasheet,
-  organization  = "Stephan Nolting (M.Sc.)",
+@misc{neorv32Datasheet,
+  Author  = "Stephan Nolting",
   title         = "The NEORV32 RISC-V Processor",
   number        = "NEORV32",
   year          =  2023,
-  note          = "v1.8.1-r17-gd1b295de"
+  note          = "v1.8.1-r17-gd1b295de",
+  howpublished = {\url{https://stnolting.github.io/neorv32/}}
+
 }
 
-@techreport{WishboneSpec,
-type = {Standard},
+@misc{WishboneSpec,
+note = {Standard},
 key = {Wishbone B4},
 month = dec,
 year = {2010},
 title = {{Wishbone B4 SoC Interconnection}},
 volume = {1},
-institution = {OpenCores}
+institution = {OpenCores},
+howpublished = {\url{https://cdn.opencores.org/downloads/wbspec_b4.pdf}}
+
 }
 
 
@@ -414,8 +418,8 @@ howpublished = {\url{https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/in
 
 
 
-@manual{LAN8720ADatasheet,
-  organization  = "Microchip Technology Incorporated",
+@misc{LAN8720ADatasheet,
+  author  = {{\relax Microchip Technology Incorporated}},
   title         = "Small Footprint RMII 10/100 Ethernet Transceiver with HP Auto-MDIX Support",
   number        = "LAN8720A/LAN8720Ai",
   year          =  2012,
@@ -500,8 +504,10 @@ author = {Wicaksana, A. and Sasongko, A.},
 keywords = {Algorithms ; Buffers ; Classification ; Classification algorithms ; Clocks ; Computer Science ; Computer security ; Cyclones ; Electronic devices ; Engines ; Ethernet ; Field programmable gate arrays ; Filtration ; Fires ; Firewalls ; Hardware Architecture ; Inspection ; Intrusion ; IP (Internet Protocol) ; IP networks ; Microprocessors ; Networking and Internet Architecture ; Packet Classification Engine ; Processor Architecture ; Protocols ; Reconfiguration ; Routers ; Tree-Based Algorithm},
 }
 
-@inproceedings{Wasti2001HardwareAP,
-  title={Hardware Assisted Packet Filtering Firewall},
-  author={Shubhash Wasti},
-  year={2001}
+
+@misc{Wasti2001HardwareAP,
+  author      = {Shubhash Wasti},
+  title       = {Hardware Assisted Packet Filtering Firewall},
+  year        = {2001},
+  howpublished = {\url{https://madmuc.usask.ca/Pubs/shw320.pdf}}, 
 }

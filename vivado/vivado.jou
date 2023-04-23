@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2022.2 (64-bit)
+# SW Build 3671981 on Fri Oct 14 05:00:03 MDT 2022
+# IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
+# Start of session at: Sun Apr 16 13:09:28 2023
+# Process ID: 4336
+# Current directory: C:/Users/Matt/thesis/vivado
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent42312 C:\Users\Matt\thesis\vivado\thesis.xpr
+# Log file: C:/Users/Matt/thesis/vivado/vivado.log
+# Journal file: C:/Users/Matt/thesis/vivado\vivado.jou
+# Running On: Squid, OS: Windows, CPU Frequency: 3693 MHz, CPU Physical cores: 24, Host memory: 85805 MB
+#-----------------------------------------------------------
+start_gui
+open_project C:/Users/Matt/thesis/vivado/thesis.xpr
+update_compile_order -fileset sources_1
+set_property SOURCE_SET sources_1 [get_filesets sim_1]
+import_files -fileset sim_1 -norecurse {C:/Users/Matt/Downloads/thesis-main/thesis-main/vivado/thesis.srcs/sim_1/new/test_crc.vhd C:/Users/Matt/Downloads/thesis-main/thesis-main/vivado/thesis.srcs/sim_1/new/test_eth_tx_mac.vhd C:/Users/Matt/Downloads/thesis-main/thesis-main/vivado/thesis.srcs/sim_1/new/test_fifo.vhd C:/Users/Matt/Downloads/thesis-main/thesis-main/vivado/thesis.srcs/sim_1/new/test_rmii.vhd}
+update_compile_order -fileset sim_1
+set_property target_language VHDL [current_project]
+set_property dataflow_viewer_settings "min_width=16"   [current_fileset]
+reset_run synth_1
+reset_run clk_master_synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 24
+wait_on_run impl_1

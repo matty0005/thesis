@@ -42,7 +42,7 @@ use neorv32.neorv32_package.all;
 entity hardware_top is
   generic (
     -- adapt these for your setup --
-    CLOCK_FREQUENCY   : natural := 100000000; -- clock frequency of clk_i in Hz
+    CLOCK_FREQUENCY   : natural := 50000000; -- clock frequency of clk_i in Hz
     MEM_INT_IMEM_SIZE : natural := 256*1024;   -- size of processor-internal instruction memory in bytes
     MEM_INT_DMEM_SIZE : natural := 32*1024;     -- size of processor-internal data memory in bytes
     CUSTOM_ID : std_ulogic_vector(31 downto 0) := x"00000000" -- custom user-defined ID
@@ -76,7 +76,12 @@ entity hardware_top is
     eth_o_txen: out std_logic;
     eth_o_txd: out std_logic_vector(1 downto 0);
     eth_o_refclk: out std_logic;
-    eth_i_intn: in std_logic
+    eth_i_intn: in std_logic;
+    
+    
+    t_btnc : in std_logic;
+    t_btnl : in std_logic;
+    t_btnr : in std_logic
 
   );
 end entity;
@@ -126,7 +131,11 @@ port (
    
     eth_o_rstn   : out std_logic;
     
-    eth_o_exti : out std_logic_vector(3 downto 0)
+    eth_o_exti : out std_logic_vector(3 downto 0);
+    
+    
+    
+    t_eth_io_rxd : out std_logic_vector(1 downto 0)
 );
 end component;
 
@@ -188,21 +197,20 @@ begin
 -- Connections
 eth_o_txd <= eth_txd;
 t_eth_o_txd <= eth_txd;
-eth_o_refclk <= clk_50;
 t_eth_o_refclk <= clk_50;
 eth_o_txen <= eth_txen;
 t_eth_o_txen <= eth_txen;
-t_eth_i_rxd <= eth_io_rxd;
+--t_eth_i_rxd <= eth_io_rxd;
 t_eth_i_rxderr <= eth_rxerr;
 eth_rxerr <= eth_i_rxerr;
 
     
 
-exti_lines(3 downto 0) <= std_ulogic_vector(eth_exti_lines);
+exti_lines(3 downto 0) <= std_ulogic_vector(eth_exti_lines(0 downto 0)) & t_btnl & t_btnc & t_btnr;
 
 ethernet_mac : wb_ethernet
     port map (
-        clk_i  => clk_100,
+        clk_i  => clk_50,
         rstn_i  => rstn_i,
         --
         -- Whishbone Interface
@@ -226,6 +234,7 @@ ethernet_mac : wb_ethernet
         eth_o_txd => eth_txd,
         eth_o_txen => eth_txen,
         eth_io_rxd => eth_io_rxd,
+        t_eth_io_rxd => t_eth_i_rxd,
         eth_i_rxderr => eth_rxerr,
         eth_i_refclk => clk_50,
         eth_o_refclk => eth_o_refclk,
@@ -265,7 +274,6 @@ ethernet_mac : wb_ethernet
     -- RISC-V CPU Extensions --
     CPU_EXTENSION_RISCV_C        => true,              -- implement compressed extension?
     CPU_EXTENSION_RISCV_M        => true,              -- implement mul/div extension?
-    CPU_EXTENSION_RISCV_Zicsr    => true,              -- implement CSR system?
     CPU_EXTENSION_RISCV_Zicntr   => true,              -- implement base counters?
     -- Internal Instruction memory --
     MEM_INT_IMEM_EN              => true,              -- implement processor-internal instruction memory
@@ -274,7 +282,7 @@ ethernet_mac : wb_ethernet
     MEM_INT_DMEM_EN              => true,              -- implement processor-internal data memory
     MEM_INT_DMEM_SIZE            => MEM_INT_DMEM_SIZE, -- size of processor-internal data memory in bytes
     -- Processor peripherals --
-    IO_GPIO_EN                   => true,              -- implement general purpose input/output port unit (GPIO)?
+    IO_GPIO_NUM                  => 8,              -- implement general purpose input/output port unit (GPIO)?
     IO_MTIME_EN                  => true,              -- implement machine system timer (MTIME)?
     IO_UART0_EN                  => true,              -- implement primary universal asynchronous receiver/transmitter (UART0)?
     
@@ -287,7 +295,7 @@ ethernet_mac : wb_ethernet
     MEM_EXT_ASYNC_TX             => false,              -- use register buffer for TX data when false
     
     -- External Interrupts Controller (XIRQ) --
-    XIRQ_NUM_CH                  => 1,      -- number of external IRQ channels (0..32)
+    XIRQ_NUM_CH                  => 4,      -- number of external IRQ channels (0..32)
     XIRQ_TRIGGER_TYPE            =>  x"ffffffff", -- trigger type: 0=level, 1=edge
     XIRQ_TRIGGER_POLARITY        => x"ffffffff" -- trigger polarity: 0=low-level/falling-edge, 1=high-level/rising-edge
     
@@ -295,7 +303,7 @@ ethernet_mac : wb_ethernet
   )
   port map (
     -- Global control --
-    clk_i       => clk_i,       -- global clock, rising edge
+    clk_i       => clk_50,       -- global clock, rising edge
     rstn_i      => rstn_i,      -- global reset, low-active, async
     -- GPIO (available if IO_GPIO_EN = true) --
     gpio_o      => con_gpio_o,  -- parallel output
