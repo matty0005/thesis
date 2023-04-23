@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <neorv32.h>
 
 // Errors
 #define ETH_ERR_OK 0
@@ -35,6 +36,9 @@
 #define ETH_MAC_CMD_IDLE 0x00
 
 #define ETH_CTRL_RESET 0x01
+
+#define PHY_MDC 0x08
+#define PHY_MDIO 0x09
 
 // Mem location starts at 0x13371000
 typedef struct __attribute__((__packed__))  {
@@ -95,5 +99,16 @@ void eth_recv(uint8_t *buffer);
  * 
  */
 void eth_send_demo();
+
+
+/**
+ * @brief Reads a register from the phy.
+ * 
+ * @param phy_addr 
+ * @param reg_addr 
+ * @param data 
+ * @return uint8_t 
+ */
+uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint8_t *data);
 
 #endif

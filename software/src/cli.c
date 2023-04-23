@@ -14,6 +14,8 @@
 static BaseType_t cli_cmd_usage(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_gpio_ctrl(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_reset(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 
 CLI_Command_Definition_t xUsage = {	
 	"usage",							
@@ -31,12 +33,48 @@ CLI_Command_Definition_t xSendDemoPacket = {
 
 CLI_Command_Definition_t xPhyControl = {	
 	"phy",							
-	"phy [command]:\r\n    Do some command to the phy - valid commands are.\r\n        phy reset \r\n\r\n",
+	"phy [command] [reg]:\r\n    Do some command to the phy - valid commands are.\r\n        phy read [reg] \r\n\r\n",
 	cli_cmd_eth_phy,
+	2				
+};
+
+CLI_Command_Definition_t xReset = {	
+	"reset",							
+	"reset [device]:\r\n    Reset some device or mechinism - valid commands are.\r\n        reset phy \r\n\r\n",
+	cli_cmd_reset,
 	1				
 };
 
 
+CLI_Command_Definition_t xGpioControl = {	
+    "gpio",							
+    "gpio [command] [pin]:\r\n    Do some command to the gpio - valid commands are.\r\n        gpio set [pin]\r\n        gpio reset [pin]\r\n        gpio get [pin] \r\n\r\n",
+    cli_cmd_gpio_ctrl,
+    2				
+};
+
+
+/**
+ * @brief Convert a string to an integer
+ * 
+ * @param string 
+ * @param length 
+ * @return int 
+ */
+int str_to_int(const char *string, int length) {
+
+    int value = 0;
+
+    if (length == 2) {
+        value += (string[0] - '0') * 10;
+        value += (string[1] - '0');
+    } else {
+        value += (string[0] - '0');
+
+    }
+    
+    return value;
+}
 
 
 int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseType_t stackUsage) {
@@ -134,17 +172,97 @@ static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, 
 static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
 
     // Check to see if the first parameter is "reset"
+    const char *pcCmd, *pcData;
+    BaseType_t xCmdLen, xDataLen;
+    uint8_t data = 0;
+    uint8_t registerNum;
+
+    // Obtain the first parameter string.
+    pcCmd = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xCmdLen);
+    pcData = FreeRTOS_CLIGetParameter(pcCommandString, 2, &xDataLen);
+
+    if (strncmp(pcCmd, "read", xCmdLen) == 0) {
+
+        registerNum = str_to_int(pcData, xDataLen);
+
+        // enter critical section
+        taskENTER_CRITICAL();
+        phy_mdio_read(0x01, registerNum, &data);
+        taskEXIT_CRITICAL();
+
+        sprintf(pcWriteBuffer, "Phy Register %d = 0x%X\r\n", registerNum, data);
+
+    } else {    
+        sprintf(pcWriteBuffer, "Unknown command\r\n");
+    }
+    
+  
+    return pdFALSE;
+}
+
+/**
+ * @brief CLI command to reset hardware
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_reset(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+    // Check to see if the first parameter is "reset"
     const char *pcParameter;
     BaseType_t xParameterStringLength;
 
     // Obtain the first parameter string.
     pcParameter = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength);
 
-    if (strncmp(pcParameter, "reset", xParameterStringLength) == 0) {
+    if (strncmp(pcParameter, "phy", xParameterStringLength) == 0) {
 
         sprintf(pcWriteBuffer, "Resetting the PHY chip\r\n");
     
         ETH_CTRL = ETH_CTRL_RESET;
+
+    } else {    
+        sprintf(pcWriteBuffer, "Unknown command\r\n");
+    }
+
+    return pdFALSE;
+}
+
+/**
+ * @brief CLI command to control the gpio.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_gpio_ctrl(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    // Check to see if the first parameter is "reset"
+    const char *pcCmd;
+    const char *pcPin;
+    BaseType_t cmdLen, pinLen;
+
+    // Obtain the first parameter string.
+    pcCmd = FreeRTOS_CLIGetParameter(pcCommandString, 1, &cmdLen);
+    pcPin = FreeRTOS_CLIGetParameter(pcCommandString, 2, &pinLen);
+    
+    int pin = str_to_int(pcPin, pinLen);
+
+    if (strncmp(pcCmd, "set", cmdLen) == 0) {
+            
+        sprintf(pcWriteBuffer, "Set pin %d\r\n", pin);
+        neorv32_gpio_pin_set(pin);      
+
+    } else if (strncmp(pcCmd, "reset", cmdLen) == 0 || strncmp(pcCmd, "clear", cmdLen) == 0) {
+
+        sprintf(pcWriteBuffer, "Reseting pin %d\r\n", pin);
+        neorv32_gpio_pin_clr(pin);
+
+    } else if (strncmp(pcCmd, "get", cmdLen) == 0) {
+
+        sprintf(pcWriteBuffer, "Pin %d is %d\r\n", pin, !!neorv32_gpio_pin_get(pin));
 
     } else {
         sprintf(pcWriteBuffer, "Unknown command\r\n");
@@ -155,15 +273,14 @@ static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, c
 }
 
 
-
-
-
 void tsk_cli_daemon(void *pvParameters) {
 
     /* Register the command with the FreeRTOS+CLI command interpreter. */
     FreeRTOS_CLIRegisterCommand(&xUsage);
     FreeRTOS_CLIRegisterCommand(&xSendDemoPacket);
     FreeRTOS_CLIRegisterCommand(&xPhyControl);
+    FreeRTOS_CLIRegisterCommand(&xGpioControl);
+    FreeRTOS_CLIRegisterCommand(&xReset);
 
 
 	char cRxedChar;

@@ -114,3 +114,103 @@ void eth_send_demo() {
     // Need to set the idle state. Otherwise packet gets sent again.
     ETH_MAC_CMD = ETH_MAC_CMD_IDLE;
 }
+
+
+void phy_smi_start() {
+    neorv32_gpio_pin_set(PHY_MDC); 
+    neorv32_gpio_pin_set(PHY_MDIO); 
+
+    // 32 clock cycls for preamble.
+    for (int i = 0; i < 32; i++) {
+        neorv32_gpio_pin_clr(PHY_MDC); 
+        neorv32_gpio_pin_set(PHY_MDC); 
+    }
+
+    // Start of frame.
+    neorv32_gpio_pin_clr(PHY_MDIO);
+    neorv32_gpio_pin_clr(PHY_MDC);
+    neorv32_gpio_pin_set(PHY_MDC);
+    neorv32_gpio_pin_set(PHY_MDIO);
+    neorv32_gpio_pin_clr(PHY_MDC);
+    neorv32_gpio_pin_set(PHY_MDC);
+}
+
+/**
+ * @brief Sends a byte to the phy smi.
+ * 
+ * @param data 
+ */
+void phy_smi_send(uint8_t data) {
+
+    for (int i = 0; i < 8; i++) {
+
+        // Set the data bit.
+        if (data & (1 << i)) {
+            neorv32_gpio_pin_set(PHY_MDIO);
+        } else {
+            neorv32_gpio_pin_clr(PHY_MDIO);
+        }
+
+        neorv32_gpio_pin_clr(PHY_MDC);
+        neorv32_gpio_pin_set(PHY_MDC);
+
+    }
+
+}
+
+/**
+ * @brief Reads a byte from the phy smi.
+ * 
+ * @param data 
+ * @param len 
+ */
+void phy_smi_read(uint8_t *data, uint8_t len) {
+
+    for (int i = 0; i < len; i++) {
+        for (int j = 0; j < 8; j++) {
+
+            neorv32_gpio_pin_set(PHY_MDC);
+            data[i] |= ((!!neorv32_gpio_pin_get(PHY_MDIO)) << (7 - j));
+            neorv32_gpio_pin_clr(PHY_MDC);
+        }
+    }
+}
+
+/**
+ * @brief Reads a register from the phy. 
+ * @note Bit banged interface.
+ * 
+ * @param phy_addr 
+ * @param reg_addr 
+ * @param data 
+ * @return uint8_t 
+ */
+uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint8_t *data) {
+
+    phy_smi_start();
+
+    // Op code
+    neorv32_gpio_pin_set(PHY_MDIO);
+    neorv32_gpio_pin_clr(PHY_MDC);
+    neorv32_gpio_pin_set(PHY_MDC);
+    neorv32_gpio_pin_clr(PHY_MDIO);
+    neorv32_gpio_pin_clr(PHY_MDC);
+    neorv32_gpio_pin_set(PHY_MDC);
+
+    // PHY address
+    phy_smi_send(phy_addr);
+
+    // Register address
+    phy_smi_send(reg_addr);
+
+    // Turn around
+    neorv32_gpio_pin_set(PHY_MDIO);
+    neorv32_gpio_pin_clr(PHY_MDC);
+    neorv32_gpio_pin_set(PHY_MDIO);
+    neorv32_gpio_pin_clr(PHY_MDC);
+
+    // Read data
+    phy_smi_read(data, 1);
+
+    return 0x00;
+}

@@ -80,7 +80,7 @@ int main( void )
 
   neorv32_uart0_printf("FreeRTOS %s on NEORV32\n", tskKERNEL_VERSION_NUMBER);
   // print some system info
-  neorv32_uart0_printf("CPU clock: %u MHz\n\n", NEORV32_SYSINFO.CLK / 1000000);
+  neorv32_uart0_printf("CPU clock: %u MHz\n\n", NEORV32_SYSINFO->CLK / 1000000);
   
 
 
@@ -99,9 +99,9 @@ int main( void )
 void freertos_risc_v_application_interrupt_handler(void) {
 
   // acknowledge XIRQ (FRIST!)
-  NEORV32_XIRQ.IPR = 0; // clear pending interrupt
-  uint32_t irq_channel = NEORV32_XIRQ.SCR;
-  NEORV32_XIRQ.SCR = 0; // acknowledge XIRQ interrupt
+  NEORV32_XIRQ->EIP = 0; // clear pending interrupt
+  uint32_t irq_channel = NEORV32_XIRQ->ESC; // store the channel before clearing it. 
+  NEORV32_XIRQ->ESC = 0; // acknowledge XIRQ interrupt
 
   // acknowledge/clear ALL pending interrupt sources here - adapt this for your setup
   neorv32_cpu_csr_write(CSR_MIP, 0);
@@ -137,9 +137,9 @@ static void prvSetupHardware( void )
   neorv32_cpu_csr_write(CSR_MTVEC, (uint32_t)&freertos_risc_v_trap_handler);
 
   // enable XIRQ channels 0 and 1 (LOW LEVEL!)
-  NEORV32_XIRQ.IPR = 0; // clear all pending IRQs
-  NEORV32_XIRQ.SCR = 0; // acknowledge (clear) XIRQ interrupt
-  NEORV32_XIRQ.IER = 0x00000003UL; // enable channels 0 and 1
+  NEORV32_XIRQ->EIP = 0; // clear all pending IRQs
+  NEORV32_XIRQ->ESC = 0; // acknowledge (clear) XIRQ interrupt
+  NEORV32_XIRQ->EIE = 0x00000003UL; // enable channels 0, 1 and 2
   // neorv32_cpu_irq_enable(XIRQ_FIRQ_ENABLE); // enable XIRQ's FIRQ channel
 
   neorv32_cpu_csr_set(CSR_MSTATUS, 1 << XIRQ_FIRQ_ENABLE);
@@ -151,12 +151,12 @@ static void prvSetupHardware( void )
   neorv32_gpio_port_set(0);
 
   // init UART at default baud rate, no parity bits, ho hw flow control
-  neorv32_uart0_setup(BAUD_RATE, PARITY_NONE, FLOW_CONTROL_NONE);
+  neorv32_uart0_setup(BAUD_RATE, 0);
 
   // check clock tick configuration
-  if (NEORV32_SYSINFO.CLK != (uint32_t)configCPU_CLOCK_HZ) {
+  if (NEORV32_SYSINFO->CLK != (uint32_t)configCPU_CLOCK_HZ) {
     neorv32_uart0_printf("Warning! Incorrect 'configCPU_CLOCK_HZ' configuration!\n"
-                         "Is %u Hz but should be %u Hz.\n\n", (uint32_t)configCPU_CLOCK_HZ, NEORV32_SYSINFO.CLK);
+                         "Is %u Hz but should be %u Hz.\n\n", (uint32_t)configCPU_CLOCK_HZ, NEORV32_SYSINFO->CLK);
   }
 
   neorv32_xirq_global_enable();
