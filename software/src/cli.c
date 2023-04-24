@@ -174,7 +174,7 @@ static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, c
     // Check to see if the first parameter is "reset"
     const char *pcCmd, *pcData;
     BaseType_t xCmdLen, xDataLen;
-    uint8_t data = 0;
+    uint16_t data = 0;
     uint8_t registerNum;
 
     // Obtain the first parameter string.
@@ -191,6 +191,15 @@ static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, c
         taskEXIT_CRITICAL();
 
         sprintf(pcWriteBuffer, "Phy Register %d = 0x%X\r\n", registerNum, data);
+
+    } else if (strncmp(pcCmd, "write", xCmdLen) == 0) { 
+        registerNum = str_to_int(pcData, xDataLen);
+
+        // enter critical section
+        taskENTER_CRITICAL();
+        phy_mdio_write(0x01, registerNum, &data);
+        taskEXIT_CRITICAL();
+        sprintf(pcWriteBuffer, "Phy Register %d => 0x%X\r\n", registerNum, data);
 
     } else {    
         sprintf(pcWriteBuffer, "Unknown command\r\n");

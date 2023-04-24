@@ -109,6 +109,6 @@ void eth_send_demo();
  * @param data 
  * @return uint8_t 
  */
-uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint8_t *data);
+uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint16_t *data);
 
 #endif
