@@ -52,7 +52,7 @@ entity hardware_top is
     clk_i       : in  std_ulogic; -- global clock, rising edge
     rstn_i      : in  std_ulogic; -- global reset, low-active, async
     -- GPIO --
-    gpio_io      : out std_ulogic_vector(7 downto 0); -- parallel output
+    gpio_io      : inout std_ulogic_vector(7 downto 0); -- parallel output
     -- UART0 --
     uart0_txd_o : out std_ulogic; -- UART0 send data
     uart0_rxd_i : in  std_ulogic;  -- UART0 receive data
@@ -93,7 +93,8 @@ end entity;
 
 architecture neorv32_test_setup_bootloader_rtl of hardware_top is
 
-  signal con_gpio_o : std_ulogic_vector(63 downto 0);
+  signal gpio_o : std_ulogic_vector(63 downto 0);
+  signal gpio_i : std_ulogic_vector(63 downto 0);
 
 
 
@@ -246,8 +247,8 @@ ethernet_mac : wb_ethernet
         eth_io_crs_dv => eth_io_crs_dv,
         eth_i_intn => eth_i_intn,
         
-        eth_io_mdc => eth_io_mdc,
-        eth_io_mdio => eth_io_mdio,
+        eth_io_mdc => open,
+        eth_io_mdio => open,
         
         eth_o_exti => eth_exti_lines
     );
@@ -285,7 +286,7 @@ ethernet_mac : wb_ethernet
     MEM_INT_DMEM_EN              => true,              -- implement processor-internal data memory
     MEM_INT_DMEM_SIZE            => MEM_INT_DMEM_SIZE, -- size of processor-internal data memory in bytes
     -- Processor peripherals --
-    IO_GPIO_NUM                  => 10,              -- implement general purpose input/output port unit (GPIO)?
+    IO_GPIO_NUM                  => 12,              -- implement general purpose input/output port unit (GPIO)?
     IO_MTIME_EN                  => true,              -- implement machine system timer (MTIME)?
     IO_UART0_EN                  => true,              -- implement primary universal asynchronous receiver/transmitter (UART0)?
     
@@ -309,8 +310,8 @@ ethernet_mac : wb_ethernet
     clk_i       => clk_50,       -- global clock, rising edge
     rstn_i      => rstn_i,      -- global reset, low-active, async
     -- GPIO (available if IO_GPIO_EN = true) --
-    gpio_o      => con_gpio_o,  -- parallel output
-    gpio_i      => con_gpio_o,  -- parallel input
+    gpio_o      => gpio_o,  -- parallel output
+    gpio_i      => gpio_i,  -- parallel input
     
     -- primary UART0 (available if IO_UART0_EN = true) --
     uart0_txd_o => uart0_txd_o, -- UART0 send data
@@ -333,10 +334,15 @@ ethernet_mac : wb_ethernet
   );
 
   -- GPIO output --
-  gpio_io <= con_gpio_o(7 downto 0);
-  eth_io_mdc <= con_gpio_o(8);
-  eth_io_mdio <= con_gpio_o(9);
+  GPIO_TRISTATE: for i in 0 to 7 generate
+      gpio_io(i) <= gpio_o(i) when gpio_o(10) = '1' else 'Z';
+  end generate;
     
-t_eth_i_rxd <= std_logic_vector(con_gpio_o(9 downto 8)); 
+  eth_io_mdc <= gpio_o(8) when gpio_o(10) = '1' else 'Z';
+  eth_io_mdio <= gpio_o(9) when gpio_o(11) = '1' else 'Z';
+  
+  gpio_i <= x"000000000000" & "000000" & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
+    
+  t_eth_i_rxd <= eth_io_mdio & eth_io_mdc; 
 
 end architecture;
