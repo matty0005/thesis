@@ -286,7 +286,7 @@ ethernet_mac : wb_ethernet
     MEM_INT_DMEM_EN              => true,              -- implement processor-internal data memory
     MEM_INT_DMEM_SIZE            => MEM_INT_DMEM_SIZE, -- size of processor-internal data memory in bytes
     -- Processor peripherals --
-    IO_GPIO_NUM                  => 12,              -- implement general purpose input/output port unit (GPIO)?
+    IO_GPIO_NUM                  => 64,              -- implement general purpose input/output port unit (GPIO)?
     IO_MTIME_EN                  => true,              -- implement machine system timer (MTIME)?
     IO_UART0_EN                  => true,              -- implement primary universal asynchronous receiver/transmitter (UART0)?
     
@@ -335,11 +335,11 @@ ethernet_mac : wb_ethernet
 
   -- GPIO output --
   GPIO_TRISTATE: for i in 0 to 7 generate
-      gpio_io(i) <= gpio_o(i) when gpio_o(10) = '1' else 'Z';
+      gpio_io(i) <= gpio_o(i) when gpio_o(i + 32) = '1' else 'Z';
   end generate;
     
-  eth_io_mdc <= gpio_o(8) when gpio_o(10) = '1' else 'Z';
-  eth_io_mdio <= gpio_o(9) when gpio_o(11) = '1' else 'Z';
+  eth_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
+  eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
   gpio_i <= x"000000000000" & "000000" & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
     
