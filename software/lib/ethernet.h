@@ -39,6 +39,8 @@
 
 #define PHY_MDC 0x08
 #define PHY_MDIO 0x09
+#define PHY_MDC_MODE 0x20
+#define PHY_MDIO_MODE 0x21
 
 // Mem location starts at 0x13371000
 typedef struct __attribute__((__packed__))  {
