@@ -210,8 +210,8 @@ void phy_smi_read(uint16_t *data) {
  */
 uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint16_t *data) {
 
-    neorv32_gpio_pin_set(10); 
-    neorv32_gpio_pin_set(11); 
+    neorv32_gpio_pin_set(PHY_MDC_MODE); 
+    neorv32_gpio_pin_set(PHY_MDIO_MODE); 
 
     phy_smi_start();
 
@@ -235,7 +235,7 @@ uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint16_t *data) {
     // Turn around
     neorv32_gpio_pin_set(PHY_MDC);
     neorv32_gpio_pin_clr(PHY_MDC);
-    neorv32_gpio_pin_clr(11); 
+    neorv32_gpio_pin_clr(PHY_MDIO_MODE); 
     neorv32_gpio_pin_set(PHY_MDC);
     neorv32_gpio_pin_clr(PHY_MDC);
 
@@ -257,8 +257,9 @@ uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint16_t *data) {
  */
 uint8_t phy_mdio_write(uint8_t phy_addr, uint8_t reg_addr, uint16_t *data) {
 
-    neorv32_gpio_pin_set(10); 
-    neorv32_gpio_pin_set(11); 
+    // Set to output
+    neorv32_gpio_pin_set(PHY_MDC_MODE); 
+    neorv32_gpio_pin_set(PHY_MDIO_MODE); 
 
     phy_smi_start();
 
