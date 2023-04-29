@@ -12,25 +12,6 @@
 %To turn off these instructions in your final thesis you MUST use the document class \documentclass[final]{uqthesis} 
 %To activate the final thesis document class you must UN-COMMENT THIS DOCUMENT CLASS (remove the % from the start of line 2) and comment out the instructional document class on line 1 (add % to the start of line 1). 
 
-%*************************************
-% Introduction to template
-%*************************************
-%This is The University of Queensland Graduate School Official LaTeX Thesis template.
-
-%Be sure to observe the content of comments within the source code, these are prefaced with a percentage symbol.
-%Most important instructions have been CAPITALISED.
-%To uncomment an inactive command (if required) remove the % from in front of the command.
-
-%Please see the README for more information.
-
-%This file loads the necessary packages, sets the page styles, and defines required macros.
-%Edit this if you are comfortable with LaTeX.
-
-%Other tweaks can be made in uqthesis.cls, but change these at your own risk!
-
-%See README for version.
-
-%You must have the memoir class installed.
 
 \input{LaTexPackages.tex}
 
@@ -39,30 +20,29 @@
 % ***************************************************
 %***THESIS TITLE***
 %Use Sentence Case (capitalise only the first word and proper nouns).
-\title{Title here: }
 
-%***YOUR NAME***
-%Do not include initials or middle names. Do not include your supervisor(s)' name(s).
-\author{Name}
-%***YOUR CURRENT DEGREES***
-%Use abbreviations. Do not include the date or location of your degree. Do not include the degree for which this thesis is being submitted.
-\currentdegrees{Candidate’s academic degrees}
+\title{FPGA packet filter with Ethernet MAC and web server using a RISC-V softcore processor }
+\subtitle{Thesis}
+
+\author{Matthew Gilpin}
+\studentnumber{45801600}
 
 
-%***YEAR OF SUBMISSION***
-\date{Year}
-%***TYPE OF DEGREE***
-\submittedfor{Doctor}
-%If this thesis is being submitted for Masters, comment out the above line (add % before line) and remove comment (by removing %) from line below
-%\submittedfor{Masters}
 
-%***YOUR SCHOOL***
-%Use Title Case (capitalise every word which is not a conjunction or preposition).
-%See - http://blog.apastyle.org/apastyle/2012/03/title-case-and-sentence-case-capitalization-in-apa-style.html - for help.
-\school{Name of the Enrolling Unit}
+\date{Semester 1, 2023}
+\submittedfor{Thesis - REIT4841}
+
+
+\school{School of Information Technology and Electrical Engineering}
+
+
+
+\date{2023}
+
+
 
 \begin{document}
-W
+
 \frontmatter
 % Assemble title page
 \maketitle
@@ -123,9 +103,10 @@ W
 %To use one of the styles provided ensure the % is removed from the start of the line, and the other option is commented out with a % at the start of the line. The style elsarticle-num is active by default.
 
 %\bibliographystyle{apalike}
-\bibliographystyle{elsarticle-num}
+\bibliographystyle{ieeetr}
 
 \bibliography{./References/Bibliography}
+
 
 %When you have finished your thesis we recommend that you manually fix any errors in your bibliography. 
 %To do this, compile, copy the .bbl into a new .tex file and include this here after commenting out the other bibliography commands. Make corrections in that .tex file.

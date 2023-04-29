@@ -13,7 +13,7 @@ type = {Standard},
 key = {IEEE 802.3-2012},
 month = dec,
 year = {2012},
-title = {{IEEE Standard for Ethernet}},
+title = {{IEEE 802.3-2012 IEEE Standard for Ethernet}},
 volume = {1},
 address = {New York, USA},
 institution = {The Institute of Electrical and Electronics Engineers, Inc.}
@@ -53,7 +53,7 @@ keywords = {Business ; Cloud computing ; Data privacy ; Device security ; Intern
 
  @misc{acsc_2022,
 title={ACSC annual cyber threat report, July 2021 to June 2022}, 
-url={https://www.cyber.gov.au/acsc/view-all-content/reports-and-statistics/acsc-annual-cyber-threat-report-july-2021-june-2022}, 
+howpublished = {\url{https://www.cyber.gov.au/acsc/view-all-content/reports-and-statistics/acsc-annual-cyber-threat-report-july-2021-june-2022}}, 
 journal={ACSC Annual Cyber Threat Report, July 2021 to June 2022 | Cyber.gov.au}, 
 author={Australian Cyber Security Center}, 
 year={2022}, 
@@ -74,29 +74,440 @@ author = {Caprolu, Maurantonio and Di Pietro, Roberto and Lombardi, Flavio and R
 keywords = {Cloud computing ; Computer architecture ; Containers ; Edge computing ; Fog Computing ; RTOS ; Security ; Servers ; Unikernels ; Virtualization},
 }
 
-@techreport{IHS_iot,
+@misc{IHS_iot,
   author      = {IHS},
   title       = {The Internet of Things: a movement, not a market},
   institution = {IHS Markit},
   year        = {2017},
-  url={https://cdn.ihs.com/www/pdf/IoT_ebook.pdf}, 
+  howpublished = {\url{https://cdn.ihs.com/www/pdf/IoT_ebook.pdf}}, 
 }
 
 
-@manual{neorv32Datasheet,
-  organization  = "Stephan Nolting (M.Sc.)",
+@misc{neorv32Datasheet,
+  Author  = "Stephan Nolting",
   title         = "The NEORV32 RISC-V Processor",
   number        = "NEORV32",
   year          =  2023,
-  note          = "v1.8.1-r17-gd1b295de"
+  note          = "v1.8.1-r17-gd1b295de",
+  howpublished = {\url{https://stnolting.github.io/neorv32/}}
+
 }
 
-@techreport{WishboneSpec,
-type = {Standard},
+@misc{WishboneSpec,
+note = {Standard},
 key = {Wishbone B4},
 month = dec,
 year = {2010},
 title = {{Wishbone B4 SoC Interconnection}},
 volume = {1},
-institution = {OpenCores}
+institution = {OpenCores},
+howpublished = {\url{https://cdn.opencores.org/downloads/wbspec_b4.pdf}}
+
+}
+
+
+@article{30YearsOfFPGA,
+issn = {0018-9219},
+abstract = {Since their introduction, field programmable gate arrays (FPGAs) have grown in capacity by more than a factor of 10 \thinspace000 and in performance by a factor of 100. Cost and energy per operation have both decreased by more than a factor of 1000. These advances have been fueled by process technology scaling, but the FPGA story is much more complex than simple technology scaling. Quantitative effects of Moore's Law have driven qualitative changes in FPGA architecture, applications and tools. As a consequence, FPGAs have passed through several distinct phases of development. These phases, termed "Ages" in this paper, are The Age of Invention, The Age of Expansion and The Age of Accumulation. This paper summarizes each and discusses their driving pressures and fundamental characteristics. The paper concludes with a vision of the upcoming Age of FPGAs.},
+journal = {Proceedings of the IEEE},
+pages = {318--331},
+volume = {103},
+publisher = {IEEE},
+number = {3},
+year = {2015},
+title = {Three Ages of FPGAs: A Retrospective on the First Thirty Years of FPGA Technology},
+language = {eng},
+address = {New York},
+author = {Trimberger, Stephen M.},
+keywords = {Age ; Application specific integrated circuits ; Computer architecture ; Field programmable gate arrays ; Logic gates ; Programmable logic controllers ; Reconfigurable architectures ; Technological innovation ; Transistors},
+}
+
+
+
+@inproceedings{packetFilteringFPGA,
+abstract = {Firewall is a key domain of security and a necessity for every organization. The basic function of firewall is packet filtering. This paper makes use of highly parallelized architecture of FPGA. The packet filtering is done for IPv4 protocol by forming rule set for allowed incoming and outgoing IP address. The packet takes one clock cycle time for delivering the output packet despite increasing number of rules. All the rules are simultaneously check in the system. The hardware firewall is better than software firewall in terms of speed and security.},
+pages = {400--403},
+publisher = {IEEE},
+booktitle = {2018 Second International Conference on Intelligent Computing and Control Systems (ICICCS)},
+isbn = {9781538628423},
+year = {2018},
+title = {Packet Filtering for IPV4 Protocol Using FPGA},
+language = {eng},
+author = {Keni, Swati Maloji and Mande, Sudhakar},
+keywords = {Field programmable gate arrays ; Filtering ; Firewalls (computing) ; FPGA ; Hardware ; IP networks ; IPv4 ; Protocols},
+}
+
+
+
+@inproceedings{LwIPFPGAFirewall,
+abstract = {Aiming at the problems of IP address security, high latency and system dependency, this paper introduces the design of the Gigabit Ethernet firewall based on FPGA (Field-Programmable Gate Array). It implements functions by FPGA including to achieve the legitimacy of the network packet inspection and the internal network protection. FPGA also provides interfaces for ARM (Advanced RISC Machines), as a management server, building a LwIP (Light weight IP) protocol stack to achieve a white-listing configuration and monitoring. Finally, the experiments prove that the firewall can achieve the throughput of 950Mbps and the latency of 61.266us when it realizes the network data filtering and static NAPT (Network Address Port Translation).},
+pages = {1--5},
+volume = {2018-},
+publisher = {IEEE},
+booktitle = {2017 10th International Congress on Image and Signal Processing, BioMedical Engineering and Informatics (CISP-BMEI)},
+isbn = {9781538619377},
+year = {2017},
+title = {A design of the ethernet firewall based on FPGA},
+copyright = {Copyright 2018 Elsevier B.V., All rights reserved.},
+language = {eng},
+author = {Lin, Shunhao and Zhang, Ding and Fu, Yuqing and Wang, Shuxian},
+keywords = {Ethernet Firewall ; Field programmable gate arrays ; Firewalls (computing) ; FPGA ; IP networks ; Law ; Network Filtering ; Packet Refactoring ; Protocols ; static NAPT ; Switches},
+}
+
+
+@inproceedings{IPFPGAFirewall2000,
+abstract = {We present the design of a firewall for IP networks using a field-programmable gate array (FPGA). The FPGA implements, in hardware, the accept or deny rules of the firewall. A hardware-based firewall offers the advantages of speed over a software firewall, in addition to direct interfacing with network devices, such as an Ethernet or a serial line transceiver. This paper shows how the rules are translated to VHDL and then implemented in hardware, and how the hardware is utilized to filter network traffic in a packet-by-packet fashion, or based on connection information, with a speed of more than 500,000 packets per second.},
+pages = {316--319 vol.1},
+volume = {1},
+publisher = {IEEE},
+booktitle = {ICECS 2000. 7th IEEE International Conference on Electronics, Circuits and Systems (Cat. No.00EX445)},
+isbn = {0780365429},
+year = {2000},
+title = {FPGA-based Internet protocol firewall chip},
+copyright = {Copyright 2010 Elsevier B.V., All rights reserved.},
+language = {eng},
+author = {Kayssi, A. and Harik, L. and Ferzli, R. and Fawaz, M.},
+keywords = {Ethernet networks ; Field programmable gate arrays ; Hardware ; Information filtering ; Information filters ; Internet ; IP networks ; Protocols ; Telecommunication traffic ; Transceivers},
+}
+
+
+@book{BuildingInternetFirewalls,
+author = {Zwicky, Elizabeth D. and Cooper, Simon and Chapman, D. Brent},
+title = {Building Internet Firewalls (2nd Ed.)},
+year = {2000},
+isbn = {1565928717},
+publisher = {O'Reilly and Associates, Inc.},
+address = {USA},
+abstract = {Completely revised and much expanded, the new edition of the highly respected and bestselling Building Internet Firewalls now covers Unix, Linux, and Windows NT. This practical and detailed guide explains in step-by-step fashion how to design and install firewalls and configure Internet services to work with a firewall. It covers a wide range of services and protocols and offers a complete list of resources, including the location of many publicly available firewalls construction tools.}
+}
+
+
+@article{FPGAComputing,
+issn = {0272-1732},
+abstract = {The articles in this special sectoin focus on cutting-edge research on topics that relate to field programmable gate arrays (FPGA) in computing.},
+journal = {IEEE MICRO},
+pages = {6--7},
+volume = {41},
+publisher = {IEEE},
+number = {4},
+year = {2021},
+title = {FPGA Computing},
+copyright = {Copyright 2021 Elsevier B.V., All rights reserved.},
+language = {eng},
+address = {LOS ALAMITOS},
+author = {Gokhale, Maya and Shannon, Lesley},
+keywords = {Computer architecture ; Computer Science ; Computer Science Hardware & Architecture ; Computer Science Software Engineering ; Field programmable gate arrays ; Hardware ; Heterogeneous networks ; MATHEMATICS AND COMPUTING ; Program processors ; Quantum computing ; Science & Technology ; Special issues and sections ; System analysis and design ; Technology},
+organization = {Lawrence Livermore National Lab. (LLNL), Livermore, CA (United States)},
+}
+
+
+@article{EdgeComputing,
+issn = {0018-9219},
+abstract = {In recent years, with the proliferation of the Internet of Things (IoT) and the wide penetration of wireless networks, the number of edge devices and the data generated from the edge have been growing rapidly. According to International Data Corporation (IDC) prediction <xref ref-type="bibr" rid="ref20">[20] , global data will reach 180 zettabytes (ZB), and 70% of the data generated by IoT will be processed on the edge of the network by 2025. IDC also forecasts that more than 150 billion devices will be connected worldwide by 2025. In this case, the centralized processing mode based on cloud computing is not efficient enough to handle the data generated by the edge. The centralized processing model uploads all data to the cloud data center through the network and leverages its supercomputing power to solve the computing and storage problems, which enables the cloud services to create economic benefits. However, in the context of IoT, traditional cloud computing has several shortcomings.},
+journal = {Proceedings of the IEEE},
+pages = {1474--1481},
+volume = {107},
+publisher = {IEEE},
+number = {8},
+year = {2019},
+title = {Edge Computing [Scanning the Issue]},
+language = {eng},
+address = {PISCATAWAY},
+author = {Shi, Weisong and Pallis, George and Xu, Zhiwei},
+keywords = {Ecosystems ; Edge computing ; Engineering ; Engineering Electrical & Electronic ; Internet of Things ; Machine learning ; Privacy ; Resource management ; Science & Technology ; Software defined networking ; Special issues and sections ; Technology},
+}
+
+
+@inproceedings{CatalogRISCSoftcore,
+issn = {2640-0472},
+abstract = {With the increasing popularity of RISC-V in the academic and industrial world, an ever growing number of open-source implementations of the instruction set have become available. However, it is not an easy task to compare the cores to one another, as they employ different interconnects, build systems and so on. This work presents an open-source catalog of RISC-V cores for use on FPGAs. All of these cores have been wrapped as drop-in compatible processing elements and can be used either standalone, or integrated into the TaPaSCo SoC composition framework. By using TaPaSCo, details of the bitstream generation flow and user-space interfaces are abstracted away, allowing the user to focus on the needs of the concrete applications when exploring the RISC-V landscape. All of the catalog's cores have been synthesized for a number of hardware platforms, and are evaluated against each other using state-of-the-art embedded processor benchmarks such as Dhrystone, Embench and CoreMark. The results show that the cores have a huge degree in performance variability. The slowest cores achieve less than 100 MHz on large UltraScale+ devices, while better FPGA-optimized cores run in excess of 500 MHz. Accordingly, the benchmarks show a wide spread of performance ranging from less than 0.5 CoreMark/MHz up to over 2.5 CoreMark/MHz.},
+pages = {1--8},
+publisher = {IEEE},
+booktitle = {2019 International Conference on ReConFigurable Computing and FPGAs (ReConFig)},
+isbn = {172811957X},
+year = {2019},
+title = {A Catalog and In-Hardware Evaluation of Open-Source Drop-In Compatible RISC-V Softcore Processors},
+language = {eng},
+author = {Heinz, Carsten and Lavan, Yannick and Hofmann, Jaco and Koch, Andreas},
+keywords = {FPGA ; RISC-V ; soft-core},
+}
+
+
+@article{SoftcoreBasedEmbeddedSystems,
+issn = {1383-7621},
+abstract = {► New application of soft-core embedded systems to develop critical aerospace systems. ► Design process combines in a selective way, hardware and software techniques. ► Designs not only meet all requirements, but avoid excessive use costly protections.
+There is an increasing interest in the aerospace industry to reduce the cost of the systems by means of using Commercial Off The Shelf (
+COTS) devices. The engineering of novel microsatellites and nanosatellites are clear examples of this new trend. However, the use of sub-micron technologies has led to greater sensitivity of these devices to radiation-induced
+transient faults, limiting the exploitation of this approach in critical systems. This paper presents an innovative application of soft-core microprocessor based embedded systems, to design dependable and reduced-cost critical systems with
+COTS reconfigurable devices (flash based
+FPGAs). To make this possible, it is necessary to fine-tune the protection strategy by combining selectively fault mitigation techniques based on hardware or software. In this way, the resultant system not only fulfills both the design constraints and the dependability requirements, but also avoids the cost provoked by excessive use of protection mechanisms. A case study is presented in which the design space exploration between hardware and software protection techniques permits to find the best trade-offs among performance, reliability, memory size and hardware cost in a dependable subsystem.},
+journal = {Journal of systems architecture},
+pages = {886--895},
+volume = {57},
+publisher = {Elsevier B.V},
+number = {10},
+year = {2011},
+title = {Soft core based embedded systems in critical aerospace applications},
+copyright = {2011 Elsevier B.V.},
+language = {eng},
+address = {Amsterdam},
+author = {Cuenca-Asensi, Sergio and Martínez-Álvarez, Antonio and Restrepo-Calle, Felipe and Palomo, Francisco R. and Guzmán-Miranda, Hipólito and Aguirre, Miguel A.},
+keywords = {Aerospace ; Aerospace industry ; Aircraft components ; Artificial satellites ; Co-design ; Computer programs ; Design engineering ; Devices ; Embedded systems ; Fault tolerance ; Faults ; Hardware ; Low-cost satellites ; Microprocessors ; Reliability ; Single Event Upset ; Soft-error mitigation ; Soft-microprocessors ; Software ; Studies ; Systems design ; Technology application ; Transient fault},
+}
+
+@article{RV16Embedded,
+issn = {1000-9000},
+abstract = {Embedded and Internet of Things (IoT) devices have extremely strict requirements on the area and power consumption of the processor because of the limitation on its working environment. To reduce the overhead of the embedded processor as much as possible, this paper designs and implements a configurable 32-bit in-order RISC-V processor core based on the 16-bit data path and units, named RV16. The evaluation results show that, compared with the traditional 32-bit RISC-V processor with similar features, RV16 consumes fewer hardware resources and less power consumption. The maxi- mum performance of RV16 running Dhrystone and CoreMark benchmarks is 0.92 DMIPS/MHz and 1.51 CoreMark/MHz, respectively, reaching 75% and 71% of traditional 32-bit processors, respectively. Moreover, a properly configured RV16 running program also consumes less energy than a traditional 32-bit processor.},
+journal = {Journal of computer science and technology},
+pages = {1307--1319},
+volume = {37},
+publisher = {Springer Nature Singapore},
+number = {6},
+year = {2022},
+title = {RV16: An Ultra-Low-Cost Embedded RISC-V Processor Core},
+copyright = {Institute of Computing Technology, Chinese Academy of Sciences 2022},
+language = {eng},
+address = {Singapore},
+author = {Cheng, Yuan-Hu and Huang, Li-Bo and Cui, Yi-Jun and Ma, Sheng and Wang, Yong-Wen and Sui, Bing-Cai},
+keywords = {Artificial Intelligence ; Comparative analysis ; Computer Science ; Data Structures and Information Theory ; Embedded systems ; Information Systems Applications (incl.Internet) ; Internet of Things ; Microprocessors ; Power consumption ; Power management ; Regular Paper ; RISC ; Software Engineering ; Theory of Computation ; Working conditions},
+}
+
+@article{InvestigatingRiscv,
+issn = {0361-7688},
+abstract = {An instruction set architecture (ISA) is a core around which the rest of a CPU is built. Errors or inflexible solutions once embedded in an instruction set remain with a corresponding generation of processors forever. Hence, one of the key reasons why the growth in the performance of modern CPUs slowed down is that the source code of processors “got corrupted” literally and figuratively: processors become more complex, which makes their further development more difficult. In any case, the development of modern computers (CPUs, GPUs, or specialized systems) is an extremely expensive process, which involves a large number of expensive stages. Therefore, the overall cost of CPU development is a key issue. In this paper, we investigate popular instruction set architectures, as well as make some conclusions about the prospects of RISC-V and other open-source architectures. We try to answer the following questions. Why an instruction set architecture is really important? Why RISC-V is better than the other architectures? Which opportunities does RISC-V open for developers around the world and what competitors does it have?},
+journal = {Programming and computer software},
+pages = {493--504},
+volume = {47},
+publisher = {Pleiades Publishing},
+number = {7},
+year = {2021},
+title = {Investigation of RISC-V},
+copyright = {Pleiades Publishing, Ltd. 2021. ISSN 0361-7688, Programming and Computer Software, 2021, Vol. 47, No. 7, pp. 493–504. © Pleiades Publishing, Ltd., 2021.},
+language = {eng},
+address = {Moscow},
+author = {Frolov, V. A. and Galaktionov, V. A. and Sanzharov, V. V.},
+keywords = {Artificial Intelligence ; Central processing units ; Computer architecture ; Computer Science ; Computer Science Software Engineering ; CPUs ; Investigations ; Microprocessors ; Operating Systems ; Processors ; RISC ; Science & Technology ; Software Engineering ; Software Engineering/Programming and Operating Systems ; Source code ; Technology},
+}
+
+@article{RiscVMulticore,
+issn = {0916-8532},
+abstract = {For the increasing demands of computation, heterogeneous multicore architecture is believed to be a promising solution to fulfill the edge computational requirement. In FPGAs, the heterogeneous multicore is realized as multiple soft processor cores with custom processing elements. Since FPGA is a resource-constrained device, sharing the hardware resources among the soft processor cores can be advantageous. A few research works have focused on the resource sharing between soft processors, but they do not study how much FPGA logic is minimized for a different pipeline processor. This paper proposes the microarchitecture of four, and five stage pipeline processors that enables the sharing of functional units for execution among the multiple cores as well as sharing the BRAM ports. We then investigate the performance and hardware resource utilization for a four-core processor. We find that sharing different functional units can save the LUT usage to 31.7% and DSP usage to 75%. We analyze the performance impact of sharing from the simulation of the Embench benchmark program. Our simulation results indicate that for some cases the sharing improves the performance and for other configurations worst-case performance drop is 16.7%.},
+journal = {IEICE transactions on information and systems},
+pages = {1506--1515},
+volume = {E105.D},
+publisher = {The Institute of Electronics, Information and Communication Engineers},
+number = {9},
+year = {2022},
+title = {An Efficient Resource Shared RISC-V Multicore Architecture},
+copyright = {2022 The Institute of Electronics, Information and Communication Engineers},
+language = {eng},
+address = {Tokyo},
+author = {ISLAM, Md Ashraful and KISE, Kenji},
+keywords = {Computer architecture ; Configuration management ; Field programmable gate arrays ; FPGA ; Hardware ; Impact analysis ; microarchiteture ; Microprocessors ; multicore ; Performance enhancement ; Pipelining (computers) ; Resource utilization ; RISC ; soft processor},
+}
+
+@incollection{OptimisedEthernetMAC,
+series = {Lecture Notes on Data Engineering and Communications Technologies},
+issn = {2367-4512},
+abstract = {The fully functional Ethernet-MAC layer is designed in accordance with IEEE 802.3 standards. The Proposed Ethernet MAC design is based on packet transceiver architecture for transmitting and receiving a packets and ensuring that the received packets are indeed valid. This design mainly includes Transmitter and Receiver-Finite state machines (FSM), FIFO’s, Cyclic Redundancy check (CRC), and padding modules. It’s compatible with input-output signals of Physical layer, the management module, and MII/RMII/GMII/RGMII interface of MAC Core. The design is extended to configure half duplex and full duplex mode based on the request. The design supports 10/100/1000 Mb/s and 1 Gb/s accessible speed and also extended to 10 Gb/s with parametrizable FIFO’s and configurable CRC with Tx and Rx state machines. The design is adaptable and is flexible to any FPGA vendors. It is synthesized on Xilinx platform by Verilog coding, simulated by ModelSim simulator and implemented on Virtex-7 FPGA Device. The proposed Ethernet-MAC Layer is compared with Xilinx Trimode Ethernet MAC Core (TEMAC) with respect to area resources with an optimization of 32.85% in slices and 24.88% LUT’s. The results have been encouraging.},
+pages = {725--732},
+volume = {26},
+publisher = {Springer International Publishing AG},
+booktitle = {International Conference on Intelligent Data Communication Technologies and Internet of Things (ICICI) 2018},
+isbn = {3030031454},
+year = {2019},
+title = {An Optimized Packet Transceiver Design for Ethernet-MAC Layer Based on FPGA},
+copyright = {Springer Nature Switzerland AG 2019},
+language = {eng},
+address = {Switzerland},
+author = {Hemanth, Jude and Fernando, Xavier and Lafata, Pavel and Baig, Zubair},
+keywords = {CRC ; Ethernet ; FPGA ; IEEE 802.3 ; MAC ; MDIO ; Physical layer ; RGMII ; Verilog},
+}
+
+
+@inproceedings{EthernetAXI,
+abstract = {SOC (System-on-a-Chip) is the development trend of current international VLSI and is the mainstream of IC development nowadays. In this paper, We present a design and verification of a MAC controller based on AXI bus, which system architecture integrates original design components and reusable IP cores", "then discuss its implementation of Multi-level and reusable verification platform using VMM verification method. Directed random test and assertion verification technology are used in verification procedure to finish verification plan effectively. The SoC chip is tape out now.},
+pages = {558--562},
+publisher = {IEEE},
+booktitle = {2013 Third International Conference on Intelligent System Design and Engineering Applications},
+isbn = {9781467348935},
+year = {2013},
+title = {Design and Verification of a MAC Controller Based on AXI Bus},
+language = {eng},
+author = {Guoteng, Pan and Li, Luo and Guodong, Ou and Qingchao, Fu and Han, Bai},
+keywords = {Architecture (computers) ; AXI bus ; Conferences ; Controllers ; Data buses ; Data transfer ; Design engineering ; EPON ; IEEE 802.3 Standards ; Media Access Control ; Monitoring ; Platforms ; Protocols ; Registers ; Reusable ; System-on-a-chip ; Systems design ; SystemVerilog Assertion ; Verification Methodology Manual},
+}
+
+@inproceedings{EthernetRMII,
+abstract = {FPGA-based solutions have become more common in embedded systems these days. These systems need to communicate with external world. Considering high-speed and popularity of Ethernet communication, a reliable real-time Ethernet component inside FPGA is of special value. To that end, this paper presents a new solution for 100 Mb/s FPGA-based Ethernet communications with timing analysis. The solution deals with "Reduced Media-Independent Interface" in its physical layer. UDP is the network protocol which is implemented from physical to transport layer. For getting used in real-time applications, timing analysis is done in the communication system. Component based software engineering is used in the design and development processes. In order to test the components inside FPGA, two different approaches are utilized. Signal measurement in combination with introduced windows based application contributes much in testing and validation phases.},
+pages = {35--39},
+publisher = {IEEE},
+booktitle = {2011 IEEE 3rd International Conference on Communication Software and Networks},
+isbn = {9781612844855},
+year = {2011},
+title = {FPGA implementation of real-time Ethernet communication using RMII interface},
+language = {eng},
+author = {Khalilzad, N. M. and Yekeh, F. and Asplund, L. and Pordel, M.},
+keywords = {100 Mb/s ; Clocks ; Complexity theory ; Equations ; Ethernet ; Field programmable gate arrays ; FPGA ; Real-Time ; RMII},
+}
+
+
+@inproceedings{ImprovemntOptimLWIP,
+abstract = {When the hardware resources are limited for LwIP (A lightweight TCP/IP Stack), it's easily to come across the problem of high usage in memory allocation. Through in-depth analysis of related issues, an optimal design is presented which unifies the memory management in system and also adopts an optimal allotment. In addition, through a series of test and analysis, the practicality of improved LwIP has been verified and compared, which has been achieved to improve the efficiency of memory usage.},
+pages = {1342--1345},
+publisher = {IEEE},
+booktitle = {2016 IEEE Advanced Information Management, Communicates, Electronic and Automation Control Conference (IMCEC)},
+isbn = {1467396133},
+year = {2016},
+title = {Improvement and optimization of LwIP},
+language = {eng},
+author = {Lu Liu and Ning Li and Lei Feng},
+keywords = {Hardware ; List Structure ; LwIP ; Memory management ; Optimization ; Optimum Allotment ; Protocols ; Resource management ; Servers ; TCPIP},
+}
+
+@article{IoTSurvey,
+issn = {0737-8831},
+abstract = {Purpose
+Internet has changed radically in the way people interact in the virtual world, in their careers or social relationships. IoT technology has added a new vision to this process by enabling connections between smart objects and humans, and also between smart objects themselves, which leads to anything, anytime, anywhere, and any media communications. IoT allows objects to physically see, hear, think, and perform tasks by making them talk to each other, share information and coordinate decisions. To enable the vision of IoT, it utilizes technologies such as ubiquitous computing, context awareness, RFID, WSN, embedded devices, CPS, communication technologies, and internet protocols. IoT is considered to be the future internet, which is significantly different from the Internet we use today. The purpose of this paper is to provide up-to-date literature on trends of IoT research which is driven by the need for convergence of several interdisciplinary technologies and new applications.
+Design/methodology/approach
+A comprehensive IoT literature review has been performed in this paper as a survey. The survey starts by providing an overview of IoT concepts, visions and evolutions. IoT architectures are also explored. Then, the most important components of IoT are discussed including a thorough discussion of IoT operating systems such as Tiny OS, Contiki OS, FreeRTOS, and RIOT. A review of IoT applications is also presented in this paper and finally, IoT challenges that can be recently encountered by researchers are introduced.
+Findings
+Studies of IoT literature and projects show the disproportionate importance of technology in IoT projects, which are often driven by technological interventions rather than innovation in the business model. There are a number of serious concerns about the dangers of IoT growth, particularly in the areas of privacy and security; hence, industry and government began addressing these concerns. At the end, what makes IoT exciting is that we do not yet know the exact use cases which would have the ability to significantly influence our lives.
+Originality/value
+This survey provides a comprehensive literature review on IoT techniques, operating systems and trends.},
+journal = {Library hi tech},
+pages = {5--66},
+volume = {38},
+publisher = {Emerald Publishing Limited},
+number = {1},
+year = {2020},
+title = {The Internet of Things (IoT): a survey of techniques, operating systems, and trends},
+copyright = {Emerald Publishing Limited},
+language = {eng},
+address = {Bradford},
+author = {Shammar, Elham Ali and Zahary, Ammar Thabit},
+keywords = {Ambient intelligence ; Cloud computing ; Communication ; Electronic devices ; Intelligence ; Internet of Things ; Literature reviews ; Radio frequency identification ; Semantic web ; Semantics ; Sensors ; Trends ; Ubiquitous computing ; Vision ; Wireless networks},
+}
+
+
+
+@inproceedings{OptimCortexLwIP,
+series = {Lecture Notes in Computer Science},
+issn = {0302-9743},
+abstract = {TCP/IP protocol stacks are usually complex protocols which require a high amount of computational power for the benefit of reliable communication. Therefore, a powerful and energy demanding processing core with an operating system is needed to achieve high data rates. In communication systems that are placed in a high temperature environment, e.g. electronics close to car engines or in aerospace applications, installation space is limited, temperatures of upto 175},
+pages = {169--183},
+publisher = {Springer International Publishing},
+booktitle = {Embedded Computer Systems: Architectures, Modeling, and Simulation},
+isbn = {9783030275617},
+title = {Design and Optimization of an ARM Cortex-M Based SoC for TCP/IP Communication in High Temperature Applications},
+copyright = {Springer Nature Switzerland AG 2019},
+language = {eng},
+address = {Cham},
+author = {Stuckenberg, T. and Gottschlich, M. and Nolting, S. and Blume, H.},
+keywords = {ARM ; ASIC ; High temperature ; lwIP ; Powerline communication ; TCP/IP ; uIP},
+}
+ @misc{FreeRTOSTCP, 
+ title={FreeRTOS plus TCP - a free thread aware TCP/IP stack for FreeRTOS}, 
+howpublished = {\url{https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/index.html}}, 
+ journal={FreeRTOS}, 
+ Author={FreeRTOS}, 
+ year={2022}, 
+ month={Aug}
+ } 
+
+
+
+
+@misc{LAN8720ADatasheet,
+  author  = {{\relax Microchip Technology Incorporated}},
+  title         = "Small Footprint RMII 10/100 Ethernet Transceiver with HP Auto-MDIX Support",
+  number        = "LAN8720A/LAN8720Ai",
+  year          =  2012,
+  note          = "Revision 1.4 (08-23-12)",
+  howpublished = {\url{"https://ww1.microchip.com/downloads/en/DeviceDoc/8720a.pdf"}}
+}
+
+@article{ParallelCRC,
+issn = {0167-9260},
+abstract = {Faster data transmission speed and longer distances are more susceptible to errors. CRC (Cyclic Redundancy Checksum) is an efficient and simple cryptic algorithm has been in use among the software community since very long time to detect malicious changes in transmitted data. Recently hardware engineers are also interested in using it in their forward error detection scheme with low resource consumption overhead for their ultra high-speed data communication. To tap the full potential of CRC algorithm in hardware level, it must be implemented in a hardware friendly manner with proper user constraints. This paper presents a very high throughput low latency VLSI design architecture of CRC-32 with reconfigurable parameters. The high throughput is achieved by using expandable data bus line. While, low latency is made possible by parallelizing the logic implementation. The way this problem is approached is elegantly explained using detailed diagrams and mathematics, such that the readers find it easy to adapt the architecture to any CRC polynomial type/size. The uniqueness of our design lies in its ability to operate on the same clock cycle in which the code word is presented, with results produced in immediately next clock cycle. The effects of variations in design parameters of CRC VLSI design on performance characteristics is studied. Also, we have further extended the scope of utility of this component by modeling test scenarios where our CRC logic core is encapsulated to suit different interface standards and how its efficiency changes with chosen interface.
+•To tap the full potential of CRC algorithm in hardware level, it must be implemented in a hardware friendly manner with proper user constraints.•The purpose of this work was to develop a CRC design architecture that is fully reconfigurable, got very high throughput and has a single clock latency with data pipelining support.•The effects of variations in design parameters of CRC VLSI design on performance characteristics is studied.•Also, we have further extended the scope of utility of this component by modeling test scenarios where our CRC logic core is encapsulated to suit different interface standards and how its efficiency changes with chosen interface.•The mathematical model discussed is for understanding the operational details of the latency optimized CRC-32 design architecture. It generalizes the architecture to expand data bus width in integral power of 2, and multiplexing of lesser width data lanes into larger width data bus lane.},
+journal = {Integration (Amsterdam)},
+pages = {1--14},
+volume = {56},
+publisher = {Elsevier B.V},
+year = {2017},
+title = {Reconfigurable very high throughput low latency VLSI (FPGA) design architecture of CRC 32},
+copyright = {2016 Elsevier B.V.},
+language = {eng},
+author = {Mitra, Jubin and Nayak, Tapan},
+keywords = {Algorithms ; Analysis ; Big data application ; Circuit design ; Consumption (Economics) ; CRC-32 ; Cyclic redundancy code (CRC) ; Digital integrated circuits ; Error detection ; FPGA ; High data rate ; Re-configurable architecture ; Very-large-scale integration ; VLSI design},
+}
+
+
+
+
+@inproceedings{reducedEtherentMacFPGA,
+  author={Sütő, József and Oniga, Stefan},
+  booktitle={2013 IEEE 4th International Conference on Cognitive Infocommunications (CogInfoCom)}, 
+  title={FPGA implemented reduced Ethernet MAC}, 
+  year={2013},
+  volume={},
+  number={},
+  pages={29-32},
+  doi={10.1109/CogInfoCom.2013.6719258}}
+
+
+@inproceedings{LwIPMicroblaze,
+abstract = {This article deals with interfacing of Xilinx MicroBlaze (UB) softcore microprocessor to full duplex, 1 Gb/s media converter from metallic to optical interface, which is employed in experimental FSO link as a transceiver. The MicroBlaze harvests statistical data from the link and allows administration of the link via interactive web user interface. The MicroBlaze is connected to the data bus of the media converter via custom simple Ethernet switch and custom network interface. The porting of lightweight IP stack and implementation of example HTTP server is mentioned. The whole design is implemented on Xilinx XUPV5-LX110T Evaluation Platform with Virtex-5 FPGA chip.},
+pages = {1--4},
+publisher = {IEEE},
+booktitle = {2016 International Conference on Broadband Communications for Next Generation Networks and Multimedia Applications (CoBCom)},
+isbn = {9781509022700},
+year = {2016},
+title = {LwIP based network solution for MicroBlaze},
+language = {eng},
+author = {Janik, Lukas and Novak, Marek and Hudcova, Lucie and Wilfert, Otakar and Dobesch, Ales},
+keywords = {Aerospace electronics ; Block RAM ; Ethernet ; Free Space Optics ; IP networks ; LwIP ; Media ; MicroBlaze ; Network interfaces ; Optical switches ; Random access memory ; Servers ; Virtex-5},
+}
+
+
+
+@inproceedings{NiosIIWebserver,
+issn = {2157-0477},
+abstract = {This paper describes implementation of Web server using Altera Nios II embedded IP core, a configurable general purpose embedded RISC processor with embedded peripheral architecture. A Web server is a computer that delivers Web pages to other computers in the network. Every Web server has a unique IP address and possibly a domain name. Any computer can work as Web server by installing server software. The web server with Nios II processor is called the embedded Web server. The embedded Web server is a highperformance embedded Web server, allows users to monitor and control their embedded applications using any standard browser. The embedded Web server can communicate with the Web browser through TCP/HTTP. The user can use a Web browser and typing URL of Web site into that browser user can examine the Web pages. This Web server does not need dedicated high configuration computer. The Web server application is designed using Altera NiosII embedded platform for uploading the information related to department. The results are verified by connecting it through Intranet with in the campus. This is found to be the cheapest best solution with low power consumption for substituting traditional Web servers. With Nios II soft processor approach, designers can create a "perfect fit" in terms of processors, peripherals, memory interfaces, performance characteristics and cost. This is accomplished by using an Altera Cyclone FPGA to create a custom system-on-chip or a system-on-programmable-chip (SOPC). The SOPC designers are benefited with tremendous versatility in product features, performance, cost and life cycle management.},
+pages = {372--377},
+publisher = {IEEE},
+booktitle = {2009 Second International Conference on Emerging Trends in Engineering and Technology},
+isbn = {9781424452507},
+year = {2009},
+title = {Embedded Web Server on Nios II Embedded FPGA Platform},
+language = {eng},
+author = {Joshi, N.N. and Dakhole, P.K. and Zode, P.P.},
+keywords = {Application software ; Computer architecture ; Computer networks ; Costs ; Field programmable gate arrays ; Network servers ; Reduced instruction set computing ; Service oriented architecture ; Web pages ; Web server},
+}
+
+
+
+@inproceedings{FastRecongifFPGAFirewall,
+issn = {2155-6822},
+abstract = {In data communication via internet, security is becoming one of the most influential aspects. One way to support it is by classifying and filtering ethernet packets within network devices. Packet classification is a fundamental task for network devices such as routers, firewalls, and intrusion detection systems. In this paper we present architecture of fast and reconfigurable Packet Classification Engine (PCE). This engine is used in FPGA-based firewall. Our PCE inspects multi-dimensional field of packet header sequentially based on tree-based algorithm. This algorithm simplifies overall system to a lower scale and leads to a more secure system. The PCE works with an adaptation of single cycle processor architecture in the system. Ethernet packet is examined with PCE based on Source IP Address, Destination IP Address, Source Port, Destination Port, and Protocol fields of the packet header. These are basic fields to know whether it is a dangerous or normal packet before inspecting the content. Using implementation of tree-based algorithm in the architecture, firewall rules are rebuilt into 24-bit sub-rules which are read as processor instruction in the inspection process. The inspection process is comparing one sub-rule with input field of header every clock cycle. The proposed PCE shows 91 MHz clock frequency in Cyclone II EP2C70F896C6 with 13 clocks throughput average from input to output generation. The use of tree-based algorithm simplifies the multidimensional packet inspection and gives us reconfigurable as well as scalable system. The architecture is fast, reliable, and adaptable and also can maximize the advantages of the algorithm very well. Although the PCE has high frequency and little amount of clock, filtering speed of a firewall also depends on the other components, such as packet FIFO buffer. Fast and reliable FIFO buffer is needed to support the PCE. This PCE also is not completed with rule update mechanism yet. This proposed PCE is tested as a component of FPGA-based firewall to filter Ethernet packet with FPGA DE2 Board using NIOS II platform.},
+pages = {1--6},
+publisher = {IEEE},
+booktitle = {Proceedings of the 2011 International Conference on Electrical Engineering and Informatics},
+isbn = {1457707535},
+year = {2016},
+title = {Fast and reconfigurable packet classification engine in FPGA-based firewall},
+copyright = {2016. This work is published under http://arxiv.org/licenses/nonexclusive-distrib/1.0/ (the “License”). Notwithstanding the ProQuest Terms and Conditions, you may use this content in accordance with the terms of the License.},
+language = {eng},
+address = {Ithaca},
+author = {Wicaksana, A. and Sasongko, A.},
+keywords = {Algorithms ; Buffers ; Classification ; Classification algorithms ; Clocks ; Computer Science ; Computer security ; Cyclones ; Electronic devices ; Engines ; Ethernet ; Field programmable gate arrays ; Filtration ; Fires ; Firewalls ; Hardware Architecture ; Inspection ; Intrusion ; IP (Internet Protocol) ; IP networks ; Microprocessors ; Networking and Internet Architecture ; Packet Classification Engine ; Processor Architecture ; Protocols ; Reconfiguration ; Routers ; Tree-Based Algorithm},
+}
+
+
+@misc{Wasti2001HardwareAP,
+  author      = {Shubhash Wasti},
+  title       = {Hardware Assisted Packet Filtering Firewall},
+  year        = {2001},
+  howpublished = {\url{https://madmuc.usask.ca/Pubs/shw320.pdf}}, 
 }
