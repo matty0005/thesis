@@ -294,6 +294,7 @@ begin
                     currentCtrlState <= IDLE;
                     ctrl_rst_ack <= '0';
                 end if;
+                eth_o_rstn <= '1';
                 
             when RESET_START => 
                 eth_io_crs_dv <= '0'; 
@@ -316,6 +317,7 @@ begin
                 eth_io_rxd <= "ZZ";
                 t_eth_io_rxd <= "00";
                 currentCtrlState <= IDLE;
+                eth_o_rstn <= '1';
 
         end case;
     end if;

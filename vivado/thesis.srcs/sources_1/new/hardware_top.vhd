@@ -60,7 +60,7 @@ entity hardware_top is
     -- Test Ethernet outof PMOD JD --
     t_eth_o_txd : out std_logic_vector(1 downto 0);
     t_eth_o_txen : out std_logic;
-    t_eth_i_rxd : out std_logic_vector(1 downto 0); -- Change to in
+    t_eth_i_rxd : inout std_logic_vector(1 downto 0); -- Change to in
     t_eth_i_rxderr : out std_logic;
     t_eth_o_refclk : out std_logic;
     t_eth_i_intn : out std_logic;
@@ -342,7 +342,13 @@ ethernet_mac : wb_ethernet
   eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
   gpio_i <= x"000000000000" & "000000" & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
+  
+  
+--  t_eth_i_rxd(0) <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
+--  t_eth_i_rxd(1) <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
+  
+--  gpio_i <= x"000000000000" & "000000" & t_eth_i_rxd(1) & t_eth_i_rxd(0) & gpio_io(7 downto 0);
     
-  t_eth_i_rxd <= eth_io_mdio & eth_io_mdc; 
+--  t_eth_i_rxd <= eth_io_mdio & eth_io_mdc; 
 
 end architecture;

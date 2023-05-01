@@ -57,24 +57,6 @@ architecture Behavioral of rmii is
         
 begin
     
---    process(clk_i_write, rmii_i_rst)
---    begin
---        if rmii_i_rst = '0' then -- active low
---            write_ptr <= 0;
---            fifo_full <= false;
---        elsif rising_edge(clk_i_write) then
---            -- Write to FIFO
---            if data_in_valid = '1' and not fifo_full then
---                fifo(write_ptr) <= rmii_i_tx_dat;
---                write_ptr <= (write_ptr + 1) mod FIFO_DEPTH;
---            end if;
-
---            -- Update FIFO full status
---            fifo_full <= (write_ptr + 1) mod FIFO_DEPTH = read_ptr;
---        end if;
---    end process;
-    
-    
     process(clk_i_write, rmii_i_rst)
     begin
         if rmii_i_rst = '0' then -- active low
