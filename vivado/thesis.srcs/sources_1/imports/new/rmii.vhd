@@ -40,7 +40,6 @@ end rmii;
 
 architecture Behavioral of rmii is
 
-    signal data_in_valid : std_logic := '1';
     constant FIFO_DEPTH : integer := 1600; -- Can then use 11 bits
     type fifo_mem is array (FIFO_DEPTH downto 0) of STD_LOGIC_VECTOR (7 downto 0);
     signal fifo : fifo_mem;
@@ -52,8 +51,6 @@ architecture Behavioral of rmii is
     
 --    signal write_ptr_next : integer := 0;
 --    signal fifo_full_next : boolean := false;
-
-    signal write_ptr_inc : integer := 0;
         
 begin
     
@@ -63,14 +60,14 @@ begin
             write_ptr <= 0;
         elsif rising_edge(clk_i_write) then
             -- Write to FIFO
-            if data_in_valid = '1' and not fifo_full then
+            if rmii_i_tx_ready = '1' and not fifo_full then
                 fifo(write_ptr) <= rmii_i_tx_dat;
             end if;
 
             -- Increment write pointer
-            if (write_ptr + write_ptr_inc) = FIFO_DEPTH then
+            if write_ptr = FIFO_DEPTH then
                 write_ptr <= 0;
-            elsif data_in_valid = '1' and not fifo_full then
+            elsif rmii_i_tx_ready = '1' and not fifo_full then
                 write_ptr <= write_ptr + 1;
             end if;
 
@@ -89,6 +86,9 @@ begin
             else
                 fifo_full <= (write_ptr + 1) = read_ptr;
             end if;
+            
+            -- Update FIFO empty status
+            fifo_empty <= write_ptr = read_ptr;
         end if;
     end process;
     
@@ -99,7 +99,6 @@ begin
     begin
         if rmii_i_rst = '0' then
             read_ptr <= 0;
-            fifo_empty <= true;
             bit_idx <= 0;
             current_read_byte <= (others => '0');
         elsif rising_edge(clk_i_read) then
@@ -116,13 +115,12 @@ begin
                     read_ptr <= (read_ptr + 1) mod FIFO_DEPTH;
                 end if;
                 bit_idx <= (bit_idx + 2) mod 8;
-                
+               
             else 
                 rmii_o_txd <= "00";
             end if;
 
-            -- Update FIFO empty status
-            fifo_empty <= write_ptr = read_ptr;
+            
         end if;
     end process;
 

@@ -68,6 +68,8 @@ constant MAC_CONFIG             : std_logic_vector(31 downto 0) := x"13370000";
 constant MAC_DEST_ADDR_HIGH     : std_logic_vector(31 downto 0) := x"13371000";
 constant MAC_DEST_ADDR_LOW      : std_logic_vector(31 downto 0) := x"13371004";
 constant MAC_LEN                : std_logic_vector(31 downto 0) := x"13371008";
+constant MAC_DAT_SIZE           : std_logic_vector(31 downto 0) := x"1337100C";
+
 
 
 
@@ -177,6 +179,9 @@ begin
                     
                         wb_o_dat <= x"0000" & FRAME_BUFFER(21) & FRAME_BUFFER(20);
                         
+                    when MAC_DAT_SIZE => 
+                        wb_o_dat <= x"0000" & payloadLen;
+                        
                     when others =>
                     
                         if wb_i_addr >= x"13371003" and wb_i_addr <= x"1337117A" then
@@ -245,21 +250,23 @@ begin
 --                        FRAME_BUFFER(13) := x"bb";
                      -- Set the payload length
                      when MAC_LEN =>                          
-                        payloadLen <= wb_i_dat(15 downto 0);      
-                                                   
+                                       
                         FRAME_BUFFER(21) := wb_i_dat(7 downto 0);
                         FRAME_BUFFER(20) := "00000" & wb_i_dat(10 downto 8);
                         
+                     when MAC_DAT_SIZE => 
+                     
+                        payloadLen <= wb_i_dat(15 downto 0); 
                      -- Setting payload
                      when others =>
                      
                         status <= "11";
                         
                         -- Check to make sure we are in the safe memory range.
-                        if wb_i_addr >= x"1337100C" and wb_i_addr <= x"1337640C" then
+                        if wb_i_addr >= x"13371010" and wb_i_addr <= x"13376410" then
                             
                             -- 322375680 = 0x13371000.
-                            virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4108));
+                            virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4112));
                             
                             FRAME_BUFFER(22 + virtAddr) := wb_i_dat(31 downto 24);
                             FRAME_BUFFER(23 + virtAddr) := wb_i_dat(23 downto 16);

@@ -53,15 +53,62 @@ entity eth_rx_mac is
         start         : in std_logic := '0';
         dataPresent   : out std_logic := '0';
         dataOut       : out std_logic_vector(7 downto 0);
-        status        : out std_logic_vector(1 downto 0)
+        status        : out std_logic_vector(1 downto 0);
 --        statusa        : out std_logic_vector(1 downto 0);  
 --        statusb        : out std_logic_vector(7 downto 0)
+        eth_i_rxd : in std_logic_vector(1 downto 0);
+        eth_i_crs_dv : in std_logic
+    
     );
 end eth_rx_mac;
 
 architecture Behavioral of eth_rx_mac is
 
+type state is (IDLE, DATA);
+signal currentState : state := IDLE;
+
+signal pipe : std_logic_vector((8 * 8) - 1 downto 0) := (others => '0');
+constant preambleFormat : std_logic_vector(63 downto 0) := x"aaaaaaaaaaaaaaab";
+
+-- FRAME BUFFER
+type ramType is array (1526 - 1 downto 0) of std_logic_vector(8 - 1 downto 0);
+shared variable FRAME_BUFFER : ramType;
+
 begin
 
+RECIEVE_PROCESS: process(clk_i) 
+variable counter : integer range 0 to 1500 * 4 := 0; -- get 2 bits at a time. 
+begin
+    if rising_edge(clk_i) then
+    
+        -- Only recieve data on input. Need to sus out end case
+        if eth_i_crs_dv = '1' then
+            case currentState is 
+                when IDLE =>
+                    -- Wait for preamble to clear.
+                    if pipe = preambleFormat then
+                        currentState <= DATA;
+                    end if;
+                    
+                when DATA => 
+                    
+                    -- Data here. 
+                    if counter mod 8 = 0 and counter /= 0 then -- every 8 times and not including the first. 
+                        FRAME_BUFFER(counter) := pipe(7 downto 0);
+                    end if;
+                    
+                    counter := counter + 1;
+                    
+            end case;
+        else
+            counter := 0;
+            currentState <= IDLE;
+        end if;
+        
+        -- Shift register
+        pipe <= pipe(pipe'length - 2 downto 2) & eth_i_rxd;
+    
+    end if;
+end process;
 
 end Behavioral;
