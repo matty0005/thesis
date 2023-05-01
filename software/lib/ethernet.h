@@ -39,8 +39,8 @@
 
 #define PHY_MDC 0x08
 #define PHY_MDIO 0x09
-#define PHY_MDC_MODE 0x20
-#define PHY_MDIO_MODE 0x21
+#define PHY_MDC_MODE 0x28
+#define PHY_MDIO_MODE 0x29
 
 // Mem location starts at 0x13371000
 typedef struct __attribute__((__packed__))  {
@@ -112,5 +112,16 @@ void eth_send_demo();
  * @return uint8_t 
  */
 uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint16_t *data);
+
+/**
+ * @brief Writes a register from the phy.
+ * @note Bit banged interface.
+ * 
+ * @param phy_addr 
+ * @param reg_addr 
+ * @param data 
+ * @return uint8_t 
+ */
+uint8_t phy_mdio_write(uint8_t phy_addr, uint8_t reg_addr, uint16_t *data);
 
 #endif

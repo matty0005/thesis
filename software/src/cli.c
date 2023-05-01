@@ -14,6 +14,7 @@
 static BaseType_t cli_cmd_usage(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_eth_phy_wr(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_gpio_ctrl(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_reset(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 
@@ -33,9 +34,16 @@ CLI_Command_Definition_t xSendDemoPacket = {
 
 CLI_Command_Definition_t xPhyControl = {	
 	"phy",							
-	"phy [command] [reg]:\r\n    Do some command to the phy - valid commands are.\r\n        phy read [reg] \r\n\r\n",
+	"phy [command] [reg] [addr]:\r\n    Do some command to the phy - valid commands are.\r\n        phy read [reg] \r\n\r\n",
 	cli_cmd_eth_phy,
-	2				
+	3				
+};
+
+CLI_Command_Definition_t xPhyControlWr = {	
+	"phywr",							
+	"phywr [reg] [value] [addr]:\r\n    Write some data to the phy over SMI/MDIO \r\n\r\n",
+	cli_cmd_eth_phy_wr,
+	3				
 };
 
 CLI_Command_Definition_t xReset = {	
@@ -53,6 +61,41 @@ CLI_Command_Definition_t xGpioControl = {
     2				
 };
 
+/**
+ * @brief Convert Hex char to int
+ * 
+ * @param c 
+ * @return int 
+ */
+int hex_char_to_int(char c) {
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+        return c - 'a' + 10;
+    } else if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 10;
+    } else {
+        return 0; // Invalid character, you may want to handle this case differently
+    }
+}
+
+
+/**
+ * @brief Convert a hex string to an integer
+ * 
+ * @param string 
+ * @param length 
+ * @return int 
+ */
+int hex_str_to_int(const char *string, int length) {
+    int value = 0;
+
+    for (int i = 0; i < length; i++) {
+        value = value * 16 + hex_char_to_int(string[i]);
+    }
+
+    return value;
+}
 
 /**
  * @brief Convert a string to an integer
@@ -65,13 +108,28 @@ int str_to_int(const char *string, int length) {
 
     int value = 0;
 
-    if (length == 2) {
-        value += (string[0] - '0') * 10;
-        value += (string[1] - '0');
-    } else {
-        value += (string[0] - '0');
-
+    switch(length) {
+        case 4:
+            value += (string[0] - '0') * 1000;
+            value += (string[1] - '0') * 100;
+            value += (string[2] - '0') * 10;
+            value += (string[3] - '0');
+            break;
+        case 3:
+            value += (string[0] - '0') * 100;
+            value += (string[1] - '0') * 10;
+            value += (string[2] - '0');
+            break;
+        case 2:
+            value += (string[0] - '0') * 10;
+            value += (string[1] - '0');
+            break;
+        case 1:
+        default:
+            value += (string[0] - '0');
+            break;
     }
+
     
     return value;
 }
@@ -172,40 +230,78 @@ static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, 
 static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
 
     // Check to see if the first parameter is "reset"
-    const char *pcCmd, *pcData;
-    BaseType_t xCmdLen, xDataLen;
+    const char *pcCmd, *pcData, *pcAddr;
+    BaseType_t xCmdLen, xDataLen, xAddrLen;
     uint16_t data = 0;
-    uint8_t registerNum;
+    uint8_t registerNum, phyAddr;
 
     // Obtain the first parameter string.
     pcCmd = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xCmdLen);
     pcData = FreeRTOS_CLIGetParameter(pcCommandString, 2, &xDataLen);
+    pcAddr = FreeRTOS_CLIGetParameter(pcCommandString, 3, &xAddrLen);
+
+    registerNum = str_to_int(pcData, xDataLen);
+    phyAddr = str_to_int(pcAddr, xAddrLen);
+
 
     if (strncmp(pcCmd, "read", xCmdLen) == 0) {
 
-        registerNum = str_to_int(pcData, xDataLen);
 
         // enter critical section
         taskENTER_CRITICAL();
-        phy_mdio_read(0x01, registerNum, &data);
+        phy_mdio_read(phyAddr, registerNum, &data);
         taskEXIT_CRITICAL();
 
-        sprintf(pcWriteBuffer, "Phy Register %d = 0x%X\r\n", registerNum, data);
+        sprintf(pcWriteBuffer, "Phy Addr: %d, Register %d = 0x%X\r\n", phyAddr, registerNum, data);
 
     } else if (strncmp(pcCmd, "write", xCmdLen) == 0) { 
         registerNum = str_to_int(pcData, xDataLen);
 
         // enter critical section
         taskENTER_CRITICAL();
-        phy_mdio_write(0x01, registerNum, &data);
+        phy_mdio_write(phyAddr, registerNum, &data);
         taskEXIT_CRITICAL();
-        sprintf(pcWriteBuffer, "Phy Register %d => 0x%X\r\n", registerNum, data);
+        sprintf(pcWriteBuffer, "Phy Addr: %d, Register %d => 0x%X\r\n", phyAddr, registerNum, data);
 
     } else {    
         sprintf(pcWriteBuffer, "Unknown command\r\n");
     }
     
   
+    return pdFALSE;
+}
+
+/**
+ * @brief CLI command to control/write the phy .
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_eth_phy_wr(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    // Check to see if the first parameter is "reset"
+    const char *pcCmd, *pcReg, *pcVal, *pcAddr;
+    BaseType_t xCmdLen, xRegLen, xValLen, xAddrLen;
+    uint16_t data = 0;
+    uint8_t registerNum, phyAddr;
+
+    // Obtain the first parameter string.
+    pcReg = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xRegLen);
+    pcVal = FreeRTOS_CLIGetParameter(pcCommandString, 2, &xValLen);
+    pcAddr = FreeRTOS_CLIGetParameter(pcCommandString, 3, &xAddrLen);
+    
+    registerNum = hex_str_to_int(pcReg, xRegLen);
+    data = hex_str_to_int(pcVal, xValLen);
+    phyAddr = str_to_int(pcAddr, xAddrLen);
+
+    // enter critical section
+    taskENTER_CRITICAL();
+    phy_mdio_write(phyAddr, registerNum, &data);
+    taskEXIT_CRITICAL();
+    sprintf(pcWriteBuffer, "Phy Addr: %d, Register %d => 0x%X\r\n", phyAddr, registerNum, data);
+    
     return pdFALSE;
 }
 
@@ -288,8 +384,10 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xUsage);
     FreeRTOS_CLIRegisterCommand(&xSendDemoPacket);
     FreeRTOS_CLIRegisterCommand(&xPhyControl);
+    FreeRTOS_CLIRegisterCommand(&xPhyControlWr);
     FreeRTOS_CLIRegisterCommand(&xGpioControl);
     FreeRTOS_CLIRegisterCommand(&xReset);
+    
 
 
 	char cRxedChar;

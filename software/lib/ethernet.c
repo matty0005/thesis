@@ -94,19 +94,21 @@ void eth_send_demo() {
     ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
     // set the destination mac
-    ETH_MAC->DEST[0] = 0xaabbccdd;
-    ETH_MAC->DEST[1] = 0x55667788;
+    ETH_MAC->DEST[0] = 0xffffffff;
+    ETH_MAC->DEST[1] = 0xffffffff;
 
     // set the length of the packet.
-    ETH_MAC->LEN = 0x0000000F;
-    // neorv32_uart0_printf("LEN: %x\n", ETH_MAC->LEN);
+    ETH_MAC->LEN = 0x0806; //ARP type
 
     // set the data of the packet.
-    ETH_MAC->DATA[0] = 0xbeefcafe;
-    ETH_MAC->DATA[1] = 0x11223344;
-    ETH_MAC->DATA[2] = 0x55667788;
-    ETH_MAC->DATA[3] = 0x99aabbcc;
-
+    // ARP header
+    ETH_MAC->DATA[0] = 0x00010800;
+    ETH_MAC->DATA[1] = 0x06040001;
+    ETH_MAC->DATA[2] = 0xfcecda16;
+    ETH_MAC->DATA[3] = 0xf0280a00;
+    ETH_MAC->DATA[4] = 0x00fa0000;
+    ETH_MAC->DATA[5] = 0x00000000;
+    ETH_MAC->DATA[6] = 0x0a000086;
 
     // send a packet.
     ETH_MAC_CMD = ETH_MAC_CMD_START_TX;
@@ -118,11 +120,11 @@ void eth_send_demo() {
 
 void phy_smi_start() {
 
-    neorv32_gpio_pin_set(PHY_MDC); 
     neorv32_gpio_pin_set(PHY_MDIO); 
+    neorv32_gpio_pin_set(PHY_MDC); 
 
     // 32 clock cycls for preamble.
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < 31; i++) {
         neorv32_gpio_pin_clr(PHY_MDC); 
         neorv32_gpio_pin_set(PHY_MDC); 
     }
@@ -156,7 +158,6 @@ void phy_smi_send_addr(uint8_t data) {
         neorv32_gpio_pin_set(PHY_MDC);
 
     }
-
 }
 
 /**
@@ -170,9 +171,12 @@ void phy_smi_read(uint16_t *data) {
     for (int j = 0; j < 16; j++) {
 
         neorv32_gpio_pin_set(PHY_MDC);
-        data[i] |= ((!!neorv32_gpio_pin_get(PHY_MDIO)) << (15 - j));
+        data[0] |= ((!!neorv32_gpio_pin_get(PHY_MDIO)) << (15 - j));
         neorv32_gpio_pin_clr(PHY_MDC);
     }
+
+    neorv32_gpio_pin_set(PHY_MDC);
+    neorv32_gpio_pin_clr(PHY_MDC);
     
 }
 
@@ -182,13 +186,13 @@ void phy_smi_read(uint16_t *data) {
  * @param data 
  * @param len 
  */
-void phy_smi_read(uint16_t *data) {
+void phy_smi_write(uint16_t *data) {
 
     for (int j = 0; j < 16; j++) {
 
         neorv32_gpio_pin_set(PHY_MDC);
         
-        if (data[i] & (1 << (15 - j))) {
+        if (data[0] & (1 << (15 - j))) {
             neorv32_gpio_pin_set(PHY_MDIO);
         } else {
             neorv32_gpio_pin_clr(PHY_MDIO);
@@ -196,7 +200,9 @@ void phy_smi_read(uint16_t *data) {
 
         neorv32_gpio_pin_clr(PHY_MDC);
     }
-    
+
+    neorv32_gpio_pin_set(PHY_MDC);
+    neorv32_gpio_pin_clr(PHY_MDC);
 }
 
 /**
@@ -233,9 +239,9 @@ uint8_t phy_mdio_read(uint8_t phy_addr, uint8_t reg_addr, uint16_t *data) {
 
 
     // Turn around
+    neorv32_gpio_pin_clr(PHY_MDIO_MODE); 
     neorv32_gpio_pin_set(PHY_MDC);
     neorv32_gpio_pin_clr(PHY_MDC);
-    neorv32_gpio_pin_clr(PHY_MDIO_MODE); 
     neorv32_gpio_pin_set(PHY_MDC);
     neorv32_gpio_pin_clr(PHY_MDC);
 
