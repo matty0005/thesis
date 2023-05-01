@@ -51,6 +51,7 @@ uint8_t eth_send(uint8_t *data, size_t len) {
 
     // Set the length of the packet.
     ETH_MAC->LEN = data[6] << 8 | data[7]; 
+    ETH_MAC->SIZE = len; 
 
     // Set the data of the packet.
     for (int i = 8; i < len; i++) {
@@ -99,6 +100,7 @@ void eth_send_demo() {
 
     // set the length of the packet.
     ETH_MAC->LEN = 0x0806; //ARP type
+    ETH_MAC->SIZE = 0x001C; //Size of data in bytes
 
     // set the data of the packet.
     // ARP header
