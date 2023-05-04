@@ -81,7 +81,14 @@ entity hardware_top is
     
     t_btnc : in std_logic;
     t_btnl : in std_logic;
-    t_btnr : in std_logic
+    t_btnr : in std_logic;
+    
+    sd_o_rst: out std_logic;
+    sd_i_cd : in std_logic; -- card detect
+    sd_o_sck : out std_logic; -- clock
+    sd_o_cmd : out std_logic; -- MOSI
+    sd_i_miso: in std_logic;
+    sd_o_csn: out std_logic
 
   );
 end entity;
@@ -176,6 +183,8 @@ signal wb_eth_i_rxderr : std_logic;
 signal wb_eth_i_txen : std_logic;
 signal wb_eth_o_refclk : std_logic;
 
+signal spi_csn :  std_ulogic_vector(07 downto 0);
+
 -- Clock master signals
 signal clk_100 : std_logic := '0';
 signal clk_50 : std_logic := '0';
@@ -196,6 +205,7 @@ signal eth_exti_lines : std_logic_vector(3 downto 0);
 
 signal test_eth : std_logic_vector(1 downto 0);
 
+
 begin
 
 -- Connections
@@ -208,7 +218,8 @@ t_eth_o_txen <= eth_txen;
 t_eth_i_rxderr <= eth_rxerr;
 eth_rxerr <= eth_i_rxerr;
 
-    
+sd_o_csn <= spi_csn(0);
+sd_o_rst <= not rstn_i;
 
 exti_lines(3 downto 0) <= std_ulogic_vector(eth_exti_lines(0 downto 0)) & t_btnl & t_btnc & t_btnr;
 
@@ -286,9 +297,10 @@ ethernet_mac : wb_ethernet
     MEM_INT_DMEM_EN              => true,              -- implement processor-internal data memory
     MEM_INT_DMEM_SIZE            => MEM_INT_DMEM_SIZE, -- size of processor-internal data memory in bytes
     -- Processor peripherals --
-    IO_GPIO_NUM                  => 64,              -- implement general purpose input/output port unit (GPIO)?
+    IO_GPIO_NUM                  => 64,                -- implement general purpose input/output port unit (GPIO)?
     IO_MTIME_EN                  => true,              -- implement machine system timer (MTIME)?
     IO_UART0_EN                  => true,              -- implement primary universal asynchronous receiver/transmitter (UART0)?
+    IO_SPI_EN                    => true,              -- implement serial peripheral interface (SPI)?
     
     -- Wishbone interface --
     MEM_EXT_EN                   => true,              -- implement external memory bus interface?
@@ -296,12 +308,12 @@ ethernet_mac : wb_ethernet
     MEM_EXT_PIPE_MODE            => false,             -- protocol: false=classic/standard wishbone mode, true=pipelined wishbone mode
     MEM_EXT_BIG_ENDIAN           => false,             -- byte order: true=big-endian, false=little-endian
     MEM_EXT_ASYNC_RX             => false,             -- use register buffer for RX data when false
-    MEM_EXT_ASYNC_TX             => false,              -- use register buffer for TX data when false
+    MEM_EXT_ASYNC_TX             => false,             -- use register buffer for TX data when false
     
     -- External Interrupts Controller (XIRQ) --
-    XIRQ_NUM_CH                  => 4,      -- number of external IRQ channels (0..32)
-    XIRQ_TRIGGER_TYPE            =>  x"ffffffff", -- trigger type: 0=level, 1=edge
-    XIRQ_TRIGGER_POLARITY        => x"ffffffff" -- trigger polarity: 0=low-level/falling-edge, 1=high-level/rising-edge
+    XIRQ_NUM_CH                  => 4,                 -- number of external IRQ channels (0..32)
+    XIRQ_TRIGGER_TYPE            =>  x"ffffffff",      -- trigger type: 0=level, 1=edge
+    XIRQ_TRIGGER_POLARITY        => x"ffffffff"        -- trigger polarity: 0=low-level/falling-edge, 1=high-level/rising-edge
     
     
   )
@@ -316,6 +328,12 @@ ethernet_mac : wb_ethernet
     -- primary UART0 (available if IO_UART0_EN = true) --
     uart0_txd_o => uart0_txd_o, -- UART0 send data
     uart0_rxd_i => uart0_rxd_i,  -- UART0 receive data
+    
+    -- SPI (available if IO_SPI_EN = true) --
+    spi_clk_o      => sd_o_sck,
+    spi_dat_o      => sd_o_cmd, -- MOSI
+    spi_dat_i      => sd_i_miso, -- MISO
+    spi_csn_o      => spi_csn, -- chip-select
     
     -- Wishbone bus interface (available if MEM_EXT_EN = true) --
 --    wb_tag_o       : out std_ulogic_vector(02 downto 0); -- request tag
@@ -341,7 +359,7 @@ ethernet_mac : wb_ethernet
   eth_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
   eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
-  gpio_i <= x"000000000000" & "000000" & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
+  gpio_i <= x"000000000000" & "00000" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
   
   
 --  t_eth_i_rxd(0) <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
