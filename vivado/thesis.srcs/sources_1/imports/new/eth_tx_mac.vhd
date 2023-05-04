@@ -296,14 +296,10 @@ begin
     elsif rising_edge(clk_i) then
         case nextState is 
             when IDLE =>
---                statusa <= "0" & startTx;
                 startTxAck <= '0';
---                status <= "00";
                 dataOut <= (others => '0');
                 sentAmount := 0;
-                if crcFinished = '1' then
-                    nextState <= FCS;
-                elsif startTx ='1' then
+                if startTx ='1' then
                     nextState <= RESET_FCS;
                     startTxAck <= '1';
                 else
@@ -375,7 +371,6 @@ begin
                 crcCalc <= '0';
                 
                 dataOut <= nextCrcData;
---                status <= nextCrcData(7 downto 6);
      
                 nextCrcData <= crcReg8;
                 sentAmount := sentAmount + 1;
