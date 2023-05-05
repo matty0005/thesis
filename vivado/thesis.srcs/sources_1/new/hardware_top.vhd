@@ -72,7 +72,7 @@ entity hardware_top is
     eth_o_rstn: out std_logic;
     eth_io_crs_dv: inout std_logic;
     eth_i_rxerr: in std_logic;
-    eth_io_rxd: inout std_logic_vector(1 downto 0);
+    eth_io_rxd: in std_logic_vector(1 downto 0);
     eth_o_txen: out std_logic;
     eth_o_txd: out std_logic_vector(1 downto 0);
     eth_o_refclk: out std_logic;
@@ -128,21 +128,19 @@ port (
      -- Ethernet --
     eth_o_txd : out std_logic_vector(1 downto 0);
     eth_o_txen : out std_logic;
-    eth_io_rxd : inout std_logic_vector(1 downto 0); -- Change to in
+    eth_io_rxd : in std_logic_vector(1 downto 0); -- Change to in
     eth_i_rxderr : out std_logic;
     eth_o_refclk : out std_logic;
     eth_i_refclk : in std_logic;
     eth_i_intn   : in std_logic;
-    eth_io_crs_dv   : inout std_logic;
+    eth_io_crs_dv   : in std_logic;
     eth_io_mdc   : inout std_logic;
     eth_io_mdio   : inout std_logic;
    
     eth_o_rstn   : out std_logic;
     
     eth_o_exti : out std_logic_vector(3 downto 0);
-    
-    
-    
+        
     t_eth_io_rxd : out std_logic_vector(1 downto 0)
 );
 end component;
@@ -197,6 +195,7 @@ signal eth_txd : std_logic_vector(1 downto 0);
 signal eth_rxd : std_logic_vector(1 downto 0);
 signal eth_txen : std_logic;
 signal eth_rxerr : std_logic;
+signal eth_crs_dv : std_logic;
 
 
 signal exti_lines : std_ulogic_vector(31 downto 0);
@@ -204,18 +203,18 @@ signal eth_exti_lines : std_logic_vector(3 downto 0);
 
 
 signal test_eth : std_logic_vector(1 downto 0);
+signal test_eth_r : std_logic_vector(1 downto 0);
 
 
 begin
 
 -- Connections
 eth_o_txd <= eth_txd;
-t_eth_o_txd <= eth_txd;
 t_eth_o_refclk <= clk_50;
 eth_o_txen <= eth_txen;
 t_eth_o_txen <= eth_txen;
 --t_eth_i_rxd <= eth_io_rxd;
-t_eth_i_rxderr <= eth_rxerr;
+--t_eth_i_rxderr <= eth_rxerr;
 eth_rxerr <= eth_i_rxerr;
 
 sd_o_csn <= spi_csn(0);
@@ -361,6 +360,14 @@ ethernet_mac : wb_ethernet
   
   gpio_i <= x"000000000000" & "00000" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
   
+  
+  t_eth_o_txd <= eth_txd when gpio_o(10) = '1' else eth_io_rxd;
+  t_eth_i_rxderr <= 'Z' when gpio_o(11) = '1' else eth_io_crs_dv;
+ 
+        
+  
+--  eth_io_crs_dv <= 'Z';
+--  eth_io_rxd <= "ZZ";
   
 --  t_eth_i_rxd(0) <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
 --  t_eth_i_rxd(1) <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
