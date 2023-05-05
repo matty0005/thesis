@@ -44,12 +44,7 @@ void tsk_ethernet(void *pvParameters) {
     for(;;) {
         
         // Enter critical section to prevent the ethernet mac from being used by another task.
-        taskENTER_CRITICAL();
-
-        eth_send_demo();
-
-        // Exit critical section.
-        taskEXIT_CRITICAL();
+       
 
         vTaskDelay(1000);
     }
@@ -64,7 +59,7 @@ void main_project( void ) {
 
 
     cli_init();
-    // xTaskCreate(tsk_ethernet, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL );
+    // xTaskCreate(tsk_ethernet, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL);
 
 }
 

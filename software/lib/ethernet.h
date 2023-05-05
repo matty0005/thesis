@@ -23,17 +23,23 @@
 
 
 #define ETH_CTRL_BASE 0x13370100
-#define ETH_MAC_BASE 0x13371000
+#define ETH_CTRL_RX_BASE 0x13380000
+#define ETH_MAC_TX_BASE 0x13371000
+#define ETH_MAC_RX_BASE 0x13380004
 #define ETH_MAC_CMD_BASE 0x13370000
 
 
 #define ETH_MAC_CMD  (*(volatile uint32_t *)ETH_MAC_CMD_BASE)
-#define ETH_MAC ((EthMac *) ETH_MAC_BASE)
+#define ETH_MAC_TX ((EthMacTx *) ETH_MAC_TX_BASE)
+#define ETH_MAC_RX ((EthMacRx *) ETH_MAC_RX_BASE)
 #define ETH_CTRL (*(volatile uint32_t *) ETH_CTRL_BASE)
+#define ETH_CTRL_RX (*(volatile uint32_t *) ETH_CTRL_RX_BASE)
 
 #define ETH_MAC_CMD_INIT 0x1
 #define ETH_MAC_CMD_START_TX 0x2
 #define ETH_MAC_CMD_IDLE 0x00
+
+#define ETH_CTRL_RX_IQR_ACK_Pos 0x01
 
 #define ETH_CTRL_RESET 0x01
 
@@ -48,7 +54,16 @@ typedef struct __attribute__((__packed__))  {
     volatile uint32_t LEN;
     volatile uint32_t SIZE;
     volatile uint32_t DATA[375]; // 1500 / 4 = 375.
-} EthMac;
+} EthMacTx;
+
+// Mem location starts at 0x13380000
+typedef struct __attribute__((__packed__))  {
+    volatile uint32_t DEST[2];
+    volatile uint32_t SRC[2];
+    volatile uint32_t LEN;
+    volatile uint32_t SIZE;
+    volatile uint32_t DATA[375]; // 1500 / 4 = 375.
+} EthMacRx;
 
 
 /**
@@ -89,6 +104,12 @@ uint8_t eth_send(uint8_t *data, size_t len);
  * @return size_t 
  */
 size_t eth_recv_size();
+
+/**
+ * @brief Acknowledge the interrupt from the ethernet mac.
+ * 
+ */
+void eth_ack_irq();
 
 /**
  * @brief Receive a packet from the ethernet mac.

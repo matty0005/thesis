@@ -46,17 +46,17 @@ uint8_t eth_send(uint8_t *data, size_t len) {
     ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
     // Set the destination mac
-    ETH_MAC->DEST[0] = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
-    ETH_MAC->DEST[1] = data[4] << 24 | data[5] << 16;
+    ETH_MAC_TX->DEST[0] = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
+    ETH_MAC_TX->DEST[1] = data[4] << 24 | data[5] << 16;
 
     // Set the length of the packet.
-    ETH_MAC->LEN = data[6] << 8 | data[7]; 
-    ETH_MAC->SIZE = len; 
+    ETH_MAC_TX->LEN = data[6] << 8 | data[7]; 
+    ETH_MAC_TX->SIZE = len; 
 
     // Set the data of the packet.
     for (int i = 8; i < len; i++) {
 
-        ETH_MAC->DATA[i] = data[i];
+        ETH_MAC_TX->DATA[i] = data[i];
     }
 
     // Send a packet.
@@ -74,9 +74,18 @@ uint8_t eth_send(uint8_t *data, size_t len) {
  * @return size_t 
  */
 size_t eth_recv_size() {
-    return 0;
+    return 0xFFFF & ETH_MAC_RX->SIZE;
 }
 
+/**
+ * @brief Acknowledge the interrupt from the ethernet mac.
+ * 
+ */
+void eth_ack_irq() {
+    // Acknowledge the interrupt.
+    ETH_CTRL_RX |= (1 << ETH_CTRL_RX_IQR_ACK_Pos);
+    ETH_CTRL_RX &= ~(0 << ETH_CTRL_RX_IQR_ACK_Pos);
+}
 
 /**
  * @brief Receive a packet from the ethernet mac.
@@ -85,6 +94,19 @@ size_t eth_recv_size() {
  */
 void eth_recv(uint8_t *buffer) {
 
+    // Get the size of the packet.
+    size_t size = eth_recv_size();
+
+    // May need to factor in MAC header stuff - depends what freertos tcp wants.
+
+    // Copy the data from the receive buffer.
+    for (int i = 0; i < (size / 4); i++) {
+        uint32_t dat = ETH_MAC_RX->DATA[i];
+
+        for (int j = 0; j < 4; j++)
+            buffer[(i << 2) + j] = 0xFF & (dat >> (j * 8));
+
+    }
 }
 
 /**
@@ -95,22 +117,22 @@ void eth_send_demo() {
     ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
     // set the destination mac
-    ETH_MAC->DEST[0] = 0xffffffff;
-    ETH_MAC->DEST[1] = 0xffffffff;
+    ETH_MAC_TX->DEST[0] = 0xffffffff;
+    ETH_MAC_TX->DEST[1] = 0xffffffff;
 
     // set the length of the packet.
-    ETH_MAC->LEN = 0x0806; //ARP type
-    ETH_MAC->SIZE = 0x001C; //Size of data in bytes
+    ETH_MAC_TX->LEN = 0x0806; //ARP type
+    ETH_MAC_TX->SIZE = 0x001C; //Size of data in bytes
 
     // set the data of the packet.
     // ARP header
-    ETH_MAC->DATA[0] = 0x00010800;
-    ETH_MAC->DATA[1] = 0x06040001;
-    ETH_MAC->DATA[2] = 0xfcecda16;
-    ETH_MAC->DATA[3] = 0xf0280a00;
-    ETH_MAC->DATA[4] = 0x00fa0000;
-    ETH_MAC->DATA[5] = 0x00000000;
-    ETH_MAC->DATA[6] = 0x0a000086;
+    ETH_MAC_TX->DATA[0] = 0x00010800;
+    ETH_MAC_TX->DATA[1] = 0x06040001;
+    ETH_MAC_TX->DATA[2] = 0xfcecda16;
+    ETH_MAC_TX->DATA[3] = 0xf0280a00;
+    ETH_MAC_TX->DATA[4] = 0x00fa0000;
+    ETH_MAC_TX->DATA[5] = 0x00000000;
+    ETH_MAC_TX->DATA[6] = 0x0a000086;
 
     // send a packet.
     ETH_MAC_CMD = ETH_MAC_CMD_START_TX;

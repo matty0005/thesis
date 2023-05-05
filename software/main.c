@@ -10,14 +10,16 @@
 #include <neorv32.h>
 
 #include "common.h"
+#include "ethernet.h"
 
 // #define BAUD_RATE 4000000
 #define BAUD_RATE 2000000
 // #define BAUD_RATE 115200
 // #define BAUD_RATE 19200
 
-#define ETH_RX_INT 0x00
+#define ETH_RX_INT 0x03
 
+TaskHandle_t xEthernetTaskHandle = NULL;
 
 extern void main_project( void );
 
@@ -43,6 +45,52 @@ static void prvSetupHardware( void );
 /* System */
 void vToggleLED( void );
 void vSendString( const char * pcString );
+
+
+/**
+ * @brief Creates a task that controls the ethernet mac.
+ * 
+ */
+void tsk_ethernet_test(void *pvParameters) {
+  size_t xBytesReceived;
+
+  for(;;) {
+
+      uint8_t buff[1500];
+      
+
+      /* Wait for the Ethernet MAC interrupt to indicate that another packet
+      has been received.  ulTaskNotifyTake() is used in place of the
+      standard queue receive function as the interrupt handler cannot directly
+      write to a queue. */
+      ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
+
+      neorv32_uart0_printf("Ethernet Recieve!\n");
+
+
+      /* Obtain the size of the packet and put it into the "length" member of
+      the pxBufferDescriptor structure. */
+      
+      // Enter critical section to prevent the ethernet mac from being used by another task.
+      taskENTER_CRITICAL();
+      
+      
+      
+      xBytesReceived = eth_recv_size();
+
+      if (xBytesReceived > 0) {
+        eth_recv(buff);
+
+        neorv32_uart0_printf("From: %x:%x:%x:%x:%x:%x\nBytes Recv: %d\n", buff[6], buff[7], buff[8], buff[9], buff[10], buff[11], xBytesReceived);
+
+      }
+      taskEXIT_CRITICAL();
+
+
+      vTaskDelay(1000);
+  }
+}
+
 
 
 
@@ -86,6 +134,8 @@ int main( void )
 
   main_project();
 
+  xTaskCreate(tsk_ethernet_test, "ETHERNETDAEMON", configMINIMAL_STACK_SIZE * 12, NULL, tskIDLE_PRIORITY + 1, xEthernetTaskHandle);
+
   /* Start the tasks and timer running. */
   vTaskStartScheduler();
 
@@ -113,12 +163,24 @@ void freertos_risc_v_application_interrupt_handler(void) {
   // Could also check CSR_MIP for pending interrupts here
 
   // handle XIRQ
-  if (irq_channel == ETH_RX_INT) {
-    // handle XIRQ
-    BaseType_t pxHigherPriorityTaskWoken;
-    if( xEMACTaskHandle != NULL )
-      vTaskNotifyGiveFromISR(xEMACTaskHandle, &pxHigherPriorityTaskWoken);
+  // if (irq_channel == ETH_RX_INT) {
+  //   // handle XIRQ
+  //   BaseType_t pxHigherPriorityTaskWoken;
+  //   if( xEMACTaskHandle != NULL )
+  //     vTaskNotifyGiveFromISR(xEMACTaskHandle, &pxHigherPriorityTaskWoken);
     
+  // }
+
+  if (irq_channel == ETH_RX_INT) {
+
+    // Acknowledge XIRQ
+    eth_ack_irq();
+
+    BaseType_t pxHigherPriorityTaskWoken;
+    if( xEthernetTaskHandle != NULL )
+      vTaskNotifyGiveFromISR(xEthernetTaskHandle, &pxHigherPriorityTaskWoken);
+    
+
   }
 }
 
@@ -139,7 +201,7 @@ static void prvSetupHardware( void )
   // enable XIRQ channels 0 and 1 (LOW LEVEL!)
   NEORV32_XIRQ->EIP = 0; // clear all pending IRQs
   NEORV32_XIRQ->ESC = 0; // acknowledge (clear) XIRQ interrupt
-  NEORV32_XIRQ->EIE = 0x00000003UL; // enable channels 0, 1 and 2
+  NEORV32_XIRQ->EIE = 0x00000007UL; // enable channels 0, 1, 3 and 4
   // neorv32_cpu_irq_enable(XIRQ_FIRQ_ENABLE); // enable XIRQ's FIRQ channel
 
   neorv32_cpu_csr_set(CSR_MSTATUS, 1 << XIRQ_FIRQ_ENABLE);

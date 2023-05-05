@@ -207,7 +207,7 @@ static BaseType_t cli_cmd_usage(char *pcWriteBuffer, size_t xWriteBufferLen, con
  */
 static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
 
-    sprintf(pcWriteBuffer, "Executed task: %ld\r\n", ETH_MAC->DATA[1]);
+    sprintf(pcWriteBuffer, "Executed task: %ld\r\n", ETH_MAC_TX->DATA[1]);
     
     taskENTER_CRITICAL();
     
