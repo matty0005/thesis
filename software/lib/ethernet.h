@@ -39,7 +39,7 @@
 #define ETH_MAC_CMD_START_TX 0x2
 #define ETH_MAC_CMD_IDLE 0x00
 
-#define ETH_CTRL_RX_IQR_ACK_Pos 0x01
+#define ETH_CTRL_RX_IQR_ACK_Pos 0x00
 
 #define ETH_CTRL_RESET 0x01
 

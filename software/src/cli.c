@@ -17,6 +17,14 @@ static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, c
 static BaseType_t cli_cmd_eth_phy_wr(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_gpio_ctrl(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_reset(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_eth(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+
+CLI_Command_Definition_t xEthAck = {	
+	"ethack",							
+	"ethack:\r\n    Acknowledge ethernet interrupts\r\n\r\n",
+	cli_cmd_eth,
+	0				
+};
 
 CLI_Command_Definition_t xUsage = {	
 	"usage",							
@@ -165,6 +173,30 @@ int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseTy
     return sprintf(buffer + strlen(buffer), "== %s == State: %s, High Water-mark Stack Usage: %ld\r\n", name, stateString, stackUsage);
 }
 
+
+/**
+ * @brief CLI command to control eth stuff.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_eth(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+   
+    sprintf(pcWriteBuffer, "Ack IQR for ethernet\r\n");
+    
+    taskENTER_CRITICAL();
+    
+    eth_ack_irq();
+
+    taskEXIT_CRITICAL();
+
+	/* Return pdFALSE, as there are no more strings to return */
+	/* Only return pdTRUE, if more strings need to be printed */
+	return pdFALSE;
+}
 
 /**
  * @brief CLI command to show the current usage of the system.
@@ -369,6 +401,16 @@ static BaseType_t cli_cmd_gpio_ctrl(char *pcWriteBuffer, size_t xWriteBufferLen,
 
         sprintf(pcWriteBuffer, "Pin %d is %d\r\n", pin, !!neorv32_gpio_pin_get(pin));
 
+    } else if (strncmp(pcCmd, "output", cmdLen) == 0) {
+
+        sprintf(pcWriteBuffer, "Pin %d is set to output\r\n", pin);
+        neorv32_gpio_pin_set(pin + 32);
+
+    } else if (strncmp(pcCmd, "input", cmdLen) == 0) {
+
+        sprintf(pcWriteBuffer, "Pin %d is set to input\r\n", pin);
+        neorv32_gpio_pin_clr(pin + 32);
+
     } else {
         sprintf(pcWriteBuffer, "Unknown command\r\n");
     }
@@ -387,8 +429,8 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xPhyControlWr);
     FreeRTOS_CLIRegisterCommand(&xGpioControl);
     FreeRTOS_CLIRegisterCommand(&xReset);
+    FreeRTOS_CLIRegisterCommand(&xEthAck);
     
-
 
 	char cRxedChar;
 	char cInputString[100];

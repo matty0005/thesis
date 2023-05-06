@@ -13,11 +13,12 @@
 #include "ethernet.h"
 
 // #define BAUD_RATE 4000000
-#define BAUD_RATE 2000000
+// #define BAUD_RATE 2000000
+#define BAUD_RATE 1152000
 // #define BAUD_RATE 115200
 // #define BAUD_RATE 19200
 
-#define ETH_RX_INT 0x03
+#define ETH_RX_INT 0x00
 
 TaskHandle_t xEthernetTaskHandle = NULL;
 
@@ -53,11 +54,9 @@ void vSendString( const char * pcString );
  */
 void tsk_ethernet_test(void *pvParameters) {
   size_t xBytesReceived;
+  uint8_t buff[1500];
 
   for(;;) {
-
-      uint8_t buff[1500];
-      
 
       /* Wait for the Ethernet MAC interrupt to indicate that another packet
       has been received.  ulTaskNotifyTake() is used in place of the
@@ -160,8 +159,6 @@ void freertos_risc_v_application_interrupt_handler(void) {
   // neorv32_uart0_printf("\n<NEORV32-IRQ> mcause = 0x%x </NEORV32-IRQ>\n", neorv32_cpu_csr_read(CSR_MCAUSE));
   neorv32_uart0_printf("\n<NEORV32-IRQ> Channel = 0x%x </NEORV32-IRQ>\n",irq_channel);
 
-  // Could also check CSR_MIP for pending interrupts here
-
   // handle XIRQ
   // if (irq_channel == ETH_RX_INT) {
   //   // handle XIRQ
@@ -174,11 +171,15 @@ void freertos_risc_v_application_interrupt_handler(void) {
   if (irq_channel == ETH_RX_INT) {
 
     // Acknowledge XIRQ
-    eth_ack_irq();
+    // eth_ack_irq();
 
-    BaseType_t pxHigherPriorityTaskWoken;
-    if( xEthernetTaskHandle != NULL )
-      vTaskNotifyGiveFromISR(xEthernetTaskHandle, &pxHigherPriorityTaskWoken);
+    size_t xBytesReceived = eth_recv_size();
+    neorv32_uart0_printf("\nLen: %d\n",xBytesReceived);
+    
+
+    // BaseType_t pxHigherPriorityTaskWoken;
+    // if( xEthernetTaskHandle != NULL )
+    //   vTaskNotifyGiveFromISR(xEthernetTaskHandle, &pxHigherPriorityTaskWoken);
     
 
   }
