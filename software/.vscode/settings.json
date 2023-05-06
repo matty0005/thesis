@@ -3,7 +3,12 @@
         "ethernet.h": "c",
         "unistd.h": "c",
         "stdint.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "array": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "ranges": "c",
+        "utility": "c"
     },
     "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }

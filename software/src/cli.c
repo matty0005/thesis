@@ -18,12 +18,28 @@ static BaseType_t cli_cmd_eth_phy_wr(char *pcWriteBuffer, size_t xWriteBufferLen
 static BaseType_t cli_cmd_gpio_ctrl(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_reset(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_eth_recv(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_eth_recv_size(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 
 CLI_Command_Definition_t xEthAck = {	
 	"ethack",							
 	"ethack:\r\n    Acknowledge ethernet interrupts\r\n\r\n",
 	cli_cmd_eth,
 	0				
+};
+
+CLI_Command_Definition_t xEthRecv = {	
+	"ethrecv",							
+	"ethrecv:\r\n    Shows contents of receive buffer\r\n\r\n",
+	cli_cmd_eth_recv,
+	0				
+};
+
+CLI_Command_Definition_t xEthRecvSize = {	
+	"ethrs",							
+	"ethrs [size]:\r\n    Shows contents of receive buffer, include size to fetch\r\n\r\n",
+	cli_cmd_eth_recv_size,
+	1				
 };
 
 CLI_Command_Definition_t xUsage = {	
@@ -172,6 +188,100 @@ int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseTy
 
     return sprintf(buffer + strlen(buffer), "== %s == State: %s, High Water-mark Stack Usage: %ld\r\n", name, stateString, stackUsage);
 }
+
+
+
+
+
+/**
+ * @brief CLI command to receive eth stuff.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_eth_recv(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+   
+    sprintf(pcWriteBuffer, "Receive from ethernet\r\n");
+    
+    taskENTER_CRITICAL();
+    
+    size_t xBytesReceived = eth_recv_size();
+
+    if (xBytesReceived > 0) {
+        uint8_t *buff = pvPortMalloc(1000 * sizeof(uint8_t));
+        char *strOut = pvPortMalloc(200 * sizeof(char));
+
+        eth_recv_raw(buff);
+
+        for (int i = 0; i < xBytesReceived; i += 8) {
+            sprintf(strOut, "%02x %02x %02x %02x %02x %02x %02x %02x\n", buff[i], buff[i+ 1], buff[i+2], buff[i+3], buff[i+4], buff[i+5], buff[i+6], buff[i+7]);
+            neorv32_uart0_printf(strOut);
+        }
+       
+        
+        vPortFree(strOut);
+        vPortFree(buff);
+
+    }
+
+    taskEXIT_CRITICAL();
+
+	/* Return pdFALSE, as there are no more strings to return */
+	/* Only return pdTRUE, if more strings need to be printed */
+	return pdFALSE;
+}
+
+/**
+ * @brief CLI command to receive eth stuff.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_eth_recv_size(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+   
+    sprintf(pcWriteBuffer, "Receive from ethernet\r\n");
+    const char *pcSize;
+    BaseType_t xSizeLen;
+    uint16_t data = 0;
+    
+
+    // Obtain the first parameter string.
+    pcSize = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xSizeLen);
+
+    uint16_t size = str_to_int(pcSize, xSizeLen);
+
+    
+    taskENTER_CRITICAL();
+
+    uint8_t *buff = pvPortMalloc(1000 * sizeof(uint8_t));
+    char *strOut = pvPortMalloc(200 * sizeof(char));
+
+    eth_recv_raw_size(buff, size);
+
+    for (int i = 0; i < size; i += 8) {
+        sprintf(strOut, "%02x %02x %02x %02x %02x %02x %02x %02x\n", buff[i+3], buff[i+2], buff[i+ 1], buff[i], buff[i+7], buff[i+6], buff[i+5], buff[i+4]);
+        neorv32_uart0_printf(strOut);
+    }
+    
+    
+    vPortFree(strOut);
+    vPortFree(buff);
+
+    
+
+    taskEXIT_CRITICAL();
+
+	/* Return pdFALSE, as there are no more strings to return */
+	/* Only return pdTRUE, if more strings need to be printed */
+	return pdFALSE;
+}
+
 
 
 /**
@@ -430,6 +540,9 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xGpioControl);
     FreeRTOS_CLIRegisterCommand(&xReset);
     FreeRTOS_CLIRegisterCommand(&xEthAck);
+    FreeRTOS_CLIRegisterCommand(&xEthRecv);
+    FreeRTOS_CLIRegisterCommand(&xEthRecvSize);
+    
     
 
 	char cRxedChar;

@@ -58,9 +58,6 @@ typedef struct __attribute__((__packed__))  {
 
 // Mem location starts at 0x13380000
 typedef struct __attribute__((__packed__))  {
-    volatile uint32_t DEST[2];
-    volatile uint32_t SRC[2];
-    volatile uint32_t LEN;
     volatile uint32_t SIZE;
     volatile uint32_t DATA[375]; // 1500 / 4 = 375.
 } EthMacRx;
@@ -104,6 +101,20 @@ uint8_t eth_send(uint8_t *data, size_t len);
  * @return size_t 
  */
 size_t eth_recv_size();
+
+/**
+ * @brief Receive a raw packet from the ethernet mac. THis includes all ethernet headers
+ * 
+ * @param buffer 
+ */
+void eth_recv_raw(uint8_t *buffer);
+
+/**
+ * @brief Receive a raw packet from the ethernet mac. THis includes all ethernet headers. This function also sets the size of payload to grab
+ * 
+ * @param buffer 
+ */
+void eth_recv_raw_size(uint8_t *buffer, uint16_t size);
 
 /**
  * @brief Acknowledge the interrupt from the ethernet mac.

@@ -102,6 +102,47 @@ void eth_recv(uint8_t *buffer) {
     // Copy the data from the receive buffer.
     for (int i = 0; i < (size / 4); i++) {
         uint32_t dat = ETH_MAC_RX->DATA[i];
+        neorv32_uart0_printf("> %X, %d, %p\n", dat, i, &ETH_MAC_RX->DATA[i]);
+
+        for (int j = 0; j < 4; j++)
+            buffer[(i << 2) + j] = 0xFF & (dat >> (j * 8));
+
+    }
+}
+
+/**
+ * @brief Receive a raw packet from the ethernet mac. THis includes all ethernet headers
+ * 
+ * @param buffer 
+ */
+void eth_recv_raw(uint8_t *buffer) {
+
+    // Get the size of the packet.
+    size_t size = eth_recv_size();
+
+    // Copy the data from the receive buffer.
+    for (int i = 0; i < (size / 4); i++) {
+        uint32_t dat = ((uint32_t *) ETH_MAC_RX_BASE)[i];
+        neorv32_uart0_printf("raw> %X, %d, %p\n", dat, i, &((uint32_t *) ETH_MAC_RX_BASE)[i]);
+
+        for (int j = 0; j < 4; j++)
+            buffer[(i << 2) + j] = 0xFF & (dat >> (j * 8));
+
+    }
+}
+
+/**
+ * @brief Receive a raw packet from the ethernet mac. THis includes all ethernet headers. This function also sets the size of payload to grab
+ * 
+ * @param buffer 
+ */
+void eth_recv_raw_size(uint8_t *buffer, uint16_t size) {
+
+
+    // Copy the data from the receive buffer.
+    for (int i = 0; i < (size / 4); i++) {
+        uint32_t dat = ((uint32_t *) ETH_MAC_RX_BASE)[i];
+        neorv32_uart0_printf("raw> %X, %d, %p\n", dat, i, &((uint32_t *) ETH_MAC_RX_BASE)[i]);
 
         for (int j = 0; j < 4; j++)
             buffer[(i << 2) + j] = 0xFF & (dat >> (j * 8));
