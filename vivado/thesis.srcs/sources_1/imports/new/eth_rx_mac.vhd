@@ -129,8 +129,8 @@ begin
                     
                     -- Data here. 
                     if counter mod 4 = 0 and counter /= 0 then -- every 8 times and not including the first. 
-                        FRAME_BUFFER(payloadLen) := pipe(7 downto 0);
---                        FRAME_BUFFER(payloadLen) := std_logic_vector(to_unsigned(payloadLen, 8));
+--                        FRAME_BUFFER(payloadLen) := pipe(7 downto 0);
+                        FRAME_BUFFER(payloadLen) := pipe(1 downto 0) & pipe(3 downto 2) & pipe(5 downto 4) & pipe(7 downto 6);
                         
                         payloadLen <= payloadLen + 1;
                     end if;
@@ -205,42 +205,6 @@ begin
                     
                 end if;
             
---                wb_o_dat <= x"0000" & wb_i_addr(15 downto 0);
---                case wb_i_addr(15 downto 0) is 
---                    when MAC_DEST_ADDR_HIGH =>
-                    
---                        wb_o_dat <= FRAME_BUFFER(0) & FRAME_BUFFER(1) & FRAME_BUFFER(2) & FRAME_BUFFER(3);
-                    
---                    when MAC_DEST_ADDR_LOW =>
---                        wb_o_dat <= FRAME_BUFFER(4) & FRAME_BUFFER(5) & x"0000";
-                        
---                    when MAC_SRC_ADDR_HIGH =>
-                    
---                        wb_o_dat <= FRAME_BUFFER(6) & FRAME_BUFFER(7) & FRAME_BUFFER(8) & FRAME_BUFFER(9);
-                    
---                    when MAC_SRC_ADDR_LOW =>
---                        wb_o_dat <= FRAME_BUFFER(10) & FRAME_BUFFER(11) & x"0000";
-
---                    when MAC_LEN =>
-                    
---                        wb_o_dat <= x"0000" & FRAME_BUFFER(12) & FRAME_BUFFER(13);
-                        
---                    when MAC_DAT_SIZE => 
---                        wb_o_dat <= std_logic_vector(to_unsigned(payloadLen, 32));
-                        
---                    when others =>
-                    
---                        if wb_i_addr >= x"001C" and wb_i_addr <= x"05F8" then
-                            
---                            -- 322375680 = 0x13371000.
---                            virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 28));
-                            
---                            wb_o_dat <= FRAME_BUFFER(14 + virtAddr) &  FRAME_BUFFER(15 + virtAddr) & FRAME_BUFFER(16 + virtAddr) & FRAME_BUFFER(17 + virtAddr);
-                            
---                        end if;
-                        
---                end case;
-
             elsif wb_i_we = '1' then
                 if wb_i_addr(15 downto 0) = READ_CONFIG then
                     -- Initialise the buffers.
@@ -253,8 +217,5 @@ begin
     
     end if;
 end process;
-
-
-
 
 end Behavioral;
