@@ -70,7 +70,7 @@ entity hardware_top is
     eth_io_mdc: inout std_logic;
     eth_io_mdio: inout std_logic;
     eth_o_rstn: out std_logic;
-    eth_io_crs_dv: inout std_logic;
+    eth_io_crs_dv: in std_logic;
     eth_i_rxerr: in std_logic;
     eth_io_rxd: in std_logic_vector(1 downto 0);
     eth_o_txen: out std_logic;
@@ -149,6 +149,8 @@ component clk_master is
   Port ( 
     clk_100 : out std_logic;
     clk_50 : out std_logic;
+    clk_50p : out std_logic; -- 270deg = 15ns
+    clk_p50 : out std_logic; -- 90 deg = 5ns
     resetn : in std_logic;
     locked : out std_logic;
     clk_in : in std_logic
@@ -186,6 +188,8 @@ signal spi_csn :  std_ulogic_vector(07 downto 0);
 -- Clock master signals
 signal clk_100 : std_logic := '0';
 signal clk_50 : std_logic := '0';
+signal clk_p50 : std_logic := '0';
+signal clk_50p : std_logic := '0';
 signal clk_locked : std_logic := '0';
 
 
@@ -210,9 +214,9 @@ begin
 
 -- Connections
 eth_o_txd <= eth_txd;
-t_eth_o_refclk <= clk_50;
+t_eth_o_refclk <= clk_p50;
 eth_o_txen <= eth_txen;
-t_eth_o_txen <= eth_txen;
+t_eth_o_txen <= clk_50;
 --t_eth_i_rxd <= eth_io_rxd;
 --t_eth_i_rxderr <= eth_rxerr;
 eth_rxerr <= eth_i_rxerr;
@@ -220,7 +224,7 @@ eth_rxerr <= eth_i_rxerr;
 sd_o_csn <= spi_csn(0);
 sd_o_rst <= not rstn_i;
 
-exti_lines(3 downto 0) <= std_ulogic_vector(eth_exti_lines(0 downto 0)) & t_btnl & t_btnc & t_btnr;
+exti_lines(3 downto 0) <= t_btnl & t_btnc & t_btnr & std_ulogic_vector(eth_exti_lines(0 downto 0));
 
 ethernet_mac : wb_ethernet
     port map (
@@ -272,6 +276,8 @@ ethernet_mac : wb_ethernet
     port map (
         clk_100 => clk_100,
         clk_50 => clk_50,
+        clk_50p => clk_50p,
+        clk_p50 => clk_p50,
         resetn => rstn_i,
         locked => clk_locked,
         clk_in => clk_i
@@ -351,9 +357,11 @@ ethernet_mac : wb_ethernet
   );
 
   -- GPIO output --
-  GPIO_TRISTATE: for i in 0 to 7 generate
+  GPIO_TRISTATE: for i in 0 to 6 generate
       gpio_io(i) <= gpio_o(i) when gpio_o(i + 32) = '1' else 'Z';
   end generate;
+  
+  gpio_io(7) <= std_ulogic(eth_exti_lines(0));
     
   eth_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
   eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';

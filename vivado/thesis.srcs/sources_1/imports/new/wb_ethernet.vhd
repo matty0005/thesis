@@ -205,27 +205,27 @@ begin
     
 --    eth_o_txen <= eth_tx_dat_pres_o;
 --    eth_o_txd <= eth_tx_dat_o(1 downto 0);
-    eth_tx : eth_tx_mac
-    port map (
-        wb_i_dat    => wb_dat_i,
-        wb_o_dat    => wb_tx_dat_o,
-        wb_i_addr   => wb_adr_i,
-        wb_i_cyc    => wb_cyc_i,
-        wb_i_lock   => wb_lock_i,
-        wb_i_sel    => wb_sel_i,
-        wb_i_we     => wb_we_i,
-        wb_o_ack    => wb_tx_ack,
-        wb_o_err    => wb_tx_err_o,
-        wb_o_rty    => wb_tx_o_rty,
-        wb_o_stall  => wb_tx_o_stall,
-        wb_i_stb    => wb_stb_i,
+--    eth_tx : eth_tx_mac
+--    port map (
+--        wb_i_dat    => wb_dat_i,
+--        wb_o_dat    => wb_tx_dat_o,
+--        wb_i_addr   => wb_adr_i,
+--        wb_i_cyc    => wb_cyc_i,
+--        wb_i_lock   => wb_lock_i,
+--        wb_i_sel    => wb_sel_i,
+--        wb_i_we     => wb_we_i,
+--        wb_o_ack    => wb_tx_ack,
+--        wb_o_err    => wb_tx_err_o,
+--        wb_o_rty    => wb_tx_o_rty,
+--        wb_o_stall  => wb_tx_o_stall,
+--        wb_i_stb    => wb_stb_i,
         
-        clk_i       => clk_i,
-        rst_i       => rstn_i,
-        start       => eth_tx_start,
-        dataPresent => eth_tx_dat_pres_o,
-        dataOut     => eth_tx_dat_o
-    );
+--        clk_i       => clk_i,
+--        rst_i       => rstn_i,
+--        start       => eth_tx_start,
+--        dataPresent => eth_tx_dat_pres_o,
+--        dataOut     => eth_tx_dat_o
+--    );
     
     eth_rx : eth_rx_mac
     port map (

@@ -58,6 +58,8 @@
 //----------------------------------------------------------------------------
 // _clk_100__100.00000______0.000______50.0______130.958_____98.575
 // __clk_50__50.00000______0.000______50.0______151.636_____98.575
+// _clk_50p__50.00000____270.000______50.0______151.636_____98.575
+// _clk_p50__50.00000_____90.000______50.0______151.636_____98.575
 //
 //----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
@@ -72,6 +74,8 @@ module clk_master_clk_wiz
   // Clock out ports
   output        clk_100,
   output        clk_50,
+  output        clk_50p,
+  output        clk_p50,
   // Status and control signals
   input         resetn,
   output        locked,
@@ -97,8 +101,8 @@ wire clk_in2_clk_master;
 
   wire        clk_100_clk_master;
   wire        clk_50_clk_master;
-  wire        clk_out3_clk_master;
-  wire        clk_out4_clk_master;
+  wire        clk_50p_clk_master;
+  wire        clk_p50_clk_master;
   wire        clk_out5_clk_master;
   wire        clk_out6_clk_master;
   wire        clk_out7_clk_master;
@@ -112,9 +116,7 @@ wire clk_in2_clk_master;
   wire        clkfboutb_unused;
     wire clkout0b_unused;
    wire clkout1b_unused;
-   wire clkout2_unused;
    wire clkout2b_unused;
-   wire clkout3_unused;
    wire clkout3b_unused;
    wire clkout4_unused;
   wire        clkout5_unused;
@@ -140,6 +142,14 @@ wire clk_in2_clk_master;
     .CLKOUT1_PHASE        (0.000),
     .CLKOUT1_DUTY_CYCLE   (0.500),
     .CLKOUT1_USE_FINE_PS  ("FALSE"),
+    .CLKOUT2_DIVIDE       (20),
+    .CLKOUT2_PHASE        (270.000),
+    .CLKOUT2_DUTY_CYCLE   (0.500),
+    .CLKOUT2_USE_FINE_PS  ("FALSE"),
+    .CLKOUT3_DIVIDE       (20),
+    .CLKOUT3_PHASE        (90.000),
+    .CLKOUT3_DUTY_CYCLE   (0.500),
+    .CLKOUT3_USE_FINE_PS  ("FALSE"),
     .CLKIN1_PERIOD        (10.000))
   mmcm_adv_inst
     // Output clocks
@@ -150,9 +160,9 @@ wire clk_in2_clk_master;
     .CLKOUT0B            (clkout0b_unused),
     .CLKOUT1             (clk_50_clk_master),
     .CLKOUT1B            (clkout1b_unused),
-    .CLKOUT2             (clkout2_unused),
+    .CLKOUT2             (clk_50p_clk_master),
     .CLKOUT2B            (clkout2b_unused),
-    .CLKOUT3             (clkout3_unused),
+    .CLKOUT3             (clk_p50_clk_master),
     .CLKOUT3B            (clkout3b_unused),
     .CLKOUT4             (clkout4_unused),
     .CLKOUT5             (clkout5_unused),
@@ -207,6 +217,14 @@ wire clk_in2_clk_master;
   BUFG clkout2_buf
    (.O   (clk_50),
     .I   (clk_50_clk_master));
+
+  BUFG clkout3_buf
+   (.O   (clk_50p),
+    .I   (clk_50p_clk_master));
+
+  BUFG clkout4_buf
+   (.O   (clk_p50),
+    .I   (clk_p50_clk_master));
 
 
 

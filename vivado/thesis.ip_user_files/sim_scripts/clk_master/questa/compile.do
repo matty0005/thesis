@@ -14,8 +14,8 @@ vcom -work xpm  -93  \
 "C:/Xilinx/Vivado/2022.2/data/ip/xpm/xpm_VCOMP.vhd" \
 
 vlog -work xil_defaultlib  -incr -mfcu  "+incdir+../../../ipstatic" \
-"../../../../project_1.gen/sources_1/ip/clk_master/clk_master_clk_wiz.v" \
-"../../../../project_1.gen/sources_1/ip/clk_master/clk_master.v" \
+"../../../../thesis.gen/sources_1/ip/clk_master/clk_master_clk_wiz.v" \
+"../../../../thesis.gen/sources_1/ip/clk_master/clk_master.v" \
 
 vlog -work xil_defaultlib \
 "glbl.v"
