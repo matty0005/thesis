@@ -57,7 +57,7 @@ architecture Behavioral of eth_tx_mac is
 
 
 -- CONSTANTS
-constant preambleSFD : std_logic_vector(63 downto 0) := x"ABAAAAAAAAAAAAAA";
+constant preambleSFD : std_logic_vector(63 downto 0) := x"D555555555555555";
 constant sourceAddr  : std_logic_vector (47 downto 0) := x"BEBAEFBEADDE"; --DEADBEEFBABE
 constant padding     : std_logic_vector(7 downto 0) := x"00"; -- Can change to A5
 
