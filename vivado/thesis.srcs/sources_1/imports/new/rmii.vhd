@@ -48,6 +48,9 @@ architecture Behavioral of rmii is
     signal current_read_byte : STD_LOGIC_VECTOR (7 downto 0) := x"00";
     signal bit_idx : natural range 0 to 7 := 0;
     
+    signal txen : std_logic := '0';
+    signal txd : std_logic_vector(1 downto 0) := "00";
+    
     
 --    signal write_ptr_next : integer := 0;
 --    signal fifo_full_next : boolean := false;
@@ -61,7 +64,7 @@ begin
         elsif rising_edge(clk_i_write) then
             -- Write to FIFO
             if rmii_i_tx_ready = '1' and not fifo_full then
-                fifo(write_ptr) <= rmii_i_tx_dat;
+                fifo(write_ptr) <= "00"; --rmii_i_tx_dat;
             end if;
 
             -- Increment write pointer
@@ -95,20 +98,22 @@ begin
     
     
     
-    process(clk_i_read, rmii_i_rst)
+    TX_OUT: process(clk_i_read, rmii_i_rst)
     begin
         if rmii_i_rst = '0' then
             read_ptr <= 0;
             bit_idx <= 0;
+            txen <= '0';
             current_read_byte <= (others => '0');
         elsif rising_edge(clk_i_read) then
             -- Read from FIFO
             if not fifo_empty then
+                txen <= '1';
                 if bit_idx = 0 then
                     current_read_byte <= fifo(read_ptr);
-                    rmii_o_txd <= fifo(read_ptr)(1 downto 0);
+                    txd <=  fifo(read_ptr)(0) & fifo(read_ptr)(1);
                 else
-                    rmii_o_txd <= current_read_byte((1 + bit_idx) downto (bit_idx));
+                    txd <= current_read_byte(bit_idx) &  current_read_byte(bit_idx + 1);
                 end if;
                 
                 if bit_idx = 6 then
@@ -117,14 +122,16 @@ begin
                 bit_idx <= (bit_idx + 2) mod 8;
                
             else 
-                rmii_o_txd <= "00";
+                txd <= "00";
+                txen <= '0';
             end if;
 
             
         end if;
     end process;
-
-    rmii_o_txen <= '1' when not fifo_empty else '0'; --data out valid
+    
+    rmii_o_txd <= txd;
+    rmii_o_txen <= '1' when (not fifo_empty) else '0'; --data out valid
 end Behavioral;
 
 

@@ -216,7 +216,7 @@ begin
 eth_o_txd <= eth_txd;
 t_eth_o_refclk <= clk_p50;
 eth_o_txen <= eth_txen;
-t_eth_o_txen <= clk_50;
+t_eth_o_txen <= clk_p50;
 --t_eth_i_rxd <= eth_io_rxd;
 --t_eth_i_rxderr <= eth_rxerr;
 eth_rxerr <= eth_i_rxerr;
@@ -370,7 +370,7 @@ ethernet_mac : wb_ethernet
   
   
   t_eth_o_txd <= eth_txd when gpio_o(10) = '1' else eth_io_rxd;
-  t_eth_i_rxderr <= 'Z' when gpio_o(11) = '1' else eth_io_crs_dv;
+  t_eth_i_rxderr <= eth_txen when gpio_o(11) = '1' else eth_io_crs_dv;
  
         
   
