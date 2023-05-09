@@ -95,7 +95,7 @@ type ramType is array (1526 - 1 downto 0) of std_logic_vector(8 - 1 downto 0);
 shared variable FRAME_BUFFER : ramType;
 
 -- Used for Main fsm.
-type state is (IDLE, FCS, TRANSMIT, RESET_FCS, LOAD_FCS);
+type state is (IDLE, FCS, TRANSMIT, RESET_FCS, LOAD_FCS, NEXT_IDLE);
 signal currentState, nextState, setStateFromOutside : state := IDLE;
 
 -- Used for FCS fsm.
@@ -128,7 +128,7 @@ signal crcIdle      : std_logic := '0';
 signal payloadLen : std_logic_vector(15 downto 0) := (others => '0');
 
 
-signal nextCrcData      : std_logic_vector(7 downto 0);
+signal nextCrcData, repeatByte: std_logic_vector(7 downto 0);
 
 
 begin
@@ -377,13 +377,17 @@ begin
                 
                 if sentAmount = 4 then
                     sentAmount := 0;
-                    dataPresent <= '0';
-                    nextState <= IDLE;
+                    repeatByte <= nextCrcData;
+                    nextState <= NEXT_IDLE;
                 else 
                     nextState <= FCS;
                 end if;
-    
-       
+                
+            when NEXT_IDLE => 
+                dataOut <= repeatByte;
+                nextState <= IDLE;
+                dataPresent <= '0';
+           
         end case;
      
         end if;
