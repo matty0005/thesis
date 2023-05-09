@@ -64,7 +64,7 @@ begin
         elsif rising_edge(clk_i_write) then
             -- Write to FIFO
             if rmii_i_tx_ready = '1' and not fifo_full then
-                fifo(write_ptr) <= "00"; --rmii_i_tx_dat;
+                fifo(write_ptr) <= rmii_i_tx_dat;
             end if;
 
             -- Increment write pointer
@@ -90,8 +90,7 @@ begin
                 fifo_full <= (write_ptr + 1) = read_ptr;
             end if;
             
-            -- Update FIFO empty status
-            fifo_empty <= write_ptr = read_ptr;
+            
         end if;
     end process;
     
@@ -107,7 +106,10 @@ begin
             current_read_byte <= (others => '0');
         elsif rising_edge(clk_i_read) then
             -- Read from FIFO
-            if not fifo_empty then
+            -- Update FIFO empty status
+            fifo_empty <= write_ptr = read_ptr;
+            
+            if write_ptr /= read_ptr then
                 txen <= '1';
                 if bit_idx = 0 then
                     current_read_byte <= fifo(read_ptr);

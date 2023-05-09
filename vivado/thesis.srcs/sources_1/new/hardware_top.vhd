@@ -254,7 +254,7 @@ ethernet_mac : wb_ethernet
         eth_io_rxd => eth_io_rxd,
         t_eth_io_rxd => test_eth,
         eth_i_rxderr => eth_rxerr,
-        eth_i_refclk => clk_50,
+        eth_i_refclk => clk_p50,
         eth_o_refclk => eth_o_refclk,
         
         eth_o_rstn => eth_o_rstn,
