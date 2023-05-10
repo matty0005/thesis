@@ -1,7 +1,7 @@
 -- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2022.2 (win64) Build 3671981 Fri Oct 14 05:00:03 MDT 2022
--- Date        : Sat May  6 23:48:47 2023
+-- Date        : Wed May 10 07:05:27 2023
 -- Host        : Squid running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode funcsim
 --               c:/Users/Matt/thesis/vivado/thesis.gen/sources_1/ip/clk_master/clk_master_sim_netlist.vhdl
@@ -119,7 +119,7 @@ mmcm_adv_inst: unisim.vcomponents.MMCME2_ADV
       CLKOUT2_USE_FINE_PS => false,
       CLKOUT3_DIVIDE => 20,
       CLKOUT3_DUTY_CYCLE => 0.500000,
-      CLKOUT3_PHASE => 90.000000,
+      CLKOUT3_PHASE => 45.000000,
       CLKOUT3_USE_FINE_PS => false,
       CLKOUT4_CASCADE => false,
       CLKOUT4_DIVIDE => 1,
