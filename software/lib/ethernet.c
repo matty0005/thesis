@@ -105,7 +105,7 @@ void eth_recv(uint8_t *buffer) {
         neorv32_uart0_printf("> %X, %d, %p\n", dat, i, &ETH_MAC_RX->DATA[i]);
 
         for (int j = 0; j < 4; j++)
-            buffer[(i << 2) + j] = 0xFF & (dat >> (j * 8));
+            buffer[(i << 2) + j] = 0xFF & (dat >> ((3 - j) * 8)); 
 
     }
 }
@@ -141,7 +141,7 @@ void eth_recv_raw_size(uint8_t *buffer, uint16_t size) {
 
     // Copy the data from the receive buffer.
     for (int i = 0; i < (size / 4); i++) {
-        uint32_t dat = ((uint32_t *) ETH_MAC_RX_BASE)[i];
+        uint32_t dat = ((uint32_t *) ETH_MAC_RX->DATA)[i];
         neorv32_uart0_printf("raw> %X, %d, %p\n", dat, i, &((uint32_t *) ETH_MAC_RX_BASE)[i]);
 
         for (int j = 0; j < 4; j++)

@@ -20,6 +20,7 @@ static BaseType_t cli_cmd_reset(char *pcWriteBuffer, size_t xWriteBufferLen, con
 static BaseType_t cli_cmd_eth(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_recv(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_recv_size(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_eth_cont(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 
 CLI_Command_Definition_t xEthAck = {	
 	"ethack",							
@@ -53,6 +54,13 @@ CLI_Command_Definition_t xSendDemoPacket = {
 	"demo",							
 	"demo:\r\n    Send an ethernet packet. \r\n\r\n",
 	cli_cmd_eth_demo,
+	0				
+};
+
+CLI_Command_Definition_t xSendDemoContPacket = {	
+	"democ",							
+	"democ:\r\n    Send an ethernet packet. \r\n\r\n",
+	cli_cmd_eth_cont,
 	0				
 };
 
@@ -362,6 +370,34 @@ static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, 
 }
 
 /**
+ * @brief CLI command to send a packet.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_eth_cont(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    sprintf(pcWriteBuffer, "Sending 10000 packets\r\n");
+    
+    taskENTER_CRITICAL();
+   
+    eth_send_demo();
+    for (int i = 0; i < 10000; i++) {
+        ETH_MAC_CMD = ETH_MAC_CMD_START_TX;
+
+        // Need to set the idle state. Otherwise packet gets sent again.
+        ETH_MAC_CMD = ETH_MAC_CMD_IDLE;
+    }
+    
+    taskEXIT_CRITICAL();
+
+	return pdFALSE;
+
+}
+
+/**
  * @brief CLI command to control the phy.
  * 
  * @param pcWriteBuffer 
@@ -542,6 +578,8 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xEthAck);
     FreeRTOS_CLIRegisterCommand(&xEthRecv);
     FreeRTOS_CLIRegisterCommand(&xEthRecvSize);
+    FreeRTOS_CLIRegisterCommand(&xSendDemoContPacket);
+    
     
     
 

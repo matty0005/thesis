@@ -59,6 +59,7 @@ typedef struct __attribute__((__packed__))  {
 // Mem location starts at 0x13380000
 typedef struct __attribute__((__packed__))  {
     volatile uint32_t SIZE;
+    volatile uint32_t PREAMBLE[2];
     volatile uint32_t DATA[375]; // 1500 / 4 = 375.
 } EthMacRx;
 

@@ -35,8 +35,39 @@
 #include "common.h"
 
 
+BaseType_t xApplicationGetRandomNumber( uint32_t * pulNumber );
+BaseType_t xApplicationDNSQueryHook( const char * pcName );
+uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress, uint16_t usSourcePort, uint32_t ulDestinationAddress, uint16_t usDestinationPort );
+
 static void prvEMACDeferredInterruptHandlerTask( void *pvParameters );
 TaskHandle_t xEMACTaskHandle = NULL;
+
+
+
+
+
+
+
+/** Implement with TNG in Neorv32*/
+BaseType_t xApplicationGetRandomNumber( uint32_t * pulNumber ) {
+    return 0;
+}
+
+
+BaseType_t xApplicationDNSQueryHook( const char * pcName ) {
+    return 0;
+}
+
+uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress, uint16_t usSourcePort, uint32_t ulDestinationAddress, uint16_t usDestinationPort ) {
+    return 0;
+}
+
+
+
+
+
+
+
 
 
 /**

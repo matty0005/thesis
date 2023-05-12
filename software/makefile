@@ -72,19 +72,18 @@ APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRT
 
 
 
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Cache.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Callback.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Networking.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Parser.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_ICMP.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_IP_Timers.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_IP_Utils.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_StreamBuffer.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Reception.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS_Plus_TCP/source/FreeRTOS_TCP_State_Handling.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS_Plus_TCP/source/FreeRTOS_TCP_Transmission.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS_Plus_TCP/source/FreeRTOS_TCP_Utils.c
-# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/FreeRTOS-Plus-TCP/source/FreeRTOS_Tiny_TCP.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Cache.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Callback.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Networking.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Parser.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_ICMP.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_IP_Timers.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_IP_Utils.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Reception.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_State_Handling.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Transmission.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Utils.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/FreeRTOS_Tiny_TCP.c
 
 APP_SRC += $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/portable/BufferManagement/BufferAllocation_2.c
 

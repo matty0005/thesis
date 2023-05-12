@@ -11,6 +11,7 @@
 
 #include "common.h"
 #include "ethernet.h"
+#include "networking.h"
 
 // #define BAUD_RATE 4000000
 // #define BAUD_RATE 2000000
@@ -21,6 +22,8 @@
 #define ETH_RX_INT 0x00
 
 TaskHandle_t xEthernetTaskHandle = NULL;
+
+
 
 extern void main_project( void );
 
@@ -95,6 +98,9 @@ void tsk_ethernet_test(void *pvParameters) {
 
 
 
+
+
+
 int main( void )
 {
   prvSetupHardware();
@@ -130,11 +136,12 @@ int main( void )
   // print some system info
   neorv32_uart0_printf("CPU clock: %u MHz\n\n", NEORV32_SYSINFO->CLK / 1000000);
   
+  start_networking();
 
 
   main_project();
 
-  xTaskCreate(tsk_ethernet_test, "ETHERNETDAEMON", configMINIMAL_STACK_SIZE * 12, NULL, tskIDLE_PRIORITY + 1, xEthernetTaskHandle);
+  xTaskCreate(tsk_ethernet_test, "ETHERNETDAEMON", configMINIMAL_STACK_SIZE * 12, NULL, tskIDLE_PRIORITY + 1, &xEthernetTaskHandle);
 
   /* Start the tasks and timer running. */
   vTaskStartScheduler();
@@ -161,29 +168,35 @@ void freertos_risc_v_application_interrupt_handler(void) {
   neorv32_uart0_printf("\n<NEORV32-IRQ> Channel = 0x%x </NEORV32-IRQ>\n",irq_channel);
 
   // handle XIRQ
-  // if (irq_channel == ETH_RX_INT) {
-  //   // handle XIRQ
-  //   BaseType_t pxHigherPriorityTaskWoken;
-  //   if( xEMACTaskHandle != NULL )
-  //     vTaskNotifyGiveFromISR(xEMACTaskHandle, &pxHigherPriorityTaskWoken);
-    
-  // }
-
   if (irq_channel == ETH_RX_INT) {
-
-    // Acknowledge XIRQ
-    // eth_ack_irq();
-
+    // handle XIRQ
     size_t xBytesReceived = eth_recv_size();
+
+    eth_ack_irq();
+
+    BaseType_t pxHigherPriorityTaskWoken;
     neorv32_uart0_printf("\nLen: %d\n",xBytesReceived);
-    
 
-    // BaseType_t pxHigherPriorityTaskWoken;
-    // if( xEthernetTaskHandle != NULL )
-    //   vTaskNotifyGiveFromISR(xEthernetTaskHandle, &pxHigherPriorityTaskWoken);
+    if( xEMACTaskHandle != NULL )
+      vTaskNotifyGiveFromISR(xEMACTaskHandle, &pxHigherPriorityTaskWoken);
     
-
   }
+
+  // if (irq_channel == ETH_RX_INT) {
+
+  //   // Acknowledge XIRQ
+  //   eth_ack_irq();
+
+  //   size_t xBytesReceived = eth_recv_size();
+  //   neorv32_uart0_printf("\nLen: %d, handler: %d\n",xBytesReceived, xEthernetTaskHandle);
+    
+
+  //   BaseType_t pxHigherPriorityTaskWoken;
+  //   if( xEthernetTaskHandle != NULL )
+  //     vTaskNotifyGiveFromISR(xEthernetTaskHandle, &pxHigherPriorityTaskWoken);
+    
+
+  // }
 }
 
 /* Handle NEORV32-specific exceptions */

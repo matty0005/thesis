@@ -35,6 +35,7 @@
 #ifndef FREERTOS_IP_CONFIG_H
 #define FREERTOS_IP_CONFIG_H
 
+
 /* Prototype for the function used to print out.  In this case it prints to the
 console before the network is connected then a UDP port after the network has
 connected. */
@@ -43,7 +44,7 @@ extern void vLoggingPrintf( const char *pcFormatString, ... );
 /* Set to 1 to print out debug messages.  If ipconfigHAS_DEBUG_PRINTF is set to
 1 then FreeRTOS_debug_printf should be defined to the function used to print
 out the debugging messages. */
-#define ipconfigHAS_DEBUG_PRINTF	1
+#define ipconfigHAS_DEBUG_PRINTF	0
 #if( ipconfigHAS_DEBUG_PRINTF == 1 )
 	#define FreeRTOS_debug_printf(X)	vLoggingPrintf X
 #endif
@@ -75,7 +76,7 @@ used as defaults. */
 
 /* Include support for LLMNR: Link-local Multicast Name Resolution
 (non-Microsoft) */
-#define ipconfigUSE_LLMNR					( 1 )
+#define ipconfigUSE_LLMNR					( 0 )
 
 /* Include support for NBNS: NetBIOS Name Service (Microsoft) */
 #define ipconfigUSE_NBNS					( 1 )
