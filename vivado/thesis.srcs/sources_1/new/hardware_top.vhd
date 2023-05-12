@@ -295,6 +295,8 @@ ethernet_mac : wb_ethernet
     CPU_EXTENSION_RISCV_C        => true,              -- implement compressed extension?
     CPU_EXTENSION_RISCV_M        => true,              -- implement mul/div extension?
     CPU_EXTENSION_RISCV_Zicntr   => true,              -- implement base counters?
+    
+    FAST_MUL_EN                  => true,             -- use DSPs for M extension's multiplier
     -- Internal Instruction memory --
     MEM_INT_IMEM_EN              => true,              -- implement processor-internal instruction memory
     MEM_INT_IMEM_SIZE            => MEM_INT_IMEM_SIZE, -- size of processor-internal instruction memory in bytes
@@ -306,6 +308,7 @@ ethernet_mac : wb_ethernet
     IO_MTIME_EN                  => true,              -- implement machine system timer (MTIME)?
     IO_UART0_EN                  => true,              -- implement primary universal asynchronous receiver/transmitter (UART0)?
     IO_SPI_EN                    => true,              -- implement serial peripheral interface (SPI)?
+    IO_TRNG_EN                   => true,              -- implement true random number generator (TRNG)?
     
     -- Wishbone interface --
     MEM_EXT_EN                   => true,              -- implement external memory bus interface?
