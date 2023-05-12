@@ -50,7 +50,15 @@ TaskHandle_t xEMACTaskHandle = NULL;
 
 /** Implement with TNG in Neorv32*/
 BaseType_t xApplicationGetRandomNumber( uint32_t * pulNumber ) {
-    return 0;
+    uint8_t trng_data[4];
+
+ 
+    neorv32_trng_get(trng_data);
+    neorv32_trng_get(trng_data + 1);
+    neorv32_trng_get(trng_data + 2);
+    neorv32_trng_get(trng_data + 3);
+      
+    return (BaseType_t) trng_data[3] << 3 | (BaseType_t)trng_data[3] << 2 | (BaseType_t) trng_data[3] << 1 | (BaseType_t) trng_data[3];
 }
 
 

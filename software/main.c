@@ -135,6 +135,10 @@ int main( void )
   neorv32_uart0_printf("FreeRTOS %s on NEORV32\n", tskKERNEL_VERSION_NUMBER);
   // print some system info
   neorv32_uart0_printf("CPU clock: %u MHz\n\n", NEORV32_SYSINFO->CLK / 1000000);
+
+  // enable TRNG
+  neorv32_trng_enable();
+  
   
   start_networking();
 
