@@ -119,9 +119,9 @@ begin
                 txen <= '1';
                 if bit_idx = 0 then
                     current_read_byte <= fifo(read_ptr);
-                    txd <=  fifo(read_ptr)(0) & fifo(read_ptr)(1);
+                    txd <=  fifo(read_ptr)(1 downto 0);
                 else
-                    txd <= current_read_byte(bit_idx) &  current_read_byte(bit_idx + 1);
+                    txd <= current_read_byte((bit_idx + 1) downto bit_idx);
                 end if;
                 
                 if bit_idx = 6 then

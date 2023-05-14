@@ -58,6 +58,7 @@ architecture Behavioral of eth_tx_mac is
 
 -- CONSTANTS
 constant preambleSFD : std_logic_vector(63 downto 0) := x"D555555555555555";
+--constant preambleSFD : std_logic_vector(63 downto 0) := x"ABAAAAAAAAAAAAAA";
 constant sourceAddr  : std_logic_vector (47 downto 0) := x"BEBAEFBEADDE"; --DEADBEEFBABE
 constant padding     : std_logic_vector(7 downto 0) := x"00"; -- Can change to A5
 
@@ -68,7 +69,7 @@ constant MAC_CONFIG             : std_logic_vector(31 downto 0) := x"13370000";
 constant MAC_DEST_ADDR_HIGH     : std_logic_vector(31 downto 0) := x"13371000";
 constant MAC_DEST_ADDR_LOW      : std_logic_vector(31 downto 0) := x"13371004";
 constant MAC_LEN                : std_logic_vector(31 downto 0) := x"13371008";
-constant MAC_DAT_SIZE           : std_logic_vector(31 downto 0) := x"1337100C";
+constant MAC_DAT_SIZE           : std_logic_vector(31 downto 0) := x"13371000"; -- 0C
 
 
 
@@ -167,115 +168,61 @@ begin
             -- Ensure write enable is set.
             if wb_i_we = '0' then
                 
-                case wb_i_addr is 
-                    when MAC_DEST_ADDR_HIGH =>
-                    
-                        wb_o_dat <= FRAME_BUFFER(8) & FRAME_BUFFER(9) & FRAME_BUFFER(10) & FRAME_BUFFER(11);
-                    
-                    when MAC_DEST_ADDR_LOW =>
-                        wb_o_dat <= FRAME_BUFFER(12) & FRAME_BUFFER(13) & x"0000";
-
-                    when MAC_LEN =>
-                    
-                        wb_o_dat <= x"0000" & FRAME_BUFFER(21) & FRAME_BUFFER(20);
-                        
-                    when MAC_DAT_SIZE => 
+                if wb_i_addr = MAC_DAT_SIZE then                 
                         wb_o_dat <= x"0000" & payloadLen;
+                else  
+                    if wb_i_addr >= x"13371004" and wb_i_addr <= x"1337117A" then
                         
-                    when others =>
-                    
-                        if wb_i_addr >= x"13371003" and wb_i_addr <= x"1337117A" then
-                            
-                            -- 322375680 = 0x13371000.
-                            virtAddr := to_integer(4 * (unsigned(wb_i_addr(11 downto 0)) - 3));
-                            
-                            wb_o_dat <= FRAME_BUFFER(22 + virtAddr) &  FRAME_BUFFER(23 + virtAddr) & FRAME_BUFFER(24 + virtAddr) & FRAME_BUFFER(25 + virtAddr);
-                            
-                        end if;
+                        -- 322375680 = 0x13371000.
+                        virtAddr := to_integer(4 * (unsigned(wb_i_addr(15 downto 0)) - 4100));
                         
-                end case;
+                        wb_o_dat <= FRAME_BUFFER(8 + virtAddr) &  FRAME_BUFFER(9 + virtAddr) & FRAME_BUFFER(10 + virtAddr) & FRAME_BUFFER(11 + virtAddr);
+                        
+                    end if;
+                end if;                      
 
             elsif wb_i_we = '1' then
-                case wb_i_addr is 
                 
-                    -- Configure hardware.
-                    when MAC_CONFIG =>
-                        
-                        -- Initialise the buffers.
-                        if wb_i_dat(0) = '1' then
-                            status <= "01";
-                      
-                            -- Set preamble + SFD
-                            for i in 0 to 7 loop
-                                FRAME_BUFFER(i) := preambleSFD((8 * i) + 7 downto (8 * i));
-                            end loop;
-            
-                            -- Set up source address since it's also constant
-                            for i in 0 to 5 loop
-                                FRAME_BUFFER(14 + i) := sourceAddr((8 * i) + 7 downto (8 * i));
-                            end loop;
-            
-                            -- Set the padding - will override if not needed
-                            for i in 0 to 46 loop
-                                FRAME_BUFFER(22 + i) := padding(7 downto 0);
-                            end loop;
-                      
-                        -- Start the transmission
-                        elsif wb_i_dat(1) = '1' then
+                -- Configure hardware.
+                if  wb_i_addr = MAC_CONFIG then
+                    
+                    -- Initialise the buffers.
+                    if wb_i_dat(0) = '1' then
+                        status <= "01";
+                  
+                        -- Set preamble + SFD
+                        for i in 0 to 7 loop
+                            FRAME_BUFFER(i) := preambleSFD((8 * i) + 7 downto (8 * i));
+                        end loop;
+        
+                
+                    -- Start the transmission
+                    elsif wb_i_dat(1) = '1' then
 --                            setStateFromOutside <= TRANSMIT;
-                            startTx <= '1';
-                            status <= "10";
-                        elsif wb_i_dat = x"00000000" then
-                            startTx <= '0';
-                            status <= "00";
-                        end if;
-                        
-                        
-                        
-                        
-                   -- Set destination MAC address (HIGH).
-                    when MAC_DEST_ADDR_HIGH =>
-                        
-                        FRAME_BUFFER(8) := wb_i_dat(31 downto 24);
-                        FRAME_BUFFER(9) := wb_i_dat(23 downto 16);
-                        FRAME_BUFFER(10) := wb_i_dat(15 downto 8);
-                        FRAME_BUFFER(11) :=  wb_i_dat(7 downto 0);
+                        startTx <= '1';
+                        status <= "10";
+                    elsif wb_i_dat = x"00000000" then
+                        startTx <= '0';
+                        status <= "00";
+                    end if;
+                 elsif  wb_i_addr = MAC_DAT_SIZE then  
+
+                    payloadLen <= wb_i_dat(15 downto 0); 
+                end if;
+                
+                -- Check to make sure we are in the safe memory range.
+                if wb_i_addr >= x"13371004" and wb_i_addr <= x"13376410" then
                     
+                    -- 322375680 = 0x13371000.
+                    virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4100));
                     
-                    -- Set destination MAC address. (LOW)               
-                     when MAC_DEST_ADDR_LOW =>                           
-                        FRAME_BUFFER(12) := wb_i_dat(31 downto 24);
-                        FRAME_BUFFER(13) :=  wb_i_dat(23 downto 16);
---                        FRAME_BUFFER(12) := x"aa";
---                        FRAME_BUFFER(13) := x"bb";
-                     -- Set the payload length
-                     when MAC_LEN =>                          
-                                       
-                        FRAME_BUFFER(21) := wb_i_dat(7 downto 0);
-                        FRAME_BUFFER(20) := "00000" & wb_i_dat(10 downto 8);
+                    FRAME_BUFFER(8 + virtAddr) := wb_i_dat(31 downto 24);
+                    FRAME_BUFFER(9 + virtAddr) := wb_i_dat(23 downto 16);
+                    FRAME_BUFFER(10 + virtAddr) := wb_i_dat(15 downto 8);
+                    FRAME_BUFFER(11 + virtAddr) := wb_i_dat(7 downto 0);
+                    
+                end if;
                         
-                     when MAC_DAT_SIZE => 
-                     
-                        payloadLen <= wb_i_dat(15 downto 0); 
-                     -- Setting payload
-                     when others =>
-                     
-                        status <= "11";
-                        
-                        -- Check to make sure we are in the safe memory range.
-                        if wb_i_addr >= x"13371010" and wb_i_addr <= x"13376410" then
-                            
-                            -- 322375680 = 0x13371000.
-                            virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4112));
-                            
-                            FRAME_BUFFER(22 + virtAddr) := wb_i_dat(31 downto 24);
-                            FRAME_BUFFER(23 + virtAddr) := wb_i_dat(23 downto 16);
-                            FRAME_BUFFER(24 + virtAddr) := wb_i_dat(15 downto 8);
-                            FRAME_BUFFER(25 + virtAddr) := wb_i_dat(7 downto 0);
-                            
-                        end if;
-                        
-                end case;
     
             end if;
         else
