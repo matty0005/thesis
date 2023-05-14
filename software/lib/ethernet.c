@@ -45,16 +45,10 @@ uint8_t eth_send(uint8_t *data, size_t len) {
     // Initialise the buffers in hardware
     ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
-    // Set the destination mac
-    ETH_MAC_TX->DEST[0] = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
-    ETH_MAC_TX->DEST[1] = data[4] << 24 | data[5] << 16;
-
-    // Set the length of the packet.
-    ETH_MAC_TX->LEN = data[6] << 8 | data[7]; 
     ETH_MAC_TX->SIZE = len; 
 
     // Set the data of the packet.
-    for (int i = 8; i < len; i++) {
+    for (int i = 0; i < len; i++) {
 
         ETH_MAC_TX->DATA[i] = data[i];
     }
@@ -157,23 +151,25 @@ void eth_recv_raw_size(uint8_t *buffer, uint16_t size) {
 void eth_send_demo() {
     ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
-    // set the destination mac
-    ETH_MAC_TX->DEST[0] = 0xffffffff;
-    ETH_MAC_TX->DEST[1] = 0xffffffff;
-
     // set the length of the packet.
-    ETH_MAC_TX->LEN = 0x0806; //ARP type
-    ETH_MAC_TX->SIZE = 0x001C; //Size of data in bytes
+    ETH_MAC_TX->SIZE = 0x002E; //Size of data in bytes
 
     // set the data of the packet.
     // ARP header
-    ETH_MAC_TX->DATA[0] = 0x00010800;
-    ETH_MAC_TX->DATA[1] = 0x06040001;
-    ETH_MAC_TX->DATA[2] = 0xfcecda16;
-    ETH_MAC_TX->DATA[3] = 0xf0280a00;
-    ETH_MAC_TX->DATA[4] = 0x00fa0000;
-    ETH_MAC_TX->DATA[5] = 0x00000000;
-    ETH_MAC_TX->DATA[6] = 0x0a000086;
+    ETH_MAC_TX->DATA[0] = 0xffffffff;
+    ETH_MAC_TX->DATA[1] = 0xffffbeef;
+    ETH_MAC_TX->DATA[2] = 0xbabe1337;
+    ETH_MAC_TX->DATA[3] = 0x08004500;
+    ETH_MAC_TX->DATA[4] = 0x002eb3fe;
+    ETH_MAC_TX->DATA[5] = 0x00008011;
+    ETH_MAC_TX->DATA[6] = 0x05400a00;
+    ETH_MAC_TX->DATA[7] = 0x00beffff;
+    ETH_MAC_TX->DATA[8] = 0xffff001a;
+    ETH_MAC_TX->DATA[9] = 0x2de80001;
+    ETH_MAC_TX->DATA[10] = 0x02030405;
+    ETH_MAC_TX->DATA[11] = 0x06070809;
+    ETH_MAC_TX->DATA[12] = 0x0a0b0c0d;
+    ETH_MAC_TX->DATA[13] = 0x0e0f1011;
 
     // send a packet.
     ETH_MAC_CMD = ETH_MAC_CMD_START_TX;
