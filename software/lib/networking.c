@@ -14,7 +14,7 @@
 #define UDP_PRIORITY ( tskIDLE_PRIORITY + 1 )
 
 /* Constants */
-static uint8_t ucMACAddress[ 6 ] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55 };
+static uint8_t ucMACAddress[ 6 ] = { 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe };
 static const uint8_t ucIPAddress[ 4 ] = { 10, 20, 1, 120 };
 static const uint8_t ucNetMask[ 4 ] = { 255, 255, 255, 0 };
 static const uint8_t ucGatewayAddress[ 4 ] = { 10, 20, 1, 1 };
@@ -22,6 +22,7 @@ static const uint8_t ucDNSServerAddress[ 4 ] = { 1, 1, 1, 1 };
 
 /* Function prototypes*/
 static void tsk_udp_receive( void *pvParameters );
+static void tsk_udp_send( void *pvParameters );
 
 
 void start_networking() {
@@ -35,6 +36,9 @@ void start_networking() {
                     ucMACAddress );
 
     xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+    xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+
+    
 }
 
 
@@ -100,7 +104,7 @@ static void tsk_udp_receive( void *pvParameters ) {
  * 
  * @param pvParameters 
  */
-static void vUDPSendUsingStandardInterface( void *pvParameters ) {
+static void tsk_udp_send( void *pvParameters ) {
     Socket_t xSocket;
     struct freertos_sockaddr xDestinationAddress;
     uint8_t cString[ 50 ];
@@ -108,7 +112,7 @@ static void vUDPSendUsingStandardInterface( void *pvParameters ) {
     const TickType_t x1000ms = 1000UL / portTICK_PERIOD_MS;
 
     /* Send strings to port 10000 on IP address 192.168.0.50. */
-    xDestinationAddress.sin_addr = FreeRTOS_inet_addr( "192.168.0.50" );
+    xDestinationAddress.sin_addr = FreeRTOS_inet_addr( "10.0.0.159" );
     xDestinationAddress.sin_port = FreeRTOS_htons( 10000 );
 
     /* Create the socket. */
@@ -141,6 +145,7 @@ static void vUDPSendUsingStandardInterface( void *pvParameters ) {
                         sizeof( xDestinationAddress ) );
 
         ulCount++;
+        // neorv32_uart0_printf("Sent packet\n\n");
 
         /* Wait until it is time to send again. */
         vTaskDelay( x1000ms );

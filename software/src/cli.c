@@ -21,6 +21,7 @@ static BaseType_t cli_cmd_eth(char *pcWriteBuffer, size_t xWriteBufferLen, const
 static BaseType_t cli_cmd_eth_recv(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_recv_size(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_cont(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_trng(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 
 CLI_Command_Definition_t xEthAck = {	
 	"ethack",							
@@ -92,6 +93,14 @@ CLI_Command_Definition_t xGpioControl = {
     cli_cmd_gpio_ctrl,
     2				
 };
+
+CLI_Command_Definition_t xTrng = {	
+    "trng",							
+    "trng [num]:\r\n    Return some random number. Select number of bytes\r\n        trng 2 \r\n\r\n",
+    cli_cmd_trng,
+    1				
+};
+
 
 /**
  * @brief Convert Hex char to int
@@ -198,6 +207,43 @@ int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseTy
 }
 
 
+
+
+
+
+static BaseType_t cli_cmd_trng(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+       
+    taskENTER_CRITICAL();
+    
+    // Check to see if the first parameter is "reset"
+    const char *pcNum;
+    BaseType_t xNumLen;
+    uint8_t num;
+
+    uint8_t trng_data = 0;
+
+    sprintf(pcWriteBuffer, "");
+
+    // Obtain the first parameter string.
+    pcNum = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xNumLen);
+
+    num = str_to_int(pcNum, xNumLen);
+
+    // enter critical section
+    taskENTER_CRITICAL();
+
+    for (int i = 0; i < num; i++) {
+        neorv32_trng_get(&trng_data);
+        sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "%02x ", trng_data);
+    }
+
+    taskEXIT_CRITICAL();
+
+    sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "\r\n");
+  
+    return pdFALSE;
+}
 
 
 
@@ -579,6 +625,7 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xEthRecv);
     FreeRTOS_CLIRegisterCommand(&xEthRecvSize);
     FreeRTOS_CLIRegisterCommand(&xSendDemoContPacket);
+    FreeRTOS_CLIRegisterCommand(&xTrng);
     
     
     
