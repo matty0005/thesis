@@ -92,6 +92,7 @@ signal q : std_logic := '0';
 signal r : std_logic := '0';
 signal s : std_logic := '0';
 signal notq : std_logic := '0';
+signal trig : std_logic := '0';
 
 begin
 
@@ -101,6 +102,7 @@ begin
     if rst_i = '0' then
         currentState <= IDLE;
         counter := 0;
+        trig <= '0';
     elsif rising_edge(clk_i) then
     
 --        -- Only recieve data on input. Need to sus out end case
@@ -114,29 +116,27 @@ begin
             
             case currentState is 
                 when IDLE =>
-                    -- Wait for preamble to clear.
---                    if pipe = preambleFormat or pipe = preambleFormatIV then
---                        currentState <= DATA;
---                        payloadLen <= 0;
---                    end if;
                     if eth_i_rxd /= "00" then
                         currentState <= DATA;
                         payloadLen <= 0;
                         counter := 1;
+                        trig <= '1';
+                        recv_irq <= '1';
                     end if;
                     
                 when DATA => 
                     
                     -- Data here. 
                     if counter mod 4 = 0 and counter /= 0 then -- every 8 times and not including the first. 
---                        FRAME_BUFFER(payloadLen) := pipe(7 downto 0);
                         FRAME_BUFFER(payloadLen) := pipe(1 downto 0) & pipe(3 downto 2) & pipe(5 downto 4) & pipe(7 downto 6);
                         
                         payloadLen <= payloadLen + 1;
                     end if;
                     
-                    
-                    
+                    if q = '1' then
+                        trig <= '0';
+                    end if;
+                    recv_irq <= '0';
                     counter := counter + 1;
                     
             end case;
@@ -147,36 +147,27 @@ begin
         end if;
     end if;
 end process;
---wb_o_dat <= std_logic_vector(to_unsigned(payloadLen, 32));
 
 
+--recv_irq <= q;
 
-recv_irq <= q;
-
-IRQ: process(clk_i, rst_i)
-variable trig : std_logic := '0';
-begin
-    if rst_i = '0' then
-        q <= '0';
-    elsif rising_edge(clk_i) then
+--IRQ: process(clk_i, rst_i)
+--begin
+--    if rst_i = '0' then
+--        q <= '0';
+--    elsif rising_edge(clk_i) then
     
---        if pipe = preambleFormat or pipe = preambleFormatIV then
-        if  currentState = DATA then
-            trig := '1';
-        else 
-            trig := '0';
-        end if;
-        
-        if trig = '1' and irqAck = '0' then 
-            q <= '1';
-        elsif trig = '0' and irqAck = '1' then
-            q <= '0'; 
-        elsif trig = '0' and irqAck = '0' then
-            q <= q;
-        end if;
 
-    end if;
-end process;
+--        if trig = '1' and irqAck = '0' then 
+--            q <= '1';
+--        elsif trig = '0' and irqAck = '1' then
+--            q <= '0'; 
+--        elsif trig = '0' and irqAck = '0' then
+--            q <= q;
+--        end if;
+
+--    end if;
+--end process;
 
 
 WB_MAIN_RX : process(clk_i)
