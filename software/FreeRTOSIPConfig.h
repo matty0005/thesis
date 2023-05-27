@@ -35,6 +35,8 @@
 #ifndef FREERTOS_IP_CONFIG_H
 #define FREERTOS_IP_CONFIG_H
 
+#include <neorv32.h>
+
 
 /* Prototype for the function used to print out.  In this case it prints to the
 console before the network is connected then a UDP port after the network has
@@ -44,18 +46,18 @@ extern void vLoggingPrintf( const char *pcFormatString, ... );
 /* Set to 1 to print out debug messages.  If ipconfigHAS_DEBUG_PRINTF is set to
 1 then FreeRTOS_debug_printf should be defined to the function used to print
 out the debugging messages. */
-#define ipconfigHAS_DEBUG_PRINTF	0
+#define ipconfigHAS_DEBUG_PRINTF	1
 #if( ipconfigHAS_DEBUG_PRINTF == 1 )
-	#define FreeRTOS_debug_printf(X)	vLoggingPrintf X
+	#define FreeRTOS_debug_printf(X)	neorv32_uart0_printf X
 #endif
 
 /* Set to 1 to print out non debugging messages, for example the output of the
 FreeRTOS_netstat() command, and ping replies.  If ipconfigHAS_PRINTF is set to 1
 then FreeRTOS_printf should be set to the function used to print out the
 messages. */
-#define ipconfigHAS_PRINTF			0
+#define ipconfigHAS_PRINTF			1
 #if( ipconfigHAS_PRINTF == 1 )
-	#define FreeRTOS_printf(X)			vLoggingPrintf X
+	#define FreeRTOS_printf(X)			neorv32_uart0_printf X
 #endif
 
 /* Define the byte order of the target MCU (the MCU FreeRTOS+TCP is executing
@@ -245,7 +247,7 @@ generate replies to incoming ICMP echo (ping) requests. */
 
 /* If ipconfigSUPPORT_OUTGOING_PINGS is set to 1 then the
 FreeRTOS_SendPingRequest() API function is available. */
-#define ipconfigSUPPORT_OUTGOING_PINGS				0
+#define ipconfigSUPPORT_OUTGOING_PINGS				1
 
 /* If ipconfigSUPPORT_SELECT_FUNCTION is set to 1 then the FreeRTOS_select()
 (and associated) API function is available. */

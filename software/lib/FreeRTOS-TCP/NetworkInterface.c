@@ -146,6 +146,45 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescripto
     return xReturn;
 }
 
+/**
+ * @brief The TCP/IP stack calls xNetworkInterfaceInput() to pass received Ethernet frames into the TCP/IP stack.
+ * 
+ * @param eStatus 
+ * @param usIdentifier 
+ */
+void vApplicationPingReplyHook( ePingReplyStatus_t eStatus, uint16_t usIdentifier )
+{
+static const uint8_t *pcSuccess = ( uint8_t * ) "Ping reply received - ";
+static const uint8_t *pcInvalidChecksum = ( uint8_t * ) "Ping reply received with invalid checksum - ";
+static const uint8_t *pcInvalidData = ( uint8_t * ) "Ping reply received with invalid data - ";
+static uint8_t cMessage[ 50 ];
+
+
+    switch( eStatus )
+    {
+        case eSuccess:
+            neorv32_uart0_printf( ( ( char * ) pcSuccess ) );
+            break;
+
+        case eInvalidChecksum:
+            neorv32_uart0_printf( ( ( char * ) pcInvalidChecksum ) );
+            break;
+
+        case eInvalidData:
+            neorv32_uart0_printf( ( ( char * ) pcInvalidData ) );
+            break;
+
+        default :
+            /* It is not possible to get here as all enums have their own
+             * case. */
+            break;
+    }
+
+    sprintf( ( char * ) cMessage, "identifier %d\r\n", ( int ) usIdentifier );
+    neorv32_uart0_printf( ( ( char * ) cMessage ) );
+}
+
+
 
 /* The deferred interrupt handler is a standard RTOS task.  FreeRTOS's centralised
 deferred interrupt handling capabilities can also be used. */
@@ -166,9 +205,6 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
         write to a queue. */
         ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
 
-        neorv32_uart0_printf("Ethernet Recieve!\n");
-
-
         /* Obtain the size of the packet and put it into the "length" member of
         the pxBufferDescriptor structure. */
         xBytesReceived = eth_recv_size();
@@ -184,10 +220,19 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
                 /* Set the actual length of the packet. */
                 pxBufferDescriptor->xDataLength = xBytesReceived;
 
+                taskENTER_CRITICAL();
+    
                 /* Obtain the packet into the buffer pointed to by the
                 pxBufferDescriptor structure. */
-                eth_recv(pxBufferDescriptor->pucEthernetBuffer);
+                eth_recv(pxBufferDescriptor->pucEthernetBuffer, xBytesReceived);
                 pxBufferDescriptor->xDataLength = xBytesReceived;
+                    // neorv32_uart0_printf("From: %x:%x:%x:%x:%x:%x\nBytes Recv: %d\n", pxBufferDescriptor->pucEthernetBuffer[1], pxBufferDescriptor->pucEthernetBuffer[2], pxBufferDescriptor->pucEthernetBuffer[3], pxBufferDescriptor->pucEthernetBuffer[4], pxBufferDescriptor->pucEthernetBuffer[5], pxBufferDescriptor->pucEthernetBuffer[6]);
+
+                
+                neorv32_uart0_printf(">> %d\n", eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer));
+
+
+                taskEXIT_CRITICAL();
 
                 if (eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer) == eProcessBuffer) 
                 {
@@ -197,16 +242,21 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
 
                     xRxEvent.pvData = (void *) pxBufferDescriptor;
 
+                    
+
                     /* Pass the received packet to the TCP/IP stack. */
                     if( xSendEventStructToIPTask( &xRxEvent, 0 ) == pdFALSE ) 
                     {
                         /* The buffer could not be sent to the IP task so the buffer must be released. */
                         vReleaseNetworkBufferAndDescriptor( pxBufferDescriptor );
                         iptraceETHERNET_RX_EVENT_LOST();
+                        neorv32_uart0_printf("xSendEventStructToIPTask failed\n");
                     }
                     else 
                     {
                         iptraceNETWORK_INTERFACE_RECEIVE();
+                        neorv32_uart0_printf("xSendEventStructToIPTask sucessful\n");
+
                     }
 
                 }

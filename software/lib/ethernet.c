@@ -22,6 +22,9 @@ uint8_t eth_init() {
     ETH_CTRL = ETH_CTRL_RESET;
     ETH_MAC_CMD = ETH_MAC_CMD_INIT;
 
+    // ack the interrupt.
+    eth_ack_irq();
+
     return ETH_ERR_OK;
 }
 
@@ -33,14 +36,25 @@ uint8_t eth_init() {
  */
 uint8_t eth_send(uint8_t *data, size_t len) {
 
+
+    char buff[60] = {0};
+    sprintf(buff, "size %d, \r\n", len);
+    neorv32_uart0_printf(buff);
+
+    for (int i = 0; i < len; i++) {
+        sprintf(buff, "%02x", data[i]);
+        neorv32_uart0_printf(buff);
+    }
+    neorv32_uart0_printf("\n");
+
     // Check the length of the packet.
     if (len > 1500) {
         return ETH_ERR_TOO_BIG;
     }
 
-    if (len < 46) {
-        return ETH_ERR_TOO_SMALL;
-    }
+    // if (len < 46) {
+    //     return ETH_ERR_TOO_SMALL;
+    // }
 
     // Initialise the buffers in hardware
     ETH_MAC_CMD = ETH_MAC_CMD_INIT;
@@ -48,9 +62,9 @@ uint8_t eth_send(uint8_t *data, size_t len) {
     ETH_MAC_TX->SIZE = len; 
 
     // Set the data of the packet.
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < len; i = i + 4) {
 
-        ETH_MAC_TX->DATA[i] = data[i];
+        ETH_MAC_TX->DATA[i >> 2] = (data[i] << 24) | (data[i + 1] << 16) | (data[i + 2] << 8) | (data[i + 3]);
     }
 
     // Send a packet.
@@ -68,7 +82,10 @@ uint8_t eth_send(uint8_t *data, size_t len) {
  * @return size_t 
  */
 size_t eth_recv_size() {
-    return 0xFFFF & ETH_MAC_RX->SIZE;
+
+    neorv32_uart0_printf("\nLen: %d\r\n", ETH_MAC_RX->SIZE);
+    
+    return ETH_MAC_RX->SIZE;
 }
 
 /**
@@ -86,17 +103,13 @@ void eth_ack_irq() {
  * 
  * @param buffer 
  */
-void eth_recv(uint8_t *buffer) {
-
-    // Get the size of the packet.
-    size_t size = eth_recv_size();
+void eth_recv(uint8_t *buffer, size_t size) {
 
     // May need to factor in MAC header stuff - depends what freertos tcp wants.
 
     // Copy the data from the receive buffer.
     for (int i = 0; i < (size / 4); i++) {
         uint32_t dat = ETH_MAC_RX->DATA[i];
-        neorv32_uart0_printf("> %X, %d, %p\n", dat, i, &ETH_MAC_RX->DATA[i]);
 
         for (int j = 0; j < 4; j++)
             buffer[(i << 2) + j] = 0xFF & (dat >> ((3 - j) * 8)); 

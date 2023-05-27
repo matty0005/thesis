@@ -34,11 +34,6 @@ void start_networking() {
                     ucGatewayAddress,
                     ucDNSServerAddress,
                     ucMACAddress );
-
-    xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
-    xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
-
-    
 }
 
 
@@ -163,6 +158,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
     /* Both eNetworkUp and eNetworkDown events can be processed here. */
     if( eNetworkEvent == eNetworkUp )
     {
+        neorv32_uart0_printf("Interface up!\n\n");
         /* Create the tasks that use the TCP/IP stack if they have not already
         been created. */
         if( xTasksAlreadyCreated == pdFALSE )
@@ -172,7 +168,13 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
              * to ensure they are not created before the network is usable.
              */
 
+            // Create tasks here as TCP/IP stack has been created
+            xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+            xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+
             xTasksAlreadyCreated = pdTRUE;
         }
+    } else {
+        neorv32_uart0_printf("Interface down!\n\n");
     }
 }

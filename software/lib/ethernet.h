@@ -126,7 +126,7 @@ void eth_ack_irq();
  * 
  * @param buffer 
  */
-void eth_recv(uint8_t *buffer);
+void eth_recv(uint8_t *buffer, size_t size);
 
 /**
  * @brief Sends a demo packet over the ethernet mac.

@@ -82,7 +82,7 @@ void tsk_ethernet_test(void *pvParameters) {
       xBytesReceived = eth_recv_size();
 
       if (xBytesReceived > 0) {
-        eth_recv(buff);
+        eth_recv(buff, xBytesReceived);
 
         neorv32_uart0_printf("From: %x:%x:%x:%x:%x:%x\nBytes Recv: %d\n", buff[6], buff[7], buff[8], buff[9], buff[10], buff[11], xBytesReceived);
 
@@ -145,7 +145,7 @@ int main( void )
 
   main_project();
 
-  xTaskCreate(tsk_ethernet_test, "ETHERNETDAEMON", configMINIMAL_STACK_SIZE * 12, NULL, tskIDLE_PRIORITY + 1, &xEthernetTaskHandle);
+  // xTaskCreate(tsk_ethernet_test, "ETHERNETDAEMON", configMINIMAL_STACK_SIZE * 12, NULL, tskIDLE_PRIORITY + 1, &xEthernetTaskHandle);
 
   /* Start the tasks and timer running. */
   vTaskStartScheduler();
@@ -169,38 +169,24 @@ void freertos_risc_v_application_interrupt_handler(void) {
 
   // debug output - Use the value from the mcause CSR to call interrupt-specific handlers
   // neorv32_uart0_printf("\n<NEORV32-IRQ> mcause = 0x%x </NEORV32-IRQ>\n", neorv32_cpu_csr_read(CSR_MCAUSE));
-  neorv32_uart0_printf("\n<NEORV32-IRQ> Channel = 0x%x </NEORV32-IRQ>\n",irq_channel);
 
   // handle XIRQ
   if (irq_channel == ETH_RX_INT) {
     // handle XIRQ
-    size_t xBytesReceived = eth_recv_size();
+    // size_t xBytesReceived = eth_recv_size();
 
     eth_ack_irq();
 
     BaseType_t pxHigherPriorityTaskWoken;
-    neorv32_uart0_printf("\nLen: %d\n",xBytesReceived);
+    // neorv32_uart0_printf("\nLen: %d\n",xBytesReceived);
 
     if( xEMACTaskHandle != NULL )
       vTaskNotifyGiveFromISR(xEMACTaskHandle, &pxHigherPriorityTaskWoken);
     
+  } else {
+    neorv32_uart0_printf("\n<NEORV32-IRQ> Channel = 0x%x </NEORV32-IRQ>\n",irq_channel);
   }
 
-  // if (irq_channel == ETH_RX_INT) {
-
-  //   // Acknowledge XIRQ
-  //   eth_ack_irq();
-
-  //   size_t xBytesReceived = eth_recv_size();
-  //   neorv32_uart0_printf("\nLen: %d, handler: %d\n",xBytesReceived, xEthernetTaskHandle);
-    
-
-  //   BaseType_t pxHigherPriorityTaskWoken;
-  //   if( xEthernetTaskHandle != NULL )
-  //     vTaskNotifyGiveFromISR(xEthernetTaskHandle, &pxHigherPriorityTaskWoken);
-    
-
-  // }
 }
 
 /* Handle NEORV32-specific exceptions */

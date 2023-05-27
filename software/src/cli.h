@@ -17,6 +17,8 @@
 #include "event_groups.h"
 #include "semphr.h"
 #include "FreeRTOS_CLI.h"
+#include "FreeRTOS_IP.h"
+#include "FreeRTOS_Sockets.h"
 
 #include "ethernet.h"
 

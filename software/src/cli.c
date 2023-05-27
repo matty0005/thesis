@@ -22,6 +22,31 @@ static BaseType_t cli_cmd_eth_recv(char *pcWriteBuffer, size_t xWriteBufferLen, 
 static BaseType_t cli_cmd_eth_recv_size(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_cont(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_trng(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_ping(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_pingn(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_broadcast(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+
+CLI_Command_Definition_t xBroadcast = {	
+	"budp",							
+	"budp:\r\n    Broadcast a UDP packet\r\n\r\n",
+	cli_cmd_broadcast,
+	0				
+};
+
+CLI_Command_Definition_t xPingn = {	
+	"pingn",							
+	"pingn [ip_addr] [num]:\r\n    Send ping to ipaddr, num many times\r\n\r\n",
+	cli_cmd_pingn,
+	2				
+};
+
+
+CLI_Command_Definition_t xPing = {	
+	"ping",							
+	"ping [ip_addr]:\r\n    Send ping to ipaddr\r\n\r\n",
+	cli_cmd_ping,
+	1				
+};
 
 CLI_Command_Definition_t xEthAck = {	
 	"ethack",							
@@ -207,14 +232,176 @@ int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseTy
 }
 
 
+/**
+ * @brief CLI command to send a broadcast udp packet
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_broadcast(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    Socket_t xSocket;
+    struct freertos_sockaddr xDestinationAddress;
+    uint8_t cString[ 50 ];
+    uint32_t ulCount = 0UL;
+    const TickType_t x1000ms = 1000UL / portTICK_PERIOD_MS;
+
+    /* Send strings to port 10000 on IP address 192.168.0.50. */
+    xDestinationAddress.sin_addr = FreeRTOS_inet_addr( "255.255.255.255" );
+    xDestinationAddress.sin_port = FreeRTOS_htons( 10000 );
+
+    /* Create the socket. */
+    xSocket = FreeRTOS_socket( FREERTOS_AF_INET,
+                                FREERTOS_SOCK_DGRAM,/*FREERTOS_SOCK_DGRAM for UDP.*/
+                                FREERTOS_IPPROTO_UDP );
 
 
+    /* Create the string that is sent. */
+    sprintf( cString,
+            "Standard send message number %lurn",
+            ulCount );
+
+    /* Send the string to the UDP socket.  ulFlags is set to 0, so the standard
+    semantics are used.  That means the data from cString[] is copied
+    into a network buffer inside FreeRTOS_sendto(), and cString[] can be
+    reused as soon as FreeRTOS_sendto() has returned. */
+    FreeRTOS_sendto( xSocket,
+                    cString,
+                    strlen( cString ),
+                    0,
+                    &xDestinationAddress,
+                    sizeof( xDestinationAddress ) );
+
+    sprintf(pcWriteBuffer, "Sent packet\r\n");   
+
+    return pdFALSE;
+
+}
 
 
-static BaseType_t cli_cmd_trng(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+/**
+ * @brief Send a ping packet 
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_ping(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
 
-       
+    const char *pcIPAddr;
+    char pcAddr[16];
+    BaseType_t xIPAddrLen;
+
+    // Obtain the first parameter string.
+    pcIPAddr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xIPAddrLen);
+    memcpy(pcAddr, pcIPAddr, xIPAddrLen);
+
     taskENTER_CRITICAL();
+    
+    uint16_t usRequestSequenceNumber, usReplySequenceNumber;
+    uint32_t ulIPAddress;
+
+    /* The pcIPAddress parameter holds the destination IP address as a string in
+    decimal dot notation (for example, "192.168.0.200").  Convert the string into
+    the required 32-bit format. */
+    ulIPAddress = FreeRTOS_inet_addr( "10.20.1.19" );
+
+    /* Send a ping containing 8 data bytes.  Wait (in the Blocked state) a
+    maximum of 100ms for a network buffer into which the generated ping request
+    can be written and sent. */
+    usRequestSequenceNumber = FreeRTOS_SendPingRequest( ulIPAddress, 8, 100 / portTICK_PERIOD_MS );
+
+    if( usRequestSequenceNumber == pdFAIL )
+    {
+        /* The ping could not be sent because a network buffer could not be
+        obtained within 100ms of FreeRTOS_SendPingRequest() being called. */
+        sprintf(pcWriteBuffer, "Buffer could not be obtained within 100ms\r\n");
+
+    }
+    else
+    {
+        
+        sprintf(pcWriteBuffer, "Sent\r\n");   
+    }   
+
+
+    taskEXIT_CRITICAL();
+
+  
+    return pdFALSE;
+}
+
+
+/**
+ * @brief Send a ping packet 
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_pingn(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    const char *pcIPAddr, *pcSize;
+    char pcAddr[16];
+    BaseType_t xIPAddrLen, xSizeLen;
+
+    // Obtain the first parameter string.
+    pcIPAddr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xIPAddrLen);
+    memcpy(pcAddr, pcIPAddr, xIPAddrLen);
+
+    pcSize = FreeRTOS_CLIGetParameter(pcCommandString, 2, &xSizeLen);
+
+    uint16_t size = str_to_int(pcSize, xSizeLen);
+    
+    uint16_t usRequestSequenceNumber, usReplySequenceNumber;
+    uint32_t ulIPAddress;
+
+    /* The pcIPAddress parameter holds the destination IP address as a string in
+    decimal dot notation (for example, "192.168.0.200").  Convert the string into
+    the required 32-bit format. */
+    ulIPAddress = FreeRTOS_inet_addr( pcAddr );
+
+    /* Send a ping containing 8 data bytes.  Wait (in the Blocked state) a
+    maximum of 100ms for a network buffer into which the generated ping request
+    can be written and sent. */
+
+    for (int i = 0; i < size; i++) {
+        usRequestSequenceNumber = FreeRTOS_SendPingRequest( ulIPAddress, 8, 100 / portTICK_PERIOD_MS );
+
+        if( usRequestSequenceNumber == pdFAIL )
+        {
+            /* The ping could not be sent because a network buffer could not be
+            obtained within 100ms of FreeRTOS_SendPingRequest() being called. */
+            sprintf(pcWriteBuffer, "Buffer could not be obtained within 100ms\r\n");
+
+        }
+        else
+        {
+            
+            sprintf(pcWriteBuffer, "Sent\r\n");   
+        }   
+    }
+    
+  
+    return pdFALSE;
+}
+
+
+
+
+/**
+ * @brief CLI command to print out the usage of the system
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_trng(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
     
     // Check to see if the first parameter is "reset"
     const char *pcNum;
@@ -268,7 +455,7 @@ static BaseType_t cli_cmd_eth_recv(char *pcWriteBuffer, size_t xWriteBufferLen, 
         uint8_t *buff = pvPortMalloc(1000 * sizeof(uint8_t));
         char *strOut = pvPortMalloc(200 * sizeof(char));
 
-        eth_recv_raw(buff);
+        eth_recv(buff, xBytesReceived);
 
         for (int i = 0; i < xBytesReceived; i += 8) {
             sprintf(strOut, "%02x %02x %02x %02x %02x %02x %02x %02x\n", buff[i], buff[i+ 1], buff[i+2], buff[i+3], buff[i+4], buff[i+5], buff[i+6], buff[i+7]);
@@ -626,6 +813,9 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xEthRecvSize);
     FreeRTOS_CLIRegisterCommand(&xSendDemoContPacket);
     FreeRTOS_CLIRegisterCommand(&xTrng);
+    FreeRTOS_CLIRegisterCommand(&xPing);
+    FreeRTOS_CLIRegisterCommand(&xPingn);
+    FreeRTOS_CLIRegisterCommand(&xBroadcast);
     
     
     
