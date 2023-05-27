@@ -35,17 +35,16 @@ uint8_t eth_init() {
  * @param len 
  */
 uint8_t eth_send(uint8_t *data, size_t len) {
+    
+    // char buff[60] = {0};
+    // sprintf(buff, "size %d, \r\n", len);
+    // neorv32_uart0_printf(buff);
 
-
-    char buff[60] = {0};
-    sprintf(buff, "size %d, \r\n", len);
-    neorv32_uart0_printf(buff);
-
-    for (int i = 0; i < len; i++) {
-        sprintf(buff, "%02x", data[i]);
-        neorv32_uart0_printf(buff);
-    }
-    neorv32_uart0_printf("\n");
+    // for (int i = 0; i < len; i++) {
+    //     sprintf(buff, "%02x", data[i]);
+    //     neorv32_uart0_printf(buff);
+    // }
+    // neorv32_uart0_printf("\n");
 
     // Check the length of the packet.
     if (len > 1500) {
@@ -82,8 +81,6 @@ uint8_t eth_send(uint8_t *data, size_t len) {
  * @return size_t 
  */
 size_t eth_recv_size() {
-
-    neorv32_uart0_printf("\nLen: %d\r\n", ETH_MAC_RX->SIZE);
     
     return ETH_MAC_RX->SIZE;
 }
@@ -130,7 +127,6 @@ void eth_recv_raw(uint8_t *buffer) {
     // Copy the data from the receive buffer.
     for (int i = 0; i < (size / 4); i++) {
         uint32_t dat = ((uint32_t *) ETH_MAC_RX_BASE)[i];
-        neorv32_uart0_printf("raw> %X, %d, %p\n", dat, i, &((uint32_t *) ETH_MAC_RX_BASE)[i]);
 
         for (int j = 0; j < 4; j++)
             buffer[(i << 2) + j] = 0xFF & (dat >> (j * 8));
@@ -149,7 +145,6 @@ void eth_recv_raw_size(uint8_t *buffer, uint16_t size) {
     // Copy the data from the receive buffer.
     for (int i = 0; i < (size / 4); i++) {
         uint32_t dat = ((uint32_t *) ETH_MAC_RX->DATA)[i];
-        neorv32_uart0_printf("raw> %X, %d, %p\n", dat, i, &((uint32_t *) ETH_MAC_RX_BASE)[i]);
 
         for (int j = 0; j < 4; j++)
             buffer[(i << 2) + j] = 0xFF & (dat >> (j * 8));

@@ -44,10 +44,6 @@ TaskHandle_t xEMACTaskHandle = NULL;
 
 
 
-
-
-
-
 /** Implement with TNG in Neorv32*/
 BaseType_t xApplicationGetRandomNumber( uint32_t * pulNumber ) {
     uint8_t trng_data[4];
@@ -73,11 +69,6 @@ uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress, uint16_t 
 
 
 
-
-
-
-
-
 /**
  * @brief The TCP/IP stack calls xNetworkInterfaceInitialise() when the network is ready to be used (or re-used after a disconnect).
  * 
@@ -93,7 +84,7 @@ BaseType_t xNetworkInterfaceInitialise( void )
                      "EMACInt",                           /* Text name for the task. */
                      256,                                 /* Stack size in words, not bytes. */
                      ( void * ) 1,                        /* Parameter passed into the task. */
-                     tskIDLE_PRIORITY,                    /* Priority at which the task is created. */
+                     tskIDLE_PRIORITY + 2,                    /* Priority at which the task is created. */
                      &xEMACTaskHandle );                  /* Used to pass out the created task's handle. */
 
     }
@@ -228,10 +219,6 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
                 pxBufferDescriptor->xDataLength = xBytesReceived;
                     // neorv32_uart0_printf("From: %x:%x:%x:%x:%x:%x\nBytes Recv: %d\n", pxBufferDescriptor->pucEthernetBuffer[1], pxBufferDescriptor->pucEthernetBuffer[2], pxBufferDescriptor->pucEthernetBuffer[3], pxBufferDescriptor->pucEthernetBuffer[4], pxBufferDescriptor->pucEthernetBuffer[5], pxBufferDescriptor->pucEthernetBuffer[6]);
 
-                
-                neorv32_uart0_printf(">> %d\n", eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer));
-
-
                 taskEXIT_CRITICAL();
 
                 if (eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer) == eProcessBuffer) 
@@ -250,12 +237,10 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
                         /* The buffer could not be sent to the IP task so the buffer must be released. */
                         vReleaseNetworkBufferAndDescriptor( pxBufferDescriptor );
                         iptraceETHERNET_RX_EVENT_LOST();
-                        neorv32_uart0_printf("xSendEventStructToIPTask failed\n");
                     }
                     else 
                     {
                         iptraceNETWORK_INTERFACE_RECEIVE();
-                        neorv32_uart0_printf("xSendEventStructToIPTask sucessful\n");
 
                     }
 

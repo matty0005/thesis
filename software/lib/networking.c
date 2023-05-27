@@ -44,6 +44,16 @@ static void print_packet(uint8_t *data, size_t len) {
         sprintf(buff, "%02x", data[i]);
         neorv32_uart0_printf(buff);
     }
+    neorv32_uart0_printf(": ");
+
+    for (int i = 0; i < len; i++) {
+        if (data[i] >= 32 && data[i] <= 126) {
+            neorv32_uart0_printf("%c", data[i]);
+        } else {
+            neorv32_uart0_printf(".");
+        }
+    }
+
     neorv32_uart0_printf("\n");
 }
 
@@ -170,7 +180,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 
             // Create tasks here as TCP/IP stack has been created
             xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
-            xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+            // xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
 
             xTasksAlreadyCreated = pdTRUE;
         }
