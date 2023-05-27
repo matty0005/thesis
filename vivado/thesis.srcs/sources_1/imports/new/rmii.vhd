@@ -107,12 +107,12 @@ begin
         elsif rising_edge(clk_i_read) then
             -- Read from FIFO
             -- Update FIFO empty status
---            fifo_empty <= write_ptr = read_ptr;
-            if write_ptr = read_ptr + 1 and bit_idx = 6 then 
-                fifo_empty <= true;
-            else 
-                fifo_empty <= write_ptr = read_ptr;
-            end if;
+            fifo_empty <= write_ptr = read_ptr;
+--            if write_ptr = read_ptr + 1 and bit_idx = 6 then 
+--                fifo_empty <= true;
+--            else 
+--                fifo_empty <= write_ptr = read_ptr;
+--            end if;
             
             
             if write_ptr /= read_ptr then
