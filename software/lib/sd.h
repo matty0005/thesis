@@ -49,6 +49,10 @@ enum SD_ERRORS {
 #define CMD8_ARG    0x0000001AA
 #define CMD8_CRC    0x86
 
+#define CMD17                   17
+#define CMD17_CRC               0x00
+#define SD_MAX_READ_ATTEMPTS    1563 //(0.1s * 16000000 MHz)/(128 * 8 bytes) = 1563. 0.1s is the timeout for the SD card.
+
 #define CMD55       55
 #define CMD55_ARG   0x00000000
 #define CMD55_CRC   0x00
@@ -76,5 +80,15 @@ uint8_t sd_card_inserted();
  * @return uint8_t error code. 0 if no error.
  */
 uint8_t sd_init();
+
+/**
+ * @brief Read a block from the SD card.
+ * 
+ * @param addr Address to read in sectors (512 bytes)
+ * @param data 512 byte buffer to store sector/block in
+ * @param token  token = 0xFE - Successful read, token = 0x0X - Data error, token = 0xFF - Timeout
+ * @return uint8_t 
+ */
+uint8_t sd_read_block(uint32_t addr, uint8_t *data, uint8_t *token);
 
 #endif

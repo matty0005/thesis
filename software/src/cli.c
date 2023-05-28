@@ -26,6 +26,15 @@ static BaseType_t cli_cmd_ping(char *pcWriteBuffer, size_t xWriteBufferLen, cons
 static BaseType_t cli_cmd_pingn(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_broadcast(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_sd_init(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_sd_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+
+
+CLI_Command_Definition_t xSDRead = {	
+	"sdr",							
+	"sdr [addr]:\r\n    Read the first 8 bytes from block at addr\r\n\r\n",
+	cli_cmd_sd_read,
+	1				
+};
 
 
 CLI_Command_Definition_t xSDInit = {	
@@ -264,6 +273,41 @@ static BaseType_t cli_cmd_sd_init(char *pcWriteBuffer, size_t xWriteBufferLen, c
     return pdFALSE;
 
 }
+
+/**
+ * @brief CLI command to read block from sd card
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_sd_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    const char *pcSize;
+    BaseType_t xSizeLen;
+
+    pcSize = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xSizeLen);
+
+    uint32_t addr = 0x0000FFFF & (uint32_t)str_to_int(pcSize, xSizeLen);
+    
+    uint8_t buff[512];
+    uint8_t token;
+    
+    taskENTER_CRITICAL();
+    uint8_t err = sd_read_block(addr, buff, &token);
+    taskEXIT_CRITICAL(); 
+
+    sprintf(pcWriteBuffer, "Reading from SD card, addr: %d, token: %x, res: %x\r\n", addr, token, err);  
+    sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "%x %x %x %x %x %x %x %x\r\n", buff[0], buff[1], buff[2], buff[3], buff[4], buff[5], buff[6], buff[7]);  
+
+    return pdFALSE;
+
+}
+
+
+
+
 
 /**
  * @brief CLI command to send a broadcast udp packet
@@ -850,6 +894,7 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xPingn);
     FreeRTOS_CLIRegisterCommand(&xBroadcast);
     FreeRTOS_CLIRegisterCommand(&xSDInit);
+    FreeRTOS_CLIRegisterCommand(&xSDRead);
     
     
     

@@ -166,6 +166,11 @@ void sd_power_on() {
 
 }
 
+/**
+ * @brief Read the OCR register from the SD card.
+ * 
+ * @param ocr 
+ */
 void sd_read_ocr(uint8_t *ocr) {
     neorv32_spi_cs_en(SD_CHANNEL);
     sd_send_cmd(CMD58, CMD58_ARG, CMD58_CRC);
@@ -173,6 +178,57 @@ void sd_read_ocr(uint8_t *ocr) {
     // read response
     sd_read_r7(ocr);
     neorv32_spi_cs_dis();
+}
+
+/**
+ * @brief Read a block from the SD card.
+ * 
+ * @param addr Address to read in sectors (512 bytes)
+ * @param data 512 byte buffer to store sector/block in
+ * @param token  token = 0xFE - Successful read, token = 0x0X - Data error, token = 0xFF - Timeout
+ * @return uint8_t 
+ */
+uint8_t sd_read_block(uint32_t addr, uint8_t *data, uint8_t *token) {
+    uint8_t res, read;
+    uint16_t readAttempts;
+
+    // Set token to none
+    *token = 0xFF;
+
+    // Send CMD17
+    neorv32_spi_cs_en(SD_CHANNEL);
+    sd_send_cmd(CMD17, addr, CMD17_CRC);
+
+    // read response
+    res = sd_read_r1();
+
+    // if response received from card
+    if(res != 0xFF)
+    {
+        // wait for a response token (timeout = 100ms)
+        readAttempts = 0;
+        while(++readAttempts != SD_MAX_READ_ATTEMPTS)
+            if((read = neorv32_spi_trans(0xFF)) != 0xFF) 
+                break;
+
+        // if response token is 0xFE
+        if(read == 0xFE) {
+            // read 512 byte block
+            for(uint16_t i = 0; i < 512; i++) 
+                *data++ = neorv32_spi_trans(0xFF);
+
+            // read 16-bit CRC
+            neorv32_spi_trans(0xFF);
+            neorv32_spi_trans(0xFF);
+        }
+
+        // set token to card response
+        *token = read;
+    }
+
+    // set CS high
+    neorv32_spi_cs_dis();
+    return res;
 }
 
 
@@ -254,6 +310,14 @@ uint8_t sd_init() {
     if(!(res[2] & 0x80)) 
         return SD_CARD_ERROR;
 
+
+    // speed up bus
+    spi_prsc = 1;
+    clk_div = 0;
+    clk_phase = 0;
+    clk_pol = 0;
+    
+    neorv32_spi_setup(spi_prsc, clk_div, clk_phase, clk_pol, 0);
 
     return SD_CARD_OK;
 
