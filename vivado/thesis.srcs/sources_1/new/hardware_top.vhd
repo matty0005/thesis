@@ -58,12 +58,8 @@ entity hardware_top is
     uart0_rxd_i : in  std_ulogic;  -- UART0 receive data
     
     -- Test Ethernet outof PMOD JD --
-    t_eth_o_txd : out std_logic_vector(1 downto 0);
-    t_eth_o_txen : out std_logic;
-    t_eth_i_rxd : inout std_logic_vector(1 downto 0); -- Change to in
-    t_eth_i_rxderr : out std_logic;
-    t_eth_o_refclk : out std_logic;
-    t_eth_i_intn : out std_logic;
+    pmod_o : out std_logic_vector(3 downto 0);
+    pmod_i : in std_logic_vector(3 downto 0);
     
     
     -- Phy Chip Nexys
@@ -207,22 +203,22 @@ signal eth_exti_lines : std_logic_vector(3 downto 0);
 
 
 signal test_eth : std_logic_vector(1 downto 0);
-signal test_eth_r : std_logic_vector(1 downto 0);
 
+signal spi_clk_o : std_logic;
+signal spi_dat_o : std_logic;
+signal spi_dat_i : std_logic;
+signal spi_csn_o : std_ulogic_vector(07 downto 0);
+
+    
 
 begin
 
 -- Connections
 eth_o_txd <= eth_txd;
-t_eth_o_refclk <= clk_p50;
 eth_o_txen <= eth_txen;
-t_eth_o_txen <= clk_p50;
---t_eth_i_rxd <= eth_io_rxd;
---t_eth_i_rxderr <= eth_rxerr;
 eth_rxerr <= eth_i_rxerr;
 
 sd_o_csn <= spi_csn(0);
-sd_o_rst <= not rstn_i;
 
 exti_lines(3 downto 0) <= t_btnl & t_btnc & t_btnr & std_ulogic_vector(eth_exti_lines(0 downto 0));
 
@@ -338,10 +334,10 @@ ethernet_mac : wb_ethernet
     uart0_rxd_i => uart0_rxd_i,  -- UART0 receive data
     
     -- SPI (available if IO_SPI_EN = true) --
-    spi_clk_o      => sd_o_sck,
-    spi_dat_o      => sd_o_cmd, -- MOSI
-    spi_dat_i      => sd_i_miso, -- MISO
-    spi_csn_o      => spi_csn, -- chip-select
+    spi_clk_o      => spi_clk_o,
+    spi_dat_o      => spi_dat_o, -- MOSI
+    spi_dat_i      => spi_dat_i, -- MISO
+    spi_csn_o      => spi_csn_o, -- chip-select
     
     -- Wishbone bus interface (available if MEM_EXT_EN = true) --
 --    wb_tag_o       : out std_ulogic_vector(02 downto 0); -- request tag
@@ -371,20 +367,18 @@ ethernet_mac : wb_ethernet
   
   gpio_i <= x"000000000000" & "00000" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
   
+  sd_o_rst <= gpio_o(11);
   
-  t_eth_o_txd <= eth_txd when gpio_o(10) = '1' else eth_io_rxd;
-  t_eth_i_rxderr <= eth_txen when gpio_o(11) = '1' else eth_io_crs_dv;
- 
-        
   
---  eth_io_crs_dv <= 'Z';
---  eth_io_rxd <= "ZZ";
-  
---  t_eth_i_rxd(0) <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
---  t_eth_i_rxd(1) <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
-  
---  gpio_i <= x"000000000000" & "000000" & t_eth_i_rxd(1) & t_eth_i_rxd(0) & gpio_io(7 downto 0);
-    
---  t_eth_i_rxd <= eth_io_mdio & eth_io_mdc; 
+    --sd_o_sck  -- clock
+    --sd_o_cmd  -- MOSI
+    --sd_i_miso
+    --sd_o_csn
 
+
+  -- test SPI
+  pmod_o <=  gpio_o(11) & spi_csn_o(0) & spi_dat_o & spi_clk_o;
+  spi_dat_i <= pmod_i(0);
+ 
+  
 end architecture;
