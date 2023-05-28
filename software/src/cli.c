@@ -25,6 +25,16 @@ static BaseType_t cli_cmd_trng(char *pcWriteBuffer, size_t xWriteBufferLen, cons
 static BaseType_t cli_cmd_ping(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_pingn(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_broadcast(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_sd_init(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+
+
+CLI_Command_Definition_t xSDInit = {	
+	"sdi",							
+	"sdi:\r\n    Initialise SD card\r\n\r\n",
+	cli_cmd_sd_init,
+	0				
+};
+
 
 CLI_Command_Definition_t xBroadcast = {	
 	"budp",							
@@ -231,6 +241,29 @@ int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseTy
     return sprintf(buffer + strlen(buffer), "== %s == State: %s, High Water-mark Stack Usage: %ld\r\n", name, stateString, stackUsage);
 }
 
+
+/**
+ * @brief CLI command to init sd card
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_sd_init(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    taskENTER_CRITICAL();
+
+
+    uint8_t err = sd_init();
+
+    sprintf(pcWriteBuffer, "Initialising SD card, r1 = %X\r\n", err);  
+
+    taskEXIT_CRITICAL(); 
+
+    return pdFALSE;
+
+}
 
 /**
  * @brief CLI command to send a broadcast udp packet
@@ -816,6 +849,7 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xPing);
     FreeRTOS_CLIRegisterCommand(&xPingn);
     FreeRTOS_CLIRegisterCommand(&xBroadcast);
+    FreeRTOS_CLIRegisterCommand(&xSDInit);
     
     
     

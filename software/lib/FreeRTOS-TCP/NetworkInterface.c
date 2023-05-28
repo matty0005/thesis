@@ -82,7 +82,7 @@ BaseType_t xNetworkInterfaceInitialise( void )
         /* Create event handler task */
         xTaskCreate( prvEMACDeferredInterruptHandlerTask, /* Function that implements the task. */
                      "EMACInt",                           /* Text name for the task. */
-                     256,                                 /* Stack size in words, not bytes. */
+                     256 * 2,                                 /* Stack size in words, not bytes. */
                      ( void * ) 1,                        /* Parameter passed into the task. */
                      tskIDLE_PRIORITY + 2,                    /* Priority at which the task is created. */
                      &xEMACTaskHandle );                  /* Used to pass out the created task's handle. */

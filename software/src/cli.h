@@ -21,6 +21,7 @@
 #include "FreeRTOS_Sockets.h"
 
 #include "ethernet.h"
+#include "sd.h"
 
 #include <neorv32.h>
 #include <stdio.h>

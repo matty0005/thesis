@@ -12,11 +12,69 @@
 #ifndef SD_H
 #define SD_H
 
-
 #include <stdint.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "neorv32.h"
 
 #define SD_CHANNEL 0
+#define SD_CARD_DETECT_PIN 10
+#define SD_CARD_RESETn_PIN 11
 
-void sd_init();
+// ENUM for errors
+enum SD_ERRORS {
+    SD_CARD_NOT_INSERTED = 1,
+    SD_CARD_NOT_RESPONDING = 2,
+    SD_CARD_INIT_FAILED = 3,
+    SD_CARD_READ_FAILED = 4,
+    SD_CARD_WRITE_FAILED = 5,
+    SD_CARD_ERASE_FAILED = 6,
+    SD_CARD_NOT_READY = 7,
+    SD_CARD_NOT_PRESENT = 8,
+    SD_CARD_NOT_INITIALIZED = 9,
+    SD_CARD_NOT_SUPPORTED = 10,
+    SD_CARD_INVALID_ARGUMENT = 11,
+    SD_CARD_CRC_ERROR = 12,
+    SD_CARD_TIMEOUT = 13,
+    SD_CARD_ERROR = 14,
+    SD_CARD_OK = 0
+};
+
+#define CMD0        0
+#define CMD0_ARG    0x00000000
+#define CMD0_CRC    0x94
+
+#define CMD8        8
+#define CMD8_ARG    0x0000001AA
+#define CMD8_CRC    0x86
+
+#define CMD55       55
+#define CMD55_ARG   0x00000000
+#define CMD55_CRC   0x00
+
+#define CMD58       58
+#define CMD58_ARG   0x00000000
+#define CMD58_CRC   0x00
+
+#define ACMD41      41
+#define ACMD41_ARG  0x40000000
+#define ACMD41_CRC  0x00
+
+
+/**
+ * @brief Check if the SD card is inserted.
+ * 
+ * @return uint8_t 1 if inserted, 0 if not inserted.
+ */
+uint8_t sd_card_inserted();
+
+
+/**
+ * @brief Initialise the SD card. This function will initialise the SD card and set the SPI clock rate to 1 MHz.
+ * 
+ * @return uint8_t error code. 0 if no error.
+ */
+uint8_t sd_init();
 
 #endif
