@@ -20,6 +20,18 @@
 #include "queue.h"
 #include "semphr.h"
 
+/* FreeRTOS+FAT includes. */
+#include "ff_sddisk.h"
+#include "ff_sys.h"
+
+/* Misc definitions. */
+#define sdSIGNATURE         0x41404342UL
+#define sdHUNDRED_64_BIT    ( 100ull )
+#define sdBYTES_PER_MB      ( 1024ull * 1024ull )
+#define sdSECTORS_PER_MB    ( sdBYTES_PER_MB / 512ull )
+#define sdIOMAN_MEM_SIZE    4096
+#define xSDCardInfo         ( sd_mmc_cards[ 0 ] )
+
 
 #define sdSECTOR_SIZE    512
 
@@ -75,7 +87,98 @@ In this example:
   - xIOManagerCacheSize is the size of the IO manager's cache, which must be a
    multiple of the sector size, and at least twice as big as the sector size.
 */
-FF_Disk_t *FF_RAMDiskInit(char *pcName, uint8_t *pucDataBuffer, uint32_t ulSectorCount, size_t xIOManagerCacheSize) {
+FF_Disk_t * FF_SDDiskInit( const char * pcName )
+{
+    FF_Error_t xFFError;
+    BaseType_t xPartitionNumber = 0;
+    FF_CreationParameters_t xParameters;
+    FF_Disk_t * pxDisk;
+
+    xSDCardStatus = prvSDMMCInit( 0 );
+
+    if( xSDCardStatus != pdPASS )
+    {
+        FF_PRINTF( "FF_SDDiskInit: prvSDMMCInit failed\n" );
+        pxDisk = NULL;
+    }
+    else
+    {
+        pxDisk = ( FF_Disk_t * ) pvPortMalloc( sizeof( *pxDisk ) );
+
+        if( pxDisk == NULL )
+        {
+            FF_PRINTF( "FF_SDDiskInit: Malloc failed\n" );
+        }
+        else
+        {
+            /* Initialise the created disk structure. */
+            memset( pxDisk, '\0', sizeof( *pxDisk ) );
+
+            /* The Atmel MMC driver sets capacity as a number of KB.
+             * Divide by two to get the number of 512-byte sectors. */
+            pxDisk->ulNumberOfSectors = xSDCardInfo.capacity << 1;
+
+            if( xPlusFATMutex == NULL )
+            {
+                xPlusFATMutex = xSemaphoreCreateRecursiveMutex();
+            }
+
+            pxDisk->ulSignature = sdSIGNATURE;
+
+            if( xPlusFATMutex != NULL )
+            {
+                memset( &xParameters, '\0', sizeof( xParameters ) );
+                xParameters.ulMemorySize = sdIOMAN_MEM_SIZE;
+                xParameters.ulSectorSize = 512;
+                xParameters.fnWriteBlocks = prvFFWrite;
+                xParameters.fnReadBlocks = prvFFRead;
+                xParameters.pxDisk = pxDisk;
+
+                /* prvFFRead()/prvFFWrite() are not re-entrant and must be
+                 * protected with the use of a semaphore. */
+                xParameters.xBlockDeviceIsReentrant = pdFALSE;
+
+                /* The semaphore will be used to protect critical sections in
+                 * the +FAT driver, and also to avoid concurrent calls to
+                 * prvFFRead()/prvFFWrite() from different tasks. */
+                xParameters.pvSemaphore = ( void * ) xPlusFATMutex;
+
+                pxDisk->pxIOManager = FF_CreateIOManager( &xParameters, &xFFError );
+
+                if( pxDisk->pxIOManager == NULL )
+                {
+                    FF_PRINTF( "FF_SDDiskInit: FF_CreateIOManager: %s\n", ( const char * ) FF_GetErrMessage( xFFError ) );
+                    FF_SDDiskDelete( pxDisk );
+                    pxDisk = NULL;
+                }
+                else
+                {
+                    pxDisk->xStatus.bIsInitialised = pdTRUE;
+                    pxDisk->xStatus.bPartitionNumber = xPartitionNumber;
+
+                    if( FF_SDDiskMount( pxDisk ) == 0 )
+                    {
+                        FF_SDDiskDelete( pxDisk );
+                        pxDisk = NULL;
+                    }
+                    else
+                    {
+                        if( pcName == NULL )
+                        {
+                            pcName = "/";
+                        }
+
+                        FF_FS_Add( pcName, pxDisk );
+                        FF_PRINTF( "FF_SDDiskInit: Mounted SD-card as root \"%s\"\n", pcName );
+                        FF_SDDiskShowPartition( pxDisk );
+                    }
+                } /* if( pxDisk->pxIOManager != NULL ) */
+            }     /* if( xPlusFATMutex != NULL) */
+        }         /* if( pxDisk != NULL ) */
+    }             /* if( xSDCardStatus == pdPASS ) */
+
+    return pxDisk;
+}
     FF_Error_t xError;
     FF_Disk_t *pxDisk = NULL;
     FF_CreationParameters_t xParameters;
