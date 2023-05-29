@@ -247,7 +247,7 @@ uint8_t sd_read_block(uint32_t addr, uint8_t *data, uint8_t *token) {
         // if response token is 0xFE
         if(read == 0xFE) {
             // read 512 byte block
-            for(uint16_t i = 0; i < 512; i++) 
+            for(uint16_t i = 0; i < SD_BLOCK_SIZE; i++) 
                 *data++ = neorv32_spi_trans(0xFF);
 
             // read 16-bit CRC
@@ -262,6 +262,80 @@ uint8_t sd_read_block(uint32_t addr, uint8_t *data, uint8_t *token) {
     // set CS high
     neorv32_spi_cs_dis();
     return res;
+}
+
+
+/**
+ * @brief Write a block to the SD card.
+ * 
+ * @param addr Address to read in sectors (512 bytes)
+ * @param data 512 byte buffer to store on the SD card
+ * @param token 
+ * @return uint8_t status
+ */
+uint8_t sd_write_block(uint32_t addr, uint8_t *data, uint8_t *token) {
+    uint8_t readAttempts, read;
+    uint8_t res[5];
+
+    // set token to none
+    *token = 0xFF;
+
+    // assert chip select
+    neorv32_spi_trans(0xFF);
+    neorv32_spi_cs_en(SD_CHANNEL);
+    neorv32_spi_trans(0xFF);
+
+    // send CMD24
+    sd_send_cmd(CMD24, addr, CMD24_CRC);
+
+    // read response
+    res[0] = sd_read_r1();
+
+    // if no error
+    if(res[0] == SD_READY)
+    {
+        // send start token
+        neorv32_spi_trans(SD_START_TOKEN);
+
+        // write data to card
+        for (uint16_t i = 0; i < SD_BLOCK_SIZE; i++) 
+            neorv32_spi_trans(data[i]);
+
+        // wait for a response 
+        readAttempts = 0;
+        while (++readAttempts != SD_MAX_WRITE_ATTEMPTS) {
+
+            if (read = neorv32_spi_trans(0xFF), read != 0xFF) { 
+
+                *token = 0xFF; 
+                break; 
+            }
+        }
+
+        // Check if data accepted - check lower 5 bits
+        if ((read & 0x1F) == SD_WRITE_ACCEPTED) {
+
+            // set token to data accepted
+            *token = 0x05;
+
+            // wait for write to finish (timeout = 250ms)
+            readAttempts = 0;
+
+            while (neorv32_spi_trans(0xFF) == 0x00) {
+                if (++readAttempts == SD_MAX_WRITE_ATTEMPTS) { 
+                    *token = 0x00; 
+                    break;
+                }
+            }
+        }
+    }
+
+    // deassert chip select
+    neorv32_spi_trans(0xFF);
+    neorv32_spi_cs_dis();
+    neorv32_spi_trans(0xFF);
+
+    return res[0];
 }
 
 
@@ -344,7 +418,7 @@ uint8_t sd_init() {
 
         cmdAttempts++;
     }
-    while(res[0] != 0x00);
+    while(res[0] != SD_READY);
 
     neorv32_cpu_delay_ms(1);
 

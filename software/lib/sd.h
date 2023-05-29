@@ -41,6 +41,11 @@ enum SD_ERRORS {
     SD_CARD_OK = 0
 };
 
+#define SD_READY 0x00
+#define SD_START_TOKEN 0xFE
+#define SD_BLOCK_SIZE 512
+#define SD_WRITE_ACCEPTED 0x05
+
 #define CMD0        0
 #define CMD0_ARG    0x00000000
 #define CMD0_CRC    0x94
@@ -52,6 +57,11 @@ enum SD_ERRORS {
 #define CMD17                   17
 #define CMD17_CRC               0x00
 #define SD_MAX_READ_ATTEMPTS    1563 //(0.1s * 16000000 MHz)/(128 * 8 bytes) = 1563. 0.1s is the timeout for the SD card.
+
+#define CMD24                   24
+#define CMD24_CRC               0x00
+#define SD_MAX_WRITE_ATTEMPTS   3907
+
 
 #define CMD55       55
 #define CMD55_ARG   0x00000000
@@ -90,5 +100,15 @@ uint8_t sd_init();
  * @return uint8_t 
  */
 uint8_t sd_read_block(uint32_t addr, uint8_t *data, uint8_t *token);
+
+/**
+ * @brief Write a block to the SD card.
+ * 
+ * @param addr Address to read in sectors (512 bytes)
+ * @param data 512 byte buffer to store on the SD card
+ * @param token 
+ * @return uint8_t status
+ */
+uint8_t sd_write_block(uint32_t addr, uint8_t *data, uint8_t *token);
 
 #endif

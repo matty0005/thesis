@@ -27,7 +27,14 @@ static BaseType_t cli_cmd_pingn(char *pcWriteBuffer, size_t xWriteBufferLen, con
 static BaseType_t cli_cmd_broadcast(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_sd_init(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_sd_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_sd_write(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 
+CLI_Command_Definition_t xSDWrite = {	
+	"sdw",							
+	"sdw [addr] [value]:\r\n    Write value to the first 2 bytes of the block starting at addr\r\n\r\n",
+	cli_cmd_sd_write,
+	2			
+};
 
 CLI_Command_Definition_t xSDRead = {	
 	"sdr",							
@@ -305,6 +312,43 @@ static BaseType_t cli_cmd_sd_read(char *pcWriteBuffer, size_t xWriteBufferLen, c
 
 }
 
+/**
+ * @brief CLI command to write a block to the sd card
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_sd_write(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    const char *pcAddr, *pcData;
+    BaseType_t xAddrLen, xDataLen;
+
+    pcAddr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xAddrLen);
+    pcData = FreeRTOS_CLIGetParameter(pcCommandString, 2, &xDataLen);
+
+    uint32_t addr = 0x0000FFFF & (uint32_t)str_to_int(pcAddr, xAddrLen);
+    uint16_t data = str_to_int(pcData, xDataLen);
+    
+    uint8_t buff[512];
+    uint8_t token;
+    
+    taskENTER_CRITICAL();
+    uint8_t err = sd_read_block(addr, buff, &token);
+
+    buff[0] = data & 0xFF;
+    buff[1] = (data >> 8) & 0xFF;
+
+    err = sd_write_block(addr, buff, &token);
+    taskEXIT_CRITICAL(); 
+
+    sprintf(pcWriteBuffer, "Reading from SD card, addr: %d, token: %x, res: %x\r\n", addr, token, err);  
+    sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "%x %x %x %x %x %x %x %x\r\n", buff[0], buff[1], buff[2], buff[3], buff[4], buff[5], buff[6], buff[7]);  
+
+    return pdFALSE;
+
+}
 
 
 
@@ -895,6 +939,7 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xBroadcast);
     FreeRTOS_CLIRegisterCommand(&xSDInit);
     FreeRTOS_CLIRegisterCommand(&xSDRead);
+    FreeRTOS_CLIRegisterCommand(&xSDWrite);
     
     
     
