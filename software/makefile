@@ -91,6 +91,25 @@ APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/inc
 APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/source/portable/Compiler/GCC
 
 
+# -----------------
+# FreeRTOS-Plus-FAT
+# -----------------
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_crc.c
+# APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_dev_support.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_dir.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_error.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_fat.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_file.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_format.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_ioman.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_locking.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_memory.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_stdio.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_string.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_sys.c
+APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_time.c
+
+APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-FAT/include
 
 
 

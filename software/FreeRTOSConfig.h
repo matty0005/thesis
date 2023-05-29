@@ -121,6 +121,8 @@
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 #define configCOMMAND_INT_MAX_OUTPUT_SIZE 1024
 
+#define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
+
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 			0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
