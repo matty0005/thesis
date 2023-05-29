@@ -82,13 +82,18 @@ void sd_read_r7(uint8_t *r7) {
  */
 uint8_t sd_software_reset() {
     
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_en(SD_CHANNEL);
+    neorv32_spi_trans(0xFF);
+    
     sd_send_cmd(CMD0, CMD0_ARG, CMD0_CRC);
 
 
     // read response
     uint8_t res1 = sd_read_r1();
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_dis();
+    neorv32_spi_trans(0xFF);
     return res1;
 }
 
@@ -98,12 +103,18 @@ uint8_t sd_software_reset() {
  * @param res buffer of 5 bytes to store the R7 response.
  */
 void sd_send_if_cond(uint8_t *res) {
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_en(SD_CHANNEL);
+    neorv32_spi_trans(0xFF);
+
     sd_send_cmd(CMD8, CMD8_ARG, CMD8_CRC);
 
     // read response
     sd_read_r7(res);
+
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_dis();
+    neorv32_spi_trans(0xFF);
 }
 
 
@@ -113,13 +124,20 @@ void sd_send_if_cond(uint8_t *res) {
  * @return uint8_t R1 response
  */
 uint8_t sd_send_app_cmd() {
+
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_en(SD_CHANNEL);
+    neorv32_spi_trans(0xFF);
+
     sd_send_cmd(CMD55, CMD55_ARG, CMD55_CRC);
 
     // read response
     uint8_t r1 = sd_read_r1();
-    neorv32_spi_cs_dis();
 
+    neorv32_spi_trans(0xFF);
+    neorv32_spi_cs_dis();
+    neorv32_spi_trans(0xFF);
+    
     return r1;
 }
 
@@ -129,12 +147,19 @@ uint8_t sd_send_app_cmd() {
  * @return uint8_t R1 response
  */
 uint8_t sd_send_app_op_cond() {
+
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_en(SD_CHANNEL);
+    neorv32_spi_trans(0xFF);
+
     sd_send_cmd(ACMD41, ACMD41_ARG, ACMD41_CRC);
 
     // read response
     uint8_t r1 = sd_read_r1();
+
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_dis();
+    neorv32_spi_trans(0xFF);
 
     return r1;
 
@@ -163,6 +188,7 @@ void sd_power_on() {
         neorv32_spi_trans(0xFF);
     
     neorv32_spi_cs_dis();
+    neorv32_spi_trans(0xFF);
 
 }
 
@@ -172,12 +198,19 @@ void sd_power_on() {
  * @param ocr 
  */
 void sd_read_ocr(uint8_t *ocr) {
+
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_en(SD_CHANNEL);
+    neorv32_spi_trans(0xFF);
+
     sd_send_cmd(CMD58, CMD58_ARG, CMD58_CRC);
 
     // read response
     sd_read_r7(ocr);
+
+    neorv32_spi_trans(0xFF);
     neorv32_spi_cs_dis();
+    neorv32_spi_trans(0xFF);
 }
 
 /**
@@ -241,6 +274,10 @@ uint8_t sd_read_block(uint32_t addr, uint8_t *data, uint8_t *token) {
  */
 uint8_t sd_init() {
 
+    uint8_t res[5];
+    uint8_t cmdAttempts = 0;
+
+
     // check if SPI unit is implemented at all
     if (neorv32_spi_available() == 0) {
         neorv32_uart0_printf("ERROR! No SPI unit implemented.");
@@ -266,12 +303,18 @@ uint8_t sd_init() {
 
 
     sd_power_on();
+
+
+    // command card to idle
+    while((res[0] = sd_software_reset()) != 0x01) {
+        cmdAttempts++;
+        if(cmdAttempts > 10) 
+            return SD_CARD_ERROR;
+    }
     
-    sd_software_reset();
+
 
     // send CMD8
-    uint8_t res[5];
-
     if (sd_send_if_cond(res), res[0] != 0x01)
         return SD_CARD_INIT_FAILED;
 
@@ -283,10 +326,10 @@ uint8_t sd_init() {
 
 
     // attempt to initialize card
-    uint8_t cmdAttempts = 0;
     do
     {
-        if(cmdAttempts > 100) return SD_CARD_INIT_FAILED;
+        if(cmdAttempts > 100) 
+            return SD_CARD_INIT_FAILED;
 
         // send app cmd
         res[0] = sd_send_app_cmd();
@@ -301,9 +344,9 @@ uint8_t sd_init() {
 
         cmdAttempts++;
     }
-    while(res[0] != 0x01);
+    while(res[0] != 0x00);
 
-    memset(res, 0, 5);
+    neorv32_cpu_delay_ms(1);
 
     sd_read_ocr(res);
 
