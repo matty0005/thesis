@@ -16,18 +16,12 @@
 // #define BAUD_RATE 4000000
 // #define BAUD_RATE 2000000
 #define BAUD_RATE 1152000
-// #define BAUD_RATE 115200
-// #define BAUD_RATE 19200
 
 #define ETH_RX_INT 0x00
 
 TaskHandle_t xEthernetTaskHandle = NULL;
 
-
-
 extern void main_project( void );
-
-
 extern void freertos_risc_v_trap_handler( void );
 
 /*
@@ -41,8 +35,6 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
 
 void vApplicationTickHook(void);
 
-
-
 /* Prepare hardware to run the demo. */
 static void prvSetupHardware( void );
 
@@ -51,63 +43,11 @@ void vToggleLED( void );
 void vSendString( const char * pcString );
 
 
-/**
- * @brief Creates a task that controls the ethernet mac.
- * 
- */
-void tsk_ethernet_test(void *pvParameters) {
-  size_t xBytesReceived;
-  uint8_t buff[1500];
 
-  for(;;) {
-
-      /* Wait for the Ethernet MAC interrupt to indicate that another packet
-      has been received.  ulTaskNotifyTake() is used in place of the
-      standard queue receive function as the interrupt handler cannot directly
-      write to a queue. */
-      ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
-
-      neorv32_uart0_printf("Ethernet Recieve!\n");
-
-
-      /* Obtain the size of the packet and put it into the "length" member of
-      the pxBufferDescriptor structure. */
-      
-      // Enter critical section to prevent the ethernet mac from being used by another task.
-      taskENTER_CRITICAL();
-      
-      
-
-      
-      xBytesReceived = eth_recv_size();
-
-      if (xBytesReceived > 0) {
-        eth_recv(buff, xBytesReceived);
-
-        neorv32_uart0_printf("From: %x:%x:%x:%x:%x:%x\nBytes Recv: %d\n", buff[6], buff[7], buff[8], buff[9], buff[10], buff[11], xBytesReceived);
-
-      }
-      taskEXIT_CRITICAL();
-
-
-      vTaskDelay(1000);
-  }
-}
-
-
-
-
-
-
-
-
-int main( void )
-{
+int main(void) {
   prvSetupHardware();
 
-  
-    /* say hi */
-  /*
+/*  
  _____  _____  _____  _____           ______ _                        _ _ 
 |  __ \|_   _|/ ____|/ ____|         |  ____(_)                      | | |
 | |__) | | | | (___ | |    _   _     | |__   _ _ __ _____      ____ _| | |
@@ -139,21 +79,13 @@ int main( void )
   // enable TRNG
   neorv32_trng_enable();
   
-  
   start_networking();
-
-
   main_project();
-
-  // xTaskCreate(tsk_ethernet_test, "ETHERNETDAEMON", configMINIMAL_STACK_SIZE * 12, NULL, tskIDLE_PRIORITY + 1, &xEthernetTaskHandle);
 
   /* Start the tasks and timer running. */
   vTaskStartScheduler();
 
 }
-
-
-
 
 
 /* Handle NEORV32-specific interrupts */
@@ -172,13 +104,10 @@ void freertos_risc_v_application_interrupt_handler(void) {
 
   // handle XIRQ
   if (irq_channel == ETH_RX_INT) {
-    // handle XIRQ
-    // size_t xBytesReceived = eth_recv_size();
 
     eth_ack_irq();
 
     BaseType_t pxHigherPriorityTaskWoken;
-    // neorv32_uart0_printf("\nLen: 2\n");
 
     if( xEMACTaskHandle != NULL )
       vTaskNotifyGiveFromISR(xEMACTaskHandle, &pxHigherPriorityTaskWoken);
