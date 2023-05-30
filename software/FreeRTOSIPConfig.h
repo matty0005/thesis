@@ -306,4 +306,11 @@ disconnecting stage will timeout after a period of non-activity. */
 
 #define portINLINE __inline
 
+
+#define ipconfigHTTP_TX_BUFSIZE				( 4 * ipconfigTCP_MSS )
+#define ipconfigHTTP_TX_WINSIZE				( 2 )
+#define ipconfigHTTP_RX_BUFSIZE				( 4 * ipconfigTCP_MSS )
+#define ipconfigHTTP_RX_WINSIZE				( 4 )
+
+
 #endif /* FREERTOS_IP_CONFIG_H */
