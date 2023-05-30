@@ -39,56 +39,185 @@
 
 #define sdSECTOR_SIZE    512
 
+static int32_t prvWriteSD(uint8_t *pucSource, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk);
+static int32_t prvReadSD(uint8_t *pucDestination, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk);
+
 /*
  * Mutex for partition.
  */
 static SemaphoreHandle_t xPlusFATMutex = NULL;
 
 
-
-static int32_t prvReadSD(uint8_t *pucDestination, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk) {
+/**
+ * @brief Reads from the SD card.
+ * 
+ * @param pucBuffer Buffer to read to 
+ * @param ulSectorNumber The sector to start at
+ * @param ulSectorCount The number of sectors to read
+ * @param pxDisk The disk to read from
+ * @return int32_t 
+ */
+static int32_t prvReadSD(uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk) {
     uint8_t *pucSource;
 
-    /* The FF_Disk_t structure describes the media being accessed.  Attributes that
-    are common to all media types are stored in the structure directly.  The pvTag
-    member of the structure is used to add attributes that are specific to the media
-    actually being accessed.  In the case of the RAM disk the pvTag member is just
-    used to point to the RAM buffer being used as the disk. */
-    pucSource = ( uint8_t * ) pxDisk->pvTag;
+    int32_t lReturnCode = 1L, lResult = pdFALSE;
 
-    /* Move to the start of the sector being read. */
-    pucSource += ( sdSECTOR_SIZE * ulSectorNumber );
+    if( ( pxDisk != NULL ) &&
+        ( sd_card_inserted() == pdTRUE ) &&
+        ( pxDisk->ulSignature == sdSIGNATURE ) &&
+        ( pxDisk->xStatus.bIsInitialised != pdFALSE ) &&
+        ( ulSectorNumber < pxDisk->ulNumberOfSectors ) &&
+        ( ( pxDisk->ulNumberOfSectors - ulSectorNumber ) >= ulSectorCount ) )
+    {
 
-    /* Copy the data from the disk.  As this is a RAM disk data can be copied
-    using memcpy(). */
-    memcpy( ( void * ) pucDestination,
-            ( void * ) pucSource,
-            ( size_t ) ( ulSectorCount * sdSECTOR_SIZE ) );
+        uint32_t ulSector;
+        uint8_t *pucDMABuffer = ffconfigMALLOC(512ul);
 
-    return FF_ERR_NONE;
+        /* The buffer is NOT word-aligned, read to an aligned buffer and then
+            * copy the data to the user provided buffer. */
+        if (pucDMABuffer != NULL) {
+            for (ulSector = 0; ulSector < ulSectorCount; ulSector++ ) {
+
+                // Ignore errors.
+                uint8_t *token;
+                sd_read_block(ulSectorNumber + ulSector, pucDMABuffer, token);
+
+                // could check token for error, but thats not fun.
+       
+                /* Copy to the user-provided buffer. */
+                memcpy(pucBuffer + 512ul * ulSector, pucDMABuffer, 512ul);
+            }
+
+            ffconfigFREE(pucDMABuffer);
+        } else {
+            FF_PRINTF("prvFFRead: malloc failed\n" );
+            lResult = pdFALSE;
+        }
+    
+
+        if (lResult != pdFALSE) {
+            lReturnCode = 0L;
+        } else {
+            /* Some error occurred. */
+            FF_PRINTF( "prvFFRead: %u: %d\n", ( unsigned ) ulSectorNumber, ( int ) lResult );
+        }
+    }
+    else
+    {
+        /* Make sure no random data is in the returned buffer. */
+        memset((void *) pucBuffer, '\0', ulSectorCount * 512UL);
+
+        if (pxDisk->xStatus.bIsInitialised != pdFALSE) {
+            FF_PRINTF("prvFFRead: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors);
+        }
+    }
+
+    return lReturnCode;
 }
 
-static int32_t prvWriteSD(uint8_t *pucSource, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk) {
-    uint8_t *pucDestination;
+/**
+ * @brief Writes to the SD card.
+ * 
+ * @param pucBuffer The buffer to write from 
+ * @param ulSectorNumber The sector to start at
+ * @param ulSectorCount The number of sectors to write
+ * @param pxDisk The disk to write to
+ * @return int32_t 
+ */
+static int32_t prvWriteSD(uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk) {
+    int32_t lReturnCode = 1, lResult = pdFALSE;
 
-    /* The FF_Disk_t structure describes the media being accessed.  Attributes that
-    are common to all media types are stored in the structure directly.  The pvTag
-    member of the structure is used to add attributes that are specific to the media
-    actually being accessed.  In the case of the RAM disk the pvTag member is just
-    used to point to the RAM buffer being used as the disk. */
-    pucDestination = ( uint8_t * ) pxDisk->pvTag;
+    if( ( pxDisk != NULL ) &&
+        ( sd_card_inserted() == pdTRUE ) &&
+        ( pxDisk->ulSignature == sdSIGNATURE ) &&
+        ( pxDisk->xStatus.bIsInitialised != pdFALSE ) &&
+        ( ulSectorNumber < pxDisk->ulNumberOfSectors ) &&
+        ( ( pxDisk->ulNumberOfSectors - ulSectorNumber ) >= ulSectorCount ) )
+    {
+       
+        uint32_t ulSector;
+        uint8_t *pucDMABuffer = ffconfigMALLOC( 512ul );
 
-    /* Move to the start of the sector being written. */
-    pucDestination += ( sdSECTOR_SIZE * ulSectorNumber );
+        if (pucDMABuffer != NULL) {
+            for (ulSector = 0; ulSector < ulSectorCount; ulSector++) {
 
-    /* Copy the data to the disk.  As this is a RAM disk data can be copied
-    using memcpy(). */
-    memcpy( ( void * ) pucDestination,
-            ( void * ) pucSource,
-            ( size_t ) ( ulSectorCount * sdSECTOR_SIZE ) );
+                /* Copy from the user provided buffer to the temporary buffer. */
+                memcpy(pucDMABuffer, pucBuffer + 512ul * ulSector, 512ul);
 
-    return FF_ERR_NONE;
+                uint8_t *token;
+                sd_write_block(ulSectorNumber + ulSector, pucDMABuffer, token);
+
+                // could check token for error, but thats boring - getting unexpected errors are much better.   
+            }
+
+            ffconfigFREE(pucDMABuffer);
+        } else {
+            FF_PRINTF("prvFFWrite: malloc failed\n");
+            lResult = pdFALSE;
+        }
+        
+
+        if(lResult != pdFALSE) {
+            /* No errors. */
+            lReturnCode = 0L;
+        } else {
+            FF_PRINTF("prvFFWrite: %u: %d\n", ( unsigned ) ulSectorNumber, ( int ) lResult);
+        }
+    } else {
+        if (pxDisk->xStatus.bIsInitialised != pdFALSE) {
+            FF_PRINTF("prvFFWrite: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors);
+        }
+    }
+
+    return lReturnCode;
 }
+
+/**
+ * @brief Detects if the SD card is plugged in.
+ * 
+ * @return BaseType_t 
+ */
+static BaseType_t prvSDDetect() {
+    static BaseType_t xWasPresent = pdFALSE;
+    BaseType_t xIsPresent = pdFALSE;
+    uint8_t xSDPresence;
+
+    // Dont bother if not inserted
+    if (!sd_card_inserted()) {
+        xWasPresent = pdFALSE;
+        return pdFALSE;
+    }
+
+    if (xWasPresent == pdFALSE) 
+        xIsPresent = sd_init();
+    
+    xWasPresent = xIsPresent;
+
+    return xIsPresent;
+}
+
+
+/**
+ * @brief Detects if the SD card is plugged in.
+ * 
+ * @return BaseType_t 
+ */
+static BaseType_t prvSDMMCInit() {
+    BaseType_t xReturn;
+
+    /* Check if the SD card is plugged in the slot */
+    if (prvSDDetect() == pdFALSE) {
+        FF_PRINTF("No SD card detected\n");
+        xReturn = pdFAIL;
+    } else {
+        FF_PRINTF("SD card Init successful\r\n");
+
+        xReturn = pdPASS;
+    }
+
+    return xReturn;
+}
+
 
 /**
  * @brief Releases the resources used by the SD card.
@@ -167,13 +296,16 @@ BaseType_t FF_SDDiskShowPartition(FF_Disk_t * pxDisk) {
 
         /* It is better not to use the 64-bit format such as %Lu because it
          * might not be implemented. */
-        neorv32_uart0_printf("Partition Nr   %8u\n", pxDisk->xStatus.bPartitionNumber);
-        neorv32_uart0_printf("Type           %8u (%s)\n", pxIOManager->xPartition.ucType, pcTypeName);
-        neorv32_uart0_printf("VolLabel       '%8s' \n", pxIOManager->xPartition.pcVolumeLabel);
-        neorv32_uart0_printf("TotalSectors   %8u\n", (unsigned) pxIOManager->xPartition.ulTotalSectors);
-        neorv32_uart0_printf("SecsPerCluster %8u\n", (unsigned) pxIOManager->xPartition.ulSectorsPerCluster);
-        neorv32_uart0_printf("Size           %8u MB\n", (unsigned) ulTotalSizeMB);
-        neorv32_uart0_printf("FreeSize       %8u MB ( %d perc free )\n", (unsigned) ulFreeSizeMB, iPercentageFree);
+
+        char buff[200];
+        
+        neorv32_uart0_printf("Partition Nr   %d\n", pxDisk->xStatus.bPartitionNumber);
+        neorv32_uart0_printf("Type           %d (%s)\n", pxIOManager->xPartition.ucType, pcTypeName);
+        neorv32_uart0_printf("VolLabel       '%s' \n", pxIOManager->xPartition.pcVolumeLabel);
+        neorv32_uart0_printf("TotalSectors   %d\n", (unsigned) pxIOManager->xPartition.ulTotalSectors);
+        neorv32_uart0_printf("SecsPerCluster %d\n", (unsigned) pxIOManager->xPartition.ulSectorsPerCluster);
+        neorv32_uart0_printf("Size           %d MB\n", (unsigned) ulTotalSizeMB);
+        neorv32_uart0_printf("FreeSize       %d MB ( %d perc free )\n", (unsigned) ulFreeSizeMB, iPercentageFree);
     }
 
     return xReturn;
@@ -197,7 +329,7 @@ BaseType_t FF_SDDiskMount(FF_Disk_t * pxDisk) {
         xReturn = pdFAIL;
     } else {
         pxDisk->xStatus.bIsMounted = pdTRUE;
-        neorv32_uart0_printf("****** FreeRTOS+FAT initialized %u sectors\n", (unsigned) pxDisk->pxIOManager->xPartition.ulTotalSectors);
+        neorv32_uart0_printf("****** FreeRTOS+FAT initialized %d sectors\n", (unsigned) pxDisk->pxIOManager->xPartition.ulTotalSectors);
         FF_SDDiskShowPartition( pxDisk );
         xReturn = pdPASS;
     }
@@ -218,7 +350,7 @@ FF_Disk_t * FF_SDDiskInit(const char * pcName) {
     FF_CreationParameters_t xParameters;
     FF_Disk_t * pxDisk;
 
-    uint8_t err = sd_init();
+    uint8_t err = prvSDMMCInit();
 
     if (err != SD_CARD_OK) {
         neorv32_uart0_printf( "FF_SDDiskInit: sd_init failed\n" );

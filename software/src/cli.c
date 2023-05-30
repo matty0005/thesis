@@ -277,7 +277,10 @@ int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseTy
 static BaseType_t cli_cmd_fat_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
 
     uint32_t ucBuffer[ 64 ];
+    uint8_t ucBuffer8[ 64 * 4];
     size_t xCount = 0;
+    
+    FF_Disk_t *disk = FF_SDDiskInit("/");
 
     FF_FILE *f = ff_fopen("/readme.txt", "r");
 
@@ -286,7 +289,12 @@ static BaseType_t cli_cmd_fat_read(char *pcWriteBuffer, size_t xWriteBufferLen, 
         xCount = ff_fread(ucBuffer, 1, sizeof( ucBuffer ), f);
         ff_fclose(f);
 
-        sprintf(pcWriteBuffer, "Read %d bytes from file\r\n", xCount);
+        sprintf(pcWriteBuffer, "Read %d bytes from file\r\n\r\n", xCount);
+
+        memcpy(ucBuffer8, ucBuffer, xCount);
+
+        for (int i = 0; i < xCount; i++) 
+            sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "%c", ucBuffer8[i]);
 
     } else {
         // https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/stdio_API/errno.html
@@ -294,13 +302,7 @@ static BaseType_t cli_cmd_fat_read(char *pcWriteBuffer, size_t xWriteBufferLen, 
     }
 
 
-    // for (int i = 0; i < xCount; i++) {
-    //     sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "%x", ucBuffer[i]);
-
-    //     if (i % 16 == 0) {
-    //         sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "\r\n");
-    //     }
-    // }
+    
 
     return pdFALSE;
 
