@@ -370,15 +370,15 @@ ethernet_mac : wb_ethernet
   sd_o_rst <= gpio_o(11);
   
   
-    --sd_o_sck  -- clock
-    --sd_o_cmd  -- MOSI
-    --sd_i_miso
-    --sd_o_csn
+  sd_o_sck  <= spi_clk_o; -- clock
+  sd_o_cmd <= spi_dat_o; -- MOSI
+  spi_dat_i <= sd_i_miso;
+  sd_o_csn <= spi_csn_o(0);   
 
 
   -- test SPI
-  pmod_o <=  gpio_o(11) & spi_csn_o(0) & spi_dat_o & spi_clk_o;
-  spi_dat_i <= pmod_i(0);
+--  pmod_o <=  gpio_o(11) & spi_csn_o(0) & spi_dat_o & spi_clk_o;
+--  spi_dat_i <= pmod_i(0);
  
   
 end architecture;
