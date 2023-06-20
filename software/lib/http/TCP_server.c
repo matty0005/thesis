@@ -50,56 +50,52 @@ static char *strnew( const char *pcString );
 /* Remove slashes at the end of a path. */
 static void prvRemoveSlash( char *pcDir );
 
-TCPServer_t *FreeRTOS_CreateTCPServer( const struct xSERVER_CONFIG *pxConfigs, BaseType_t xCount )
-{
-TCPServer_t *pxServer;
-SocketSet_t xSocketSet;
+TCPServer_t *FreeRTOS_CreateTCPServer( const struct xSERVER_CONFIG *pxConfigs, BaseType_t xCount ) {
+    TCPServer_t *pxServer;
+    SocketSet_t xSocketSet;
 
 	/* Create a new server.
 	xPort / xPortAlt : Make the service available on 1 or 2 public port numbers. */
 	xSocketSet = FreeRTOS_CreateSocketSet();
 
-	if( xSocketSet != NULL )
-	{
-	BaseType_t xSize;
+	if (xSocketSet != NULL) {
+		BaseType_t xSize;
 
 		xSize = sizeof( *pxServer ) - sizeof( pxServer->xServers ) + xCount * sizeof( pxServer->xServers[ 0 ] );
 
 		pxServer = ( TCPServer_t * ) pvPortMallocLarge( xSize );
-		if( pxServer != NULL )
-		{
-		struct freertos_sockaddr xAddress;
-		BaseType_t xNoTimeout = 0;
-		BaseType_t xIndex;
+		if (pxServer != NULL) {
+
+			struct freertos_sockaddr xAddress;
+			BaseType_t xNoTimeout = 0;
+			BaseType_t xIndex;
 
 			memset( pxServer, '\0', xSize );
 			pxServer->xServerCount = xCount;
 			pxServer->xSocketSet = xSocketSet;
 
-			for( xIndex = 0; xIndex < xCount; xIndex++ )
-			{
-			BaseType_t xPortNumber = pxConfigs[ xIndex ].xPortNumber;
+			for ( xIndex = 0; xIndex < xCount; xIndex++ ) {
+				BaseType_t xPortNumber = pxConfigs[ xIndex ].xPortNumber;
 
-				if( xPortNumber > 0 )
-				{
-				Socket_t xSocket;
+				if ( xPortNumber > 0 ) {
+					Socket_t xSocket;
 
 					xSocket = FreeRTOS_socket( FREERTOS_AF_INET, FREERTOS_SOCK_STREAM, FREERTOS_IPPROTO_TCP );
-					FreeRTOS_printf( ( "TCP socket on port %d\n", ( int )xPortNumber ) );
+					FreeRTOS_printf( ( "TCP socket on port %d.\n", ( int )xPortNumber ) );
+					FreeRTOS_printf( ( "IP to bind: %d\n", ( int )FreeRTOS_GetIPAddress() ) );
 
-					if( xSocket != FREERTOS_INVALID_SOCKET )
-					{
-						xAddress.sin_addr = FreeRTOS_GetIPAddress(); // Single NIC, currently not used
+					if ( xSocket != FREERTOS_INVALID_SOCKET ) {
+						// xAddress.sin_addr = FreeRTOS_GetIPAddress(); // Single NIC, currently not used
 						xAddress.sin_port = FreeRTOS_htons( xPortNumber );
 
 						FreeRTOS_bind( xSocket, &xAddress, sizeof( xAddress ) );
 						FreeRTOS_listen( xSocket, pxConfigs[ xIndex ].xBackLog );
 
+						// Set timeouts for sockets. 
 						FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_RCVTIMEO, ( void * ) &xNoTimeout, sizeof( BaseType_t ) );
 						FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_SNDTIMEO, ( void * ) &xNoTimeout, sizeof( BaseType_t ) );
-
 						
-                        if(pxConfigs[ xIndex ].eType == eSERVER_HTTP) {
+                        if (pxConfigs[ xIndex ].eType == eSERVER_HTTP) {
                             WinProperties_t xWinProps;
 
                             memset( &xWinProps, '\0', sizeof( xWinProps ) );
@@ -123,9 +119,7 @@ SocketSet_t xSocketSet;
 					}
 				}
 			}
-		}
-		else
-		{
+		} else {
 			/* Could not allocate the server, delete the socket set */
 			FreeRTOS_DeleteSocketSet( xSocketSet );
 		}
@@ -204,6 +198,9 @@ BaseType_t xRc;
 
 	/* Let the server do one working cycle */
 	xRc = FreeRTOS_select( pxServer->xSocketSet, xBlockingTime );
+
+    neorv32_uart0_printf("-------FreeRTOS_TCPServerWork------ %d=\n", xRc);
+
 
 	if( xRc != 0 )
 	{

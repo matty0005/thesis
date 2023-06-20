@@ -63,7 +63,14 @@ BaseType_t xApplicationDNSQueryHook( const char * pcName ) {
 }
 
 uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress, uint16_t usSourcePort, uint32_t ulDestinationAddress, uint16_t usDestinationPort ) {
-    return 0;
+    uint8_t trng_data[4];
+
+    neorv32_trng_get(trng_data);
+    neorv32_trng_get(trng_data + 1);
+    neorv32_trng_get(trng_data + 2);
+    neorv32_trng_get(trng_data + 3);
+      
+    return (uint32_t) trng_data[3] << 3 | (uint32_t)trng_data[3] << 2 | (uint32_t) trng_data[3] << 1 | (uint32_t) trng_data[3];
 }
 
 

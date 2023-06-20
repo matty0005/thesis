@@ -15,7 +15,7 @@
 #define UDP_STACK_SIZE ( configMINIMAL_STACK_SIZE * 5 )
 #define UDP_PRIORITY ( tskIDLE_PRIORITY + 1 )
 
-#define mainTCP_SERVER_TASK_PRIORITY	( tskIDLE_PRIORITY + 1 )
+#define mainTCP_SERVER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define	mainTCP_SERVER_STACK_SIZE		( configMINIMAL_STACK_SIZE * 8 )
 
 /* Constants */
@@ -207,16 +207,19 @@ static void tsk_HTTP_server(void *pvParameters) {
 
     /* The priority of this task can be raised now the disk has been
     initialised. */
-    vTaskPrioritySet( NULL, mainTCP_SERVER_TASK_PRIORITY );
+    // vTaskPrioritySet( NULL, mainTCP_SERVER_TASK_PRIORITY );
 
     /* Create the servers defined by the xServerConfiguration array above. */
     pxTCPServer = FreeRTOS_CreateTCPServer( xServerConfiguration, sizeof( xServerConfiguration ) / sizeof( xServerConfiguration[ 0 ] ) );
+    neorv32_uart0_printf("TCP Server Create result: %d\n\n", pxTCPServer != NULL);
+
     configASSERT( pxTCPServer );
 
     for( ;; )
     {
         /* Run the HTTP and/or FTP servers, as configured above. */
         FreeRTOS_TCPServerWork( pxTCPServer, xInitialBlockTime );
+        
     }
 }
 
@@ -248,9 +251,9 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
              */
 
             // Create tasks here as TCP/IP stack has been created
-            xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+            // xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
             // xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
-            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xServerWorkTaskHandle );
+            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY, &xServerWorkTaskHandle );
 
             xTasksAlreadyCreated = pdTRUE;
         }

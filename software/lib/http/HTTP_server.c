@@ -328,6 +328,8 @@ BaseType_t xHTTPClientWork( TCPClient_t *pxTCPClient )
 BaseType_t xRc;
 HTTPClient_t *pxClient = ( HTTPClient_t * ) pxTCPClient;
 
+
+neorv32_uart0_printf("-------xHTTPClientWork------\n");
 	if( pxClient->pxFileHandle != NULL )
 	{
 		prvSendFile( pxClient );
