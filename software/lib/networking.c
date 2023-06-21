@@ -10,7 +10,7 @@
  */
 #include "networking.h"
 
-#define configHTTP_ROOT "/www/http"
+#define configHTTP_ROOT "/www/html"
 
 #define UDP_STACK_SIZE ( configMINIMAL_STACK_SIZE * 5 )
 #define UDP_PRIORITY ( tskIDLE_PRIORITY + 1 )
