@@ -16,7 +16,7 @@
 #define UDP_PRIORITY ( tskIDLE_PRIORITY + 1 )
 
 #define mainTCP_SERVER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
-#define	mainTCP_SERVER_STACK_SIZE		( configMINIMAL_STACK_SIZE * 8 )
+#define	mainTCP_SERVER_STACK_SIZE		( configMINIMAL_STACK_SIZE * 16 )
 
 /* Constants */
 static uint8_t ucMACAddress[ 6 ] = { 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe };
