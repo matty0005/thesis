@@ -1,9 +1,8 @@
 <template>
-  <div class="home">
-    <div class="flex flex-col">
+  <div class="home ">
+    <div class="flex flex-col ">
       <div class="m-4 rounded-xl p-2 text-3xl font-bold text-gray-600">RISCy Firewall</div>
-      <div class="m-4 rounded-xl p-2 text-gray-600">This website is hosted on a RISC-V processor on FPGA</div>
-      <div class="flex flex-row mx-auto space-x-4">
+      <div class="flex flex-row mx-auto space-x-4 mt-24">
         <Stats 
           title="Upload packets" 
           value="1024"

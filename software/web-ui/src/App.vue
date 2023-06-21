@@ -2,7 +2,7 @@
 
 <template>
   <AppLayout >
-      <div class="wrapper w-[24rem]">
+      <div class="wrapper w-[76rem]">
         <nav>
           <RouterLink class="mx-2" to="/">Home</RouterLink>
           <RouterLink class="mx-2" to="/about">About</RouterLink>
@@ -10,7 +10,7 @@
         </nav>
       </div>
 
-    <RouterView />
+    <RouterView class=" h-[48rem]" />
   </AppLayout>
 </template>
 
