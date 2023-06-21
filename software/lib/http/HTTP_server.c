@@ -162,9 +162,9 @@ BaseType_t xRc;
 
 static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 {
-size_t uxSpace;
-size_t uxCount;
-BaseType_t xRc = 0;
+	size_t uxSpace;
+	size_t uxCount;
+	BaseType_t xRc = 0;
 
 	if( pxClient->bits.bReplySent == pdFALSE_UNSIGNED )
 	{
@@ -200,7 +200,14 @@ BaseType_t xRc = 0;
 			ff_fread( pxClient->pxParent->pcFileBuffer, 1, uxCount, pxClient->pxFileHandle );
 			pxClient->uxBytesLeft -= uxCount;
 
+			
+
 			xRc = FreeRTOS_send( pxClient->xSocket, pxClient->pxParent->pcFileBuffer, uxCount, 0 );
+			FreeRTOS_FD_SET( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
+
+			FreeRTOS_printf( ( "prvSendFile: Data left= %d, xRc = %d\n",
+				pxClient->uxBytesLeft, xRc) );
+
 			if( xRc < 0 )
 			{
 				break;
@@ -362,21 +369,17 @@ HTTPClient_t *pxClient = ( HTTPClient_t * ) pxTCPClient;
 		pxClient->pcRestData = pcEmptyString;
 
 		/* Last entry is "ECMD_UNK". */
-		for( xIndex = 0; xIndex < WEB_CMD_COUNT - 1; xIndex++, curCmd++ )
-		{
-		BaseType_t xLength;
+		for ( xIndex = 0; xIndex < WEB_CMD_COUNT - 1; xIndex++, curCmd++ ) {
+			BaseType_t xLength;
 
 			xLength = curCmd->xCommandLength;
-			if( ( xRc >= xLength ) && ( memcmp( curCmd->pcCommandName, pcBuffer, xLength ) == 0 ) )
-			{
-			char *pcLastPtr;
+			if ( ( xRc >= xLength ) && ( memcmp( curCmd->pcCommandName, pcBuffer, xLength ) == 0 ) ) {
+				char *pcLastPtr;
 
 				pxClient->pcUrlData += xLength + 1;
-				for( pcLastPtr = (char *)pxClient->pcUrlData; pcLastPtr < pcEndOfCmd; pcLastPtr++ )
-				{
+				for ( pcLastPtr = (char *)pxClient->pcUrlData; pcLastPtr < pcEndOfCmd; pcLastPtr++ ) {
 					char ch = *pcLastPtr;
-					if( ( ch == '\0' ) || ( strchr( "\n\r \t", ch ) != NULL ) )
-					{
+					if ( ( ch == '\0' ) || ( strchr( "\n\r \t", ch ) != NULL ) ) {
 						*pcLastPtr = '\0';
 						pxClient->pcRestData = pcLastPtr + 1;
 						break;

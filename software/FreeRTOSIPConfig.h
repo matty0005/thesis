@@ -289,7 +289,7 @@ maximum size.  Define the size of Rx buffer for TCP sockets. */
 #define ipconfigTCP_RX_BUFFER_LENGTH			( 3 * 1460 )
 
 /* Define the size of Tx buffer for TCP sockets. */
-#define ipconfigTCP_TX_BUFFER_LENGTH			( 2 * 1460 )
+#define ipconfigTCP_TX_BUFFER_LENGTH			( 1 * 1460 )
 
 /* When using call-back handlers, the driver may check if the handler points to
 real program memory (RAM or flash) or just has a random non-zero value. */
@@ -309,10 +309,10 @@ disconnecting stage will timeout after a period of non-activity. */
 #define portINLINE __inline
 
 
-#define ipconfigHTTP_TX_BUFSIZE				( 4 * ipconfigTCP_MSS )
-#define ipconfigHTTP_TX_WINSIZE				( 2 )
-#define ipconfigHTTP_RX_BUFSIZE				( 4 * ipconfigTCP_MSS )
-#define ipconfigHTTP_RX_WINSIZE				( 4 )
+#define ipconfigHTTP_TX_BUFSIZE				( 1 * ipconfigTCP_MSS )
+#define ipconfigHTTP_TX_WINSIZE				( 1 )
+#define ipconfigHTTP_RX_BUFSIZE				( 1 * ipconfigTCP_MSS )
+#define ipconfigHTTP_RX_WINSIZE				( 1 )
 #define ipconfigSUPPORT_SIGNALS				1
 
 

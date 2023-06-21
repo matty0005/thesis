@@ -100,53 +100,6 @@ struct xHTTP_CLIENT
 
 typedef struct xHTTP_CLIENT HTTPClient_t;
 
-struct xFTP_CLIENT
-{
-	/* This define contains fields which must come first within each of the client structs */
-	TCP_CLIENT_FIELDS;
-	/* --- Keep at the top  --- */
-
-	uint32_t ulRestartOffset;
-	uint32_t ulRecvBytes;
-	size_t uxBytesLeft;	/* Bytes left to send */
-	uint32_t ulClientIP;
-	TickType_t xStartTime;
-	uint16_t usClientPort;
-	Socket_t xTransferSocket;
-	BaseType_t xTransType;
-	BaseType_t xDirCount;
-	FF_FindData_t xFindData;
-	FF_FILE *pxReadHandle;
-	FF_FILE *pxWriteHandle;
-	char pcCurrentDir[ ffconfigMAX_FILENAME ];
-	char pcFileName[ ffconfigMAX_FILENAME ];
-	char pcConnectionAck[ 128 ];
-	char pcClientAck[ 128 ];
-	union {
-		struct {
-			uint32_t
-				bHelloSent : 1,
-				bLoggedIn : 1,
-				bStatusUser : 1,
-				bInRename : 1,
-				bReadOnly : 1;
-		};
-		uint32_t ulFTPFlags;
-	} bits;
-	union {
-		struct {
-			uint32_t
-				bIsListen : 1,			/* pdTRUE for passive data connections (using list()). */
-				bDirHasEntry : 1,		/* pdTRUE if ff_findfirst() was successful. */
-				bClientConnected : 1,	/* pdTRUE after connect() or accept() has succeeded. */
-				bEmptyFile : 1,			/* pdTRUE if a connection-without-data was received. */
-				bHadError : 1;			/* pdTRUE if a transfer got aborted because of an error. */
-		};
-		uint32_t ulConnFlags;
-	} bits1;
-};
-
-typedef struct xFTP_CLIENT FTPClient_t;
 
 BaseType_t xHTTPClientWork( TCPClient_t *pxClient );
 BaseType_t xFTPClientWork( TCPClient_t *pxClient );
@@ -155,7 +108,6 @@ void vHTTPClientDelete( TCPClient_t *pxClient );
 void vFTPClientDelete( TCPClient_t *pxClient );
 
 BaseType_t xMakeAbsolute( struct xFTP_CLIENT *pxClient, char *pcBuffer, BaseType_t xBufferLength, const char *pcFileName );
-BaseType_t xMakeRelative( FTPClient_t *pxClient, char *pcBuffer, BaseType_t xBufferLength, const char *pcFileName );
 
 struct xTCP_SERVER
 {
