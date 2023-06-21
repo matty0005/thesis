@@ -199,9 +199,6 @@ BaseType_t xRc;
 	/* Let the server do one working cycle */
 	xRc = FreeRTOS_select( pxServer->xSocketSet, xBlockingTime );
 
-    neorv32_uart0_printf("-------FreeRTOS_TCPServerWork------ %d=\n", xRc);
-
-
 	if( xRc != 0 )
 	{
 		for( xIndex = 0; xIndex < pxServer->xServerCount; xIndex++ )
