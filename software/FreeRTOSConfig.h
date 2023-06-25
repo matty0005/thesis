@@ -101,10 +101,10 @@
 #define configUSE_TICK_HOOK				1
 #define configCPU_CLOCK_HZ				50000000
 #define configTICK_RATE_HZ				( ( TickType_t ) 100 )
-#define configMAX_PRIORITIES			( 5 )
+#define configMAX_PRIORITIES			( 10 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 128 ) /* Can be as low as 60 but some of the demo tasks that use this constant require it to be higher. */
 #define configSUPPORT_DYNAMIC_ALLOCATION  1
-#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 32 * 1024 ) )
+#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 96 * 1024 ) )
 #define configMAX_TASK_NAME_LEN			( 16 )
 #define configUSE_TRACE_FACILITY		1
 #define configUSE_16_BIT_TICKS			0

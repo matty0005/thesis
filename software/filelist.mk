@@ -2,7 +2,9 @@
 LIB_PATH=./lib
 SRC_PATH=./src
 
+APP_SRC += $(wildcard $(LIB_PATH)/http/*.c)
 APP_INC += -I$(LIB_PATH)
+APP_INC += -I$(LIB_PATH)/http
 APP_INC += -I$(SRC_PATH)
 APP_SRC += $(wildcard $(LIB_PATH)/*.c)
 
@@ -10,3 +12,5 @@ APP_SRC += $(wildcard $(LIB_PATH)/*.c)
 APP_SRC += src/project.c
 APP_SRC += src/cli.c
 APP_SRC += lib/FreeRTOS-TCP/NetworkInterface.c
+APP_SRC += lib/FreeRTOS-FAT/FilesystemPort.c
+

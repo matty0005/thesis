@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ff_stdio.h"
+
 #define CLI_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
 #define CLI_STACK_SIZE (configMINIMAL_STACK_SIZE * 5)
 

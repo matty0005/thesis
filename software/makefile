@@ -110,6 +110,7 @@ APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_sys.c
 APP_SRC += $(FREERTOS_HOME)/FreeRTOS-FAT/ff_time.c
 
 APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-FAT/include
+APP_INC += -I $(FREERTOS_HOME)/FreeRTOS-FAT/portable/common
 
 
 

@@ -28,6 +28,14 @@ static BaseType_t cli_cmd_broadcast(char *pcWriteBuffer, size_t xWriteBufferLen,
 static BaseType_t cli_cmd_sd_init(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_sd_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_sd_write(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_cmd_fat_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+
+CLI_Command_Definition_t xFATRead = {	
+	"fatr",							
+	"fatr:\r\n    Read a file called readme.txt and print the contents\r\n\r\n",
+	cli_cmd_fat_read,
+	0				
+};
 
 CLI_Command_Definition_t xSDWrite = {	
 	"sdw",							
@@ -255,6 +263,49 @@ int usage_string_build(char *buffer, const char *name, eTaskState state, UBaseTy
     }
 
     return sprintf(buffer + strlen(buffer), "== %s == State: %s, High Water-mark Stack Usage: %ld\r\n", name, stateString, stackUsage);
+}
+
+
+/**
+ * @brief CLI command to read FAT32 file called readme.txt in root directory.
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_cmd_fat_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    uint32_t ucBuffer[ 64 ];
+    uint8_t ucBuffer8[ 64 * 4];
+    size_t xCount = 0;
+    
+    FF_Disk_t *disk = FF_SDDiskInit("/");
+
+    FF_FILE *f = ff_fopen("/readme.txt", "r");
+
+    if (f != NULL) {
+
+        xCount = ff_fread(ucBuffer, 1, sizeof( ucBuffer ), f);
+        ff_fclose(f);
+
+        sprintf(pcWriteBuffer, "Read %d bytes from file\r\n\r\n", xCount);
+
+        memcpy(ucBuffer8, ucBuffer, xCount);
+
+        for (int i = 0; i < xCount; i++) 
+            sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "%c", ucBuffer8[i]);
+
+    } else {
+        // https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/stdio_API/errno.html
+        sprintf(pcWriteBuffer, "Failed to open file: %d\r\n", stdioGET_ERRNO());
+    }
+
+
+    
+
+    return pdFALSE;
+
 }
 
 
@@ -940,6 +991,7 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xSDInit);
     FreeRTOS_CLIRegisterCommand(&xSDRead);
     FreeRTOS_CLIRegisterCommand(&xSDWrite);
+    FreeRTOS_CLIRegisterCommand(&xFATRead);
     
     
     

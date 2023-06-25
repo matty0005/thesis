@@ -24,6 +24,8 @@
 #include "ff_sddisk.h"
 #include "ff_sys.h"
 
+#include "sd.h"
+
 /* Misc definitions. */
 #define sdSIGNATURE         0x41404342UL
 #define sdHUNDRED_64_BIT    ( 100ull )
@@ -32,247 +34,394 @@
 #define sdIOMAN_MEM_SIZE    4096
 #define xSDCardInfo         ( sd_mmc_cards[ 0 ] )
 
+#define sdSECTOR_COUNT      31250000UL
+
 
 #define sdSECTOR_SIZE    512
 
-static int32_t prvReadSD(uint8_t *pucDestination, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk) {
-    uint8_t *pucSource;
-
-    /* The FF_Disk_t structure describes the media being accessed.  Attributes that
-    are common to all media types are stored in the structure directly.  The pvTag
-    member of the structure is used to add attributes that are specific to the media
-    actually being accessed.  In the case of the RAM disk the pvTag member is just
-    used to point to the RAM buffer being used as the disk. */
-    pucSource = ( uint8_t * ) pxDisk->pvTag;
-
-    /* Move to the start of the sector being read. */
-    pucSource += ( sdSECTOR_SIZE * ulSectorNumber );
-
-    /* Copy the data from the disk.  As this is a RAM disk data can be copied
-    using memcpy(). */
-    memcpy( ( void * ) pucDestination,
-            ( void * ) pucSource,
-            ( size_t ) ( ulSectorCount * sdSECTOR_SIZE ) );
-
-    return FF_ERR_NONE;
-}
-
-static int32_t prvWriteSD(uint8_t *pucSource, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk) {
-    uint8_t *pucDestination;
-
-    /* The FF_Disk_t structure describes the media being accessed.  Attributes that
-    are common to all media types are stored in the structure directly.  The pvTag
-    member of the structure is used to add attributes that are specific to the media
-    actually being accessed.  In the case of the RAM disk the pvTag member is just
-    used to point to the RAM buffer being used as the disk. */
-    pucDestination = ( uint8_t * ) pxDisk->pvTag;
-
-    /* Move to the start of the sector being written. */
-    pucDestination += ( sdSECTOR_SIZE * ulSectorNumber );
-
-    /* Copy the data to the disk.  As this is a RAM disk data can be copied
-    using memcpy(). */
-    memcpy( ( void * ) pucDestination,
-            ( void * ) pucSource,
-            ( size_t ) ( ulSectorCount * sdSECTOR_SIZE ) );
-
-    return FF_ERR_NONE;
-}
+static int32_t prvWriteSD(uint8_t *pucSource, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk);
+static int32_t prvReadSD(uint8_t *pucDestination, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk);
 
 /*
-In this example:
-  - pcName is the name to give the disk within FreeRTOS-Plus-FAT's virtual file system.
-  - pucDataBuffer is the start of the RAM buffer used as the disk.
-  - ulSectorCount is effectively the size of the disk, each sector is 512 bytes.
-  - xIOManagerCacheSize is the size of the IO manager's cache, which must be a
-   multiple of the sector size, and at least twice as big as the sector size.
-*/
-FF_Disk_t * FF_SDDiskInit( const char * pcName )
-{
+ * Mutex for partition.
+ */
+static SemaphoreHandle_t xPlusFATMutex = NULL;
+
+
+/**
+ * @brief Reads from the SD card.
+ * 
+ * @param pucBuffer Buffer to read to 
+ * @param ulSectorNumber The sector to start at
+ * @param ulSectorCount The number of sectors to read
+ * @param pxDisk The disk to read from
+ * @return int32_t 
+ */
+static int32_t prvReadSD(uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk) {
+    uint8_t *pucSource;
+
+    int32_t lReturnCode = 1L, lResult = pdFALSE;
+
+    if( ( pxDisk != NULL ) &&
+        ( sd_card_inserted() == pdTRUE ) &&
+        ( pxDisk->ulSignature == sdSIGNATURE ) &&
+        ( pxDisk->xStatus.bIsInitialised != pdFALSE ) &&
+        ( ulSectorNumber < pxDisk->ulNumberOfSectors ) &&
+        ( ( pxDisk->ulNumberOfSectors - ulSectorNumber ) >= ulSectorCount ) )
+    {
+
+        uint32_t ulSector;
+        uint8_t *pucDMABuffer = ffconfigMALLOC(512ul);
+
+        /* The buffer is NOT word-aligned, read to an aligned buffer and then
+            * copy the data to the user provided buffer. */
+        if (pucDMABuffer != NULL) {
+            for (ulSector = 0; ulSector < ulSectorCount; ulSector++ ) {
+
+                // Ignore errors.
+                uint8_t *token;
+                sd_read_block(ulSectorNumber + ulSector, pucDMABuffer, token);
+
+                // could check token for error, but thats not fun.
+       
+                /* Copy to the user-provided buffer. */
+                memcpy(pucBuffer + 512ul * ulSector, pucDMABuffer, 512ul);
+            }
+
+            ffconfigFREE(pucDMABuffer);
+        } else {
+            FF_PRINTF("prvFFRead: malloc failed\n" );
+            lResult = pdFALSE;
+        }
+    
+
+        if (lResult != pdFALSE) {
+            lReturnCode = 0L;
+        } else {
+            /* Some error occurred. */
+            FF_PRINTF( "prvFFRead: %u: %d\n", ( unsigned ) ulSectorNumber, ( int ) lResult );
+        }
+    }
+    else
+    {
+        /* Make sure no random data is in the returned buffer. */
+        memset((void *) pucBuffer, '\0', ulSectorCount * 512UL);
+
+        if (pxDisk->xStatus.bIsInitialised != pdFALSE) {
+            FF_PRINTF("prvFFRead: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors);
+        }
+    }
+
+    return lReturnCode;
+}
+
+/**
+ * @brief Writes to the SD card.
+ * 
+ * @param pucBuffer The buffer to write from 
+ * @param ulSectorNumber The sector to start at
+ * @param ulSectorCount The number of sectors to write
+ * @param pxDisk The disk to write to
+ * @return int32_t 
+ */
+static int32_t prvWriteSD(uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk) {
+    int32_t lReturnCode = 1, lResult = pdFALSE;
+
+    if( ( pxDisk != NULL ) &&
+        ( sd_card_inserted() == pdTRUE ) &&
+        ( pxDisk->ulSignature == sdSIGNATURE ) &&
+        ( pxDisk->xStatus.bIsInitialised != pdFALSE ) &&
+        ( ulSectorNumber < pxDisk->ulNumberOfSectors ) &&
+        ( ( pxDisk->ulNumberOfSectors - ulSectorNumber ) >= ulSectorCount ) )
+    {
+       
+        uint32_t ulSector;
+        uint8_t *pucDMABuffer = ffconfigMALLOC( 512ul );
+
+        if (pucDMABuffer != NULL) {
+            for (ulSector = 0; ulSector < ulSectorCount; ulSector++) {
+
+                /* Copy from the user provided buffer to the temporary buffer. */
+                memcpy(pucDMABuffer, pucBuffer + 512ul * ulSector, 512ul);
+
+                uint8_t *token;
+                sd_write_block(ulSectorNumber + ulSector, pucDMABuffer, token);
+
+                // could check token for error, but thats boring - getting unexpected errors are much better.   
+            }
+
+            ffconfigFREE(pucDMABuffer);
+        } else {
+            FF_PRINTF("prvFFWrite: malloc failed\n");
+            lResult = pdFALSE;
+        }
+        
+
+        if(lResult != pdFALSE) {
+            /* No errors. */
+            lReturnCode = 0L;
+        } else {
+            FF_PRINTF("prvFFWrite: %u: %d\n", ( unsigned ) ulSectorNumber, ( int ) lResult);
+        }
+    } else {
+        if (pxDisk->xStatus.bIsInitialised != pdFALSE) {
+            FF_PRINTF("prvFFWrite: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors);
+        }
+    }
+
+    return lReturnCode;
+}
+
+/**
+ * @brief Detects if the SD card is plugged in.
+ * 
+ * @return BaseType_t 
+ */
+static BaseType_t prvSDDetect() {
+    static BaseType_t xWasPresent = pdFALSE;
+    BaseType_t xIsPresent = pdFALSE;
+    uint8_t xSDPresence;
+
+    // Dont bother if not inserted
+    if (!sd_card_inserted()) {
+        xWasPresent = pdFALSE;
+        return pdFALSE;
+    }
+
+    if (xWasPresent == pdFALSE) 
+        xIsPresent = sd_init();
+    
+    xWasPresent = xIsPresent;
+
+    return xIsPresent;
+}
+
+
+/**
+ * @brief Detects if the SD card is plugged in.
+ * 
+ * @return BaseType_t 
+ */
+static BaseType_t prvSDMMCInit() {
+    BaseType_t xReturn;
+
+    /* Check if the SD card is plugged in the slot */
+    if (prvSDDetect() == pdFALSE) {
+        FF_PRINTF("No SD card detected\n");
+        xReturn = pdFAIL;
+    } else {
+        FF_PRINTF("SD card Init successful\r\n");
+
+        xReturn = pdPASS;
+    }
+
+    return xReturn;
+}
+
+
+/**
+ * @brief Releases the resources used by the SD card.
+ * 
+ * @param pxDisk Disk to unmount
+ * @return BaseType_t 
+ */
+BaseType_t FF_SDDiskDelete(FF_Disk_t * pxDisk) {
+    if (pxDisk != NULL) {
+        pxDisk->ulSignature = 0;
+        pxDisk->xStatus.bIsInitialised = 0;
+
+        if (pxDisk->pxIOManager != NULL) {
+
+            if (FF_Mounted(pxDisk->pxIOManager) != pdFALSE)
+                FF_Unmount(pxDisk);
+
+            FF_DeleteIOManager(pxDisk->pxIOManager);
+        }
+
+        vPortFree(pxDisk);
+    }
+
+    return 1;
+}
+
+
+/**
+ * @brief Shows the partition information of the SD card
+ * 
+ * @param pxDisk Disk to show partition information of
+ * @return BaseType_t 
+ */
+BaseType_t FF_SDDiskShowPartition(FF_Disk_t * pxDisk) {
+    FF_Error_t xError;
+    uint64_t ullFreeSectors;
+    uint32_t ulTotalSizeMB, ulFreeSizeMB;
+    int iPercentageFree;
+    FF_IOManager_t * pxIOManager;
+    const char * pcTypeName = "unknown type";
+    BaseType_t xReturn = pdPASS;
+
+    if (pxDisk == NULL) {
+        xReturn = pdFAIL;
+    } else {
+        pxIOManager = pxDisk->pxIOManager;
+
+        neorv32_uart0_printf("Reading FAT and calculating Free Space\n");
+
+        switch (pxIOManager->xPartition.ucType) {
+            case FF_T_FAT12:
+                pcTypeName = "FAT12";
+                break;
+
+            case FF_T_FAT16:
+                pcTypeName = "FAT16";
+                break;
+
+            case FF_T_FAT32:
+                pcTypeName = "FAT32";
+                break;
+
+            default:
+                pcTypeName = "UNKOWN";
+                break;
+        }
+
+        FF_GetFreeSize(pxIOManager, &xError);
+
+        ullFreeSectors = pxIOManager->xPartition.ulFreeClusterCount * pxIOManager->xPartition.ulSectorsPerCluster;
+        iPercentageFree = (int) ((sdHUNDRED_64_BIT * ullFreeSectors + pxIOManager->xPartition.ulDataSectors / 2 ) /
+                                    ((uint64_t) pxIOManager->xPartition.ulDataSectors ));
+
+        ulTotalSizeMB = pxIOManager->xPartition.ulDataSectors / sdSECTORS_PER_MB;
+        //ulFF_SDDiskMountFreeSizeMB = (uint32_t) (ullFreeSectors / sdSECTORS_PER_MB);
+
+        /* It is better not to use the 64-bit format such as %Lu because it
+         * might not be implemented. */
+
+        char buff[200];
+        
+        neorv32_uart0_printf("Partition Nr   %d\n", pxDisk->xStatus.bPartitionNumber);
+        neorv32_uart0_printf("Type           %d (%s)\n", pxIOManager->xPartition.ucType, pcTypeName);
+        neorv32_uart0_printf("VolLabel       '%s' \n", pxIOManager->xPartition.pcVolumeLabel);
+        neorv32_uart0_printf("TotalSectors   %d\n", (unsigned) pxIOManager->xPartition.ulTotalSectors);
+        neorv32_uart0_printf("SecsPerCluster %d\n", (unsigned) pxIOManager->xPartition.ulSectorsPerCluster);
+        neorv32_uart0_printf("Size           %d MB\n", (unsigned) ulTotalSizeMB);
+        neorv32_uart0_printf("FreeSize       %d MB ( %d perc free )\n", (unsigned) ulFreeSizeMB, iPercentageFree);
+    }
+
+    return xReturn;
+}
+
+/**
+ * @brief Mounts the SD card
+ * 
+ * @param pxDisk Disk to mount
+ * @return BaseType_t 
+ */
+BaseType_t FF_SDDiskMount(FF_Disk_t * pxDisk) {
+    FF_Error_t xFFError;
+    BaseType_t xReturn;
+
+    /* Mount the partition */
+    xFFError = FF_Mount(pxDisk, pxDisk->xStatus.bPartitionNumber);
+
+    if (FF_isERR(xFFError)) {
+        neorv32_uart0_printf("FF_SDDiskMount: %08lX\n", xFFError);
+        xReturn = pdFAIL;
+    } else {
+        pxDisk->xStatus.bIsMounted = pdTRUE;
+        neorv32_uart0_printf("****** FreeRTOS+FAT initialized %d sectors\n", (unsigned) pxDisk->pxIOManager->xPartition.ulTotalSectors);
+        FF_SDDiskShowPartition( pxDisk );
+        xReturn = pdPASS;
+    }
+
+    return xReturn;
+}
+
+
+/**
+ * @brief Initalises the SD disk
+ * 
+ * @param pcName Path to mount the SD card as
+ * @return FF_Disk_t* 
+ */
+FF_Disk_t * FF_SDDiskInit(const char * pcName) {
     FF_Error_t xFFError;
     BaseType_t xPartitionNumber = 0;
     FF_CreationParameters_t xParameters;
     FF_Disk_t * pxDisk;
 
-    xSDCardStatus = prvSDMMCInit( 0 );
+    uint8_t err = prvSDMMCInit();
 
-    if( xSDCardStatus != pdPASS )
-    {
-        FF_PRINTF( "FF_SDDiskInit: prvSDMMCInit failed\n" );
+    if (err != SD_CARD_OK) {
+        neorv32_uart0_printf( "FF_SDDiskInit: sd_init failed\n" );
         pxDisk = NULL;
-    }
-    else
-    {
-        pxDisk = ( FF_Disk_t * ) pvPortMalloc( sizeof( *pxDisk ) );
+    } else {
+        pxDisk = (FF_Disk_t *) pvPortMalloc(sizeof(*pxDisk));
 
-        if( pxDisk == NULL )
-        {
-            FF_PRINTF( "FF_SDDiskInit: Malloc failed\n" );
-        }
-        else
-        {
+        if (pxDisk == NULL) {
+
+            neorv32_uart0_printf("FF_SDDiskInit: Malloc failed\n");
+
+        } else {
+
             /* Initialise the created disk structure. */
-            memset( pxDisk, '\0', sizeof( *pxDisk ) );
+            memset(pxDisk, '\0', sizeof( *pxDisk ));
 
-            /* The Atmel MMC driver sets capacity as a number of KB.
-             * Divide by two to get the number of 512-byte sectors. */
-            pxDisk->ulNumberOfSectors = xSDCardInfo.capacity << 1;
+            // time by 2 since we are using 512 byte sectors
+            pxDisk->ulNumberOfSectors = sdSECTOR_COUNT << 1;
 
-            if( xPlusFATMutex == NULL )
-            {
+            if (xPlusFATMutex == NULL) {
                 xPlusFATMutex = xSemaphoreCreateRecursiveMutex();
             }
 
             pxDisk->ulSignature = sdSIGNATURE;
 
-            if( xPlusFATMutex != NULL )
-            {
-                memset( &xParameters, '\0', sizeof( xParameters ) );
+            if (xPlusFATMutex != NULL) {
+                memset(&xParameters, '\0', sizeof(xParameters));
                 xParameters.ulMemorySize = sdIOMAN_MEM_SIZE;
                 xParameters.ulSectorSize = 512;
-                xParameters.fnWriteBlocks = prvFFWrite;
-                xParameters.fnReadBlocks = prvFFRead;
+                xParameters.fnWriteBlocks = prvWriteSD;
+                xParameters.fnReadBlocks = prvReadSD;
                 xParameters.pxDisk = pxDisk;
 
-                /* prvFFRead()/prvFFWrite() are not re-entrant and must be
+                /* prvReadSD()/prvWriteSD() are not re-entrant and must be
                  * protected with the use of a semaphore. */
                 xParameters.xBlockDeviceIsReentrant = pdFALSE;
 
                 /* The semaphore will be used to protect critical sections in
                  * the +FAT driver, and also to avoid concurrent calls to
-                 * prvFFRead()/prvFFWrite() from different tasks. */
-                xParameters.pvSemaphore = ( void * ) xPlusFATMutex;
+                 * prvReadSD()/prvWriteSD() from different tasks. */
+                xParameters.pvSemaphore = (void *) xPlusFATMutex;
 
-                pxDisk->pxIOManager = FF_CreateIOManager( &xParameters, &xFFError );
+                pxDisk->pxIOManager = FF_CreateIOManager(&xParameters, &xFFError);
 
-                if( pxDisk->pxIOManager == NULL )
-                {
-                    FF_PRINTF( "FF_SDDiskInit: FF_CreateIOManager: %s\n", ( const char * ) FF_GetErrMessage( xFFError ) );
-                    FF_SDDiskDelete( pxDisk );
+                if (pxDisk->pxIOManager == NULL) {
+
+                    neorv32_uart0_printf("FF_SDDiskInit: FF_CreateIOManager: %s\n", (const char *) FF_GetErrMessage( xFFError));
+                    FF_SDDiskDelete(pxDisk);
                     pxDisk = NULL;
-                }
-                else
-                {
+
+                } else {
+
                     pxDisk->xStatus.bIsInitialised = pdTRUE;
                     pxDisk->xStatus.bPartitionNumber = xPartitionNumber;
 
-                    if( FF_SDDiskMount( pxDisk ) == 0 )
-                    {
-                        FF_SDDiskDelete( pxDisk );
+                    if(FF_SDDiskMount(pxDisk) == 0) {
+                        FF_SDDiskDelete(pxDisk);
                         pxDisk = NULL;
-                    }
-                    else
-                    {
-                        if( pcName == NULL )
-                        {
+                    } else {
+                        if (pcName == NULL) {
                             pcName = "/";
                         }
 
-                        FF_FS_Add( pcName, pxDisk );
-                        FF_PRINTF( "FF_SDDiskInit: Mounted SD-card as root \"%s\"\n", pcName );
-                        FF_SDDiskShowPartition( pxDisk );
+                        FF_FS_Add(pcName, pxDisk);
+                        neorv32_uart0_printf("FF_SDDiskInit: Mounted SD-card as root \"%s\"\n", pcName);
+                        FF_SDDiskShowPartition(pxDisk);
                     }
                 } /* if( pxDisk->pxIOManager != NULL ) */
             }     /* if( xPlusFATMutex != NULL) */
         }         /* if( pxDisk != NULL ) */
     }             /* if( xSDCardStatus == pdPASS ) */
-
-    return pxDisk;
-}
-    FF_Error_t xError;
-    FF_Disk_t *pxDisk = NULL;
-    FF_CreationParameters_t xParameters;
-
-    /* Check the validity of the xIOManagerCacheSize parameter. */
-    configASSERT( ( xIOManagerCacheSize % sdSECTOR_SIZE ) == 0 );
-    configASSERT( ( xIOManagerCacheSize >= ( 2 * sdSECTOR_SIZE ) ) );
-
-    /* Attempt to allocated the FF_Disk_t structure. */
-    pxDisk = ( FF_Disk_t * ) pvPortMalloc( sizeof( FF_Disk_t ) );
-
-    if( pxDisk != NULL )
-    {
-        /* It is advisable to clear the entire structure to zero after it has been
-        allocated - that way the media driver will be compatible with future
-        FreeRTOS-Plus-FAT versions, in which the FF_Disk_t structure may include
-        additional members. */
-        memset( pxDisk, '�', sizeof( FF_Disk_t ) );
-
-        /* The pvTag member of the FF_Disk_t structure allows the structure to be
-        extended to also include media specific parameters.  The only media
-        specific data that needs to be stored in the FF_Disk_t structure for a
-        RAM disk is the location of the RAM buffer itself - so this is stored
-        directly in the FF_Disk_t's pvTag member. */
-        pxDisk->pvTag = ( void * ) pucDataBuffer;
-
-        /* The signature is used by the disk read and disk write functions to
-        ensure the disk being accessed is a RAM disk. */
-        pxDisk->ulSignature = ramSIGNATURE;
-
-        /* The number of sectors is recorded for bounds checking in the read and
-        write functions. */
-        pxDisk->ulNumberOfSectors = ulSectorCount;
-
-        /* Create the IO manager that will be used to control the RAM disk -
-        the FF_CreationParameters_t structure completed with the required
-        parameters, then passed into the FF_CreateIOManager() function. */
-        memset (&xParameters, '�', sizeof xParameters);
-        xParameters.pucCacheMemory = NULL;
-        xParameters.ulMemorySize = xIOManagerCacheSize;
-        xParameters.ulSectorSize = sdSECTOR_SIZE;
-        xParameters.fnWriteBlocks = prvWriteRAM;
-        xParameters.fnReadBlocks = prvReadRAM;
-        xParameters.pxDisk = pxDisk;
-
-        /* The driver is re-entrant as it just accesses RAM using memcpy(), so
-        xBlockDeviceIsReentrant can be set to pdTRUE.  In this case the
-        semaphore is only used to protect FAT data structures, and not the read
-        and write function. */
-        xParameters.pvSemaphore = ( void * ) xSemaphoreCreateRecursiveMutex();
-        xParameters.xBlockDeviceIsReentrant = pdTRUE;
-
-
-        pxDisk->pxIOManager = FF_CreateIOManger( &xParameters, &xError );
-
-        if( ( pxDisk->pxIOManager != NULL ) && ( FF_isERR( xError ) == pdFALSE ) )
-        {
-            /* Record that the RAM disk has been initialised. */
-            pxDisk->xStatus.bIsInitialised = pdTRUE;
-
-            /* Create a partition on the RAM disk.  NOTE!  The disk is only
-            being partitioned here because it is a new RAM disk.  It is
-            known that the disk has not been used before, and cannot already
-            contain any partitions.  Most media drivers will not perform
-            this step because the media will already been partitioned and
-            formatted. */
-            xError = prvPartitionAndFormatDisk( pxDisk );
-
-            if( FF_isERR( xError ) == pdFALSE )
-            {
-                /* Record the partition number the FF_Disk_t structure is, then
-                mount the partition. */
-                pxDisk->xStatus.bPartitionNumber = ramPARTITION_NUMBER;
-
-                /* Mount the partition. */
-                xError = FF_Mount( pxDisk, ramPARTITION_NUMBER );
-            }
-
-            if( FF_isERR( xError ) == pdFALSE )
-            {
-                /* The partition mounted successfully, add it to the virtual
-                file system - where it will appear as a directory off the file
-                system's root directory. */
-                FF_FS_Add( pcName, pxDisk->pxIOManager );
-            }
-        }
-        else
-        {
-            /* The disk structure was allocated, but the disk's IO manager could
-            not be allocated, so free the disk again. */
-            FF_RAMDiskDelete( pxDisk );
-            pxDisk = NULL;
-        }
-    }
 
     return pxDisk;
 }

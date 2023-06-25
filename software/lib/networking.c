@@ -10,8 +10,13 @@
  */
 #include "networking.h"
 
+#define configHTTP_ROOT "/www/html"
+
 #define UDP_STACK_SIZE ( configMINIMAL_STACK_SIZE * 5 )
 #define UDP_PRIORITY ( tskIDLE_PRIORITY + 1 )
+
+#define mainTCP_SERVER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
+#define	mainTCP_SERVER_STACK_SIZE		( configMINIMAL_STACK_SIZE * 16 )
 
 /* Constants */
 static uint8_t ucMACAddress[ 6 ] = { 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe };
@@ -23,6 +28,12 @@ static const uint8_t ucDNSServerAddress[ 4 ] = { 1, 1, 1, 1 };
 /* Function prototypes*/
 static void tsk_udp_receive( void *pvParameters );
 static void tsk_udp_send( void *pvParameters );
+
+/* Handle of the task that runs the FTP and HTTP servers. */
+static TaskHandle_t xServerWorkTaskHandle = NULL;
+
+/* The SD card disk. */
+static FF_Disk_t *pxDisk = NULL;
 
 
 void start_networking() {
@@ -161,6 +172,67 @@ static void tsk_udp_send( void *pvParameters ) {
 
 
 
+
+
+
+
+
+
+
+static void tsk_HTTP_server(void *pvParameters) {
+	TCPServer_t *pxTCPServer = NULL;
+	const TickType_t xInitialBlockTime = pdMS_TO_TICKS( 5000UL );
+	const TickType_t xSDCardInsertDelay = pdMS_TO_TICKS( 1000UL );
+
+	/* A structure that defines the servers to be created.  Which servers are
+	included in the structure depends on the mainCREATE_HTTP_SERVER and
+	mainCREATE_FTP_SERVER settings at the top of this file. */
+	static const struct xSERVER_CONFIG xServerConfiguration[] =
+	{
+        /* Server type,		port number,	backlog, 	root dir. */
+        { eSERVER_HTTP, 	80, 			12, 		configHTTP_ROOT },
+	};
+
+
+    /* Can't serve web pages or start an FTP session until the card is
+    inserted.  The Xplained Pro hardware cannot generate an interrupt when
+    the card is inserted - so periodically look for the card until it is
+    inserted. */
+    while (pxDisk = FF_SDDiskInit("/"), pxDisk == NULL) 
+        vTaskDelay(xSDCardInsertDelay);
+    
+    /* A disk is going to be created, so register the example file CLI
+    commands (which are very basic). */
+    vRegisterFileSystemCLICommands();
+
+    /* The priority of this task can be raised now the disk has been
+    initialised. */
+    // vTaskPrioritySet( NULL, mainTCP_SERVER_TASK_PRIORITY );
+
+    /* Create the servers defined by the xServerConfiguration array above. */
+    pxTCPServer = FreeRTOS_CreateTCPServer( xServerConfiguration, sizeof( xServerConfiguration ) / sizeof( xServerConfiguration[ 0 ] ) );
+    neorv32_uart0_printf("TCP Server Create result: %d\n\n", pxTCPServer != NULL);
+
+    configASSERT( pxTCPServer );
+
+    for( ;; )
+    {
+        /* Run the HTTP and/or FTP servers, as configured above. */
+        FreeRTOS_TCPServerWork( pxTCPServer, xInitialBlockTime );
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
 {
 static BaseType_t xTasksAlreadyCreated = pdFALSE;
@@ -179,8 +251,9 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
              */
 
             // Create tasks here as TCP/IP stack has been created
-            xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+            // xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
             // xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY, &xServerWorkTaskHandle );
 
             xTasksAlreadyCreated = pdTRUE;
         }

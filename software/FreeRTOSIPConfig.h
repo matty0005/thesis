@@ -286,10 +286,10 @@ simultaneously, one could define TCP_WIN_SEG_COUNT as 120. */
 
 /* Each TCP socket has a circular buffers for Rx and Tx, which have a fixed
 maximum size.  Define the size of Rx buffer for TCP sockets. */
-#define ipconfigTCP_RX_BUFFER_LENGTH			( 1500 )
+#define ipconfigTCP_RX_BUFFER_LENGTH			( 3 * 1460 )
 
 /* Define the size of Tx buffer for TCP sockets. */
-#define ipconfigTCP_TX_BUFFER_LENGTH			( 1500 )
+#define ipconfigTCP_TX_BUFFER_LENGTH			( 1 * 1460 )
 
 /* When using call-back handlers, the driver may check if the handler points to
 real program memory (RAM or flash) or just has a random non-zero value. */
@@ -298,12 +298,22 @@ real program memory (RAM or flash) or just has a random non-zero value. */
 /* Include support for TCP hang protection.  All sockets in a connecting or
 disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigTCP_HANG_PROTECTION			( 1 )
-#define ipconfigTCP_HANG_PROTECTION_TIME	( 30 )
+#define ipconfigTCP_HANG_PROTECTION_TIME	( 20 )
 
 /* Include support for TCP keep-alive messages. */
 #define ipconfigTCP_KEEP_ALIVE				( 1 )
 #define ipconfigTCP_KEEP_ALIVE_INTERVAL		( 20 ) /* in seconds */
 
+#define ipconfigUSE_HTTP					1
+
 #define portINLINE __inline
+
+
+#define ipconfigHTTP_TX_BUFSIZE				( 1 * ipconfigTCP_MSS )
+#define ipconfigHTTP_TX_WINSIZE				( 1 )
+#define ipconfigHTTP_RX_BUFSIZE				( 1 * ipconfigTCP_MSS )
+#define ipconfigHTTP_RX_WINSIZE				( 1 )
+#define ipconfigSUPPORT_SIGNALS				1
+
 
 #endif /* FREERTOS_IP_CONFIG_H */
