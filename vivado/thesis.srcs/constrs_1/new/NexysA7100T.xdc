@@ -52,6 +52,17 @@ set_property -dict { PACKAGE_PIN G2    IOSTANDARD LVCMOS33 } [get_ports { pmod_i
 set_property -dict { PACKAGE_PIN F3    IOSTANDARD LVCMOS33 } [get_ports { pmod_i[3] }]; #IO_L13N_T2_MRCC_35 Sch=jd[10]
 
 
+#set_property -dict { PACKAGE_PIN H4    IOSTANDARD LVCMOS33 } [get_ports { eth_o_txd[0] }]; #IO_L21N_T3_DQS_35 Sch=jd[1]
+#set_property -dict { PACKAGE_PIN H1    IOSTANDARD LVCMOS33 } [get_ports { eth_io_rxd[1] }]; #IO_L17P_T2_35 Sch=jd[2]
+#set_property -dict { PACKAGE_PIN G1    IOSTANDARD LVCMOS33 } [get_ports { eth_io_crs_dv }]; #IO_L17N_T2_35 Sch=jd[3]
+#set_property -dict { PACKAGE_PIN G3    IOSTANDARD LVCMOS33 } [get_ports { eth_io_mdc }]; #IO_L20N_T3_35 Sch=jd[4]
+#set_property -dict { PACKAGE_PIN H2    IOSTANDARD LVCMOS33 } [get_ports { eth_o_txen }]; #IO_L15P_T2_DQS_35 Sch=jd[7]
+#set_property -dict { PACKAGE_PIN G4    IOSTANDARD LVCMOS33 } [get_ports { eth_io_rxd[0] }]; #IO_L20P_T3_35 Sch=jd[8]
+#set_property -dict { PACKAGE_PIN G2    IOSTANDARD LVCMOS33 } [get_ports { eth_o_refclk }]; #IO_L15N_T2_DQS_35 Sch=jd[9]
+#set_property -dict { PACKAGE_PIN F3    IOSTANDARD LVCMOS33 } [get_ports { eth_io_mdio }]; #IO_L13N_T2_MRCC_35 Sch=jd[10]
+#set_property -dict { PACKAGE_PIN K1    IOSTANDARD LVCMOS33 } [get_ports { eth_o_txd[1] }]; #IO_L23N_T3_35 Sch=jc[1]
+
+
 ##SMSC Ethernet PHY
 set_property -dict { PACKAGE_PIN C9    IOSTANDARD LVCMOS33 } [get_ports { eth_io_mdc }]; #IO_L11P_T1_SRCC_16 Sch=eth_mdc
 set_property -dict { PACKAGE_PIN A9    IOSTANDARD LVCMOS33 } [get_ports { eth_io_mdio }]; #IO_L14N_T2_SRCC_16 Sch=eth_mdio

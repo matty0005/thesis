@@ -58,8 +58,8 @@ entity hardware_top is
     uart0_rxd_i : in  std_ulogic;  -- UART0 receive data
     
     -- Test Ethernet outof PMOD JD --
-    pmod_o : out std_logic_vector(3 downto 0);
-    pmod_i : in std_logic_vector(3 downto 0);
+--    pmod_o : out std_logic_vector(3 downto 0);
+--    pmod_i : in std_logic_vector(3 downto 0);
     
     
     -- Phy Chip Nexys
