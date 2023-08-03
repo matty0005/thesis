@@ -2,7 +2,8 @@
 -- Packet classifier for FPGA firewall.
 -- Uses SPI to configure and monitor
 --
--- IO DESCRIPTION
+-- SPI packet layout
+-- Address (1) | Dest Addr (4) | Source Addr (4) | Dest Port (2) | Source Port (2) | Protocol (1) 
 --           
 --
 -- @author         Matthew Gilpin
@@ -21,8 +22,12 @@ use IEEE.std_logic_unsigned.all;
 entity packet_classifier is
   Port (
     clk:  in std_logic;
+    rst:  in std_logic;
     valid: out std_logic; -- Output "forward" is valid when 1. 
     forward: out std_logic;
+    
+    packet_in: in std_logic_vector(7 downto 0);
+    packet_valid: in std_logic;
     
     spi_clk: in std_logic;
     spi_mosi: in std_logic;
@@ -56,13 +61,15 @@ begin
     end if;
 end process;
 
-spi_control : process(spi_clk)
+spi_control : process(spi_clk, rst)
 
 variable ruleAddr : std_logic_vector(7 downto 0) := x"00";
 variable spiCounter : integer := 0;
 
 begin
-    if rising_edge(spi_clk) and spi_csn = '0' then
+    if rst = '1' then
+        spiCounter := 0;
+    elsif rising_edge(spi_clk) and spi_csn = '0' then
         
         spiCounter := spiCounter + 1;
                 
