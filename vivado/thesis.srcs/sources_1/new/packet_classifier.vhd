@@ -54,6 +54,19 @@ signal spi_mosi_data : std_logic_vector(111 downto 0); -- 13 bytes = 104 bits fo
 
 begin
 
+
+classifier : process(clk)
+begin
+    if rising_edge(clk) and packet_valid = '1' then
+        
+        -- determine if to continue or forward data.
+    end if;
+end process;
+
+
+
+
+
 spi_input : process(spi_clk)
 begin
     if rising_edge(spi_clk) and spi_csn = '0' then
