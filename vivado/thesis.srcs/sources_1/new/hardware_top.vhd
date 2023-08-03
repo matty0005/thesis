@@ -100,6 +100,18 @@ architecture neorv32_test_setup_bootloader_rtl of hardware_top is
   signal gpio_i : std_ulogic_vector(63 downto 0);
 
 
+component packet_classfier
+port (
+    clk:  in std_logic;
+    valid: out std_logic; -- Output "forward" is valid when 1. 
+    forward: out std_logic;
+    
+    spi_clk: in std_logic;
+    spi_mosi: in std_logic;
+    spi_miso: out std_logic;
+    spi_csn: in std_logic);
+end component;
+
 
 component wb_ethernet 
 port (
