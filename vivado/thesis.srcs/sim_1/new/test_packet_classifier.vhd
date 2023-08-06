@@ -70,11 +70,12 @@ signal packet_in : std_logic_vector(31 downto 0) := x"00000000";
 signal test_port : std_logic_vector(119 downto 0);
 
 
-signal RULE_1 : std_logic_vector(119 downto 0) := x"00150A00009F0A0000010050005001";
+signal RULE_1 : std_logic_vector(119 downto 0) :=    x"00150A00009F0A0000010050005001";
 
-signal TEST_PACKET_1 : std_logic_vector(103 downto 0) := x"0A00009F0A0000010050005001";
-signal TEST_PACKET_2 : std_logic_vector(103 downto 0) := x"0A00009F0A1000010050005001";
-signal TEST_PACKET_3 : std_logic_vector(103 downto 0) := x"03009095077502020030001001";
+signal TEST_PACKET_1 : std_logic_vector(159 downto 0) := x"0000000A00009F0A000001005000500100000000"; -- Valid
+signal TEST_PACKET_2 : std_logic_vector(159 downto 0) := x"0000000A00009F0A100001005000500100000000"; -- Invalid
+signal TEST_PACKET_3 : std_logic_vector(159 downto 0) := x"0000000A0000240A000001013000501100000000"; -- Valid
+signal TEST_PACKET_4 : std_logic_vector(159 downto 0) := x"0000000300909507750202003000100100000000"; -- Invalid
 
 
 begin
@@ -113,35 +114,15 @@ begin
     
     -- Test packet 1
     packet_valid <= '1';
-    packet_in <= TEST_PACKET_1(103 downto 72);
-    wait for 1ps;
-    clk <= '1';
-    wait for 1ps;
-    clk <= '0';
-    
-    packet_in <= TEST_PACKET_1(71 downto 40);
-    wait for 1ps;
-    clk <= '1';
-    wait for 1ps;
-    clk <= '0';
-    
-    packet_in <= x"0000" & TEST_PACKET_1(39 downto 24);
-    wait for 1ps;
-    clk <= '1';
-    wait for 1ps;
-    clk <= '0';
-    
-    packet_in <= x"0000" & TEST_PACKET_1(23 downto 8);
-    wait for 1ps;
-    clk <= '1';
-    wait for 1ps;
-    clk <= '0';
-    
-    packet_in <= x"000000" & TEST_PACKET_1(7 downto 0);
-    wait for 1ps;
-    clk <= '1';
-    wait for 1ps;
-    clk <= '0';
+    for i in 0 to 13 loop
+        -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
+        packet_in <= TEST_PACKET_4(159 - i * 8 downto 128 - i * 8);
+        wait for 1ps;
+        clk <= '1';
+        wait for 1ps;
+        clk <= '0';
+    end loop; 
+ 
     
     
     

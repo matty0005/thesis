@@ -67,18 +67,19 @@ begin
     
         stateCounter := stateCounter + 1;
         
+        test_port <= rulesMatch(3 downto 0) & std_logic_vector(to_unsigned(stateCounter, 4)) & packet_in & RULES_MEMORY(0)(71 downto 0) & "00000000";
+        
         -- determine if to continue or forward data.
         case classiferState is
             when IDLE =>
                 valid  <= '0'; 
-                forward <= '0';
-                classiferState <= IDLE;
+                classiferState <= IP_DEST;
             when IP_DEST =>
                 if stateCounter = 4 then
                     
                     -- Check fields
                     for i in 0 to ruleSize-1 loop
-                        if RULES_MEMORY(i)(4) = '1' then -- If wildcard entry is here accept by default
+                        if RULES_MEMORY(i)(104 + 4) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
                         elsif packet_in(31 downto 0) = RULES_MEMORY(i)(103 downto 72) then
                             rulesMatch(i) <= '1';
@@ -89,18 +90,18 @@ begin
                 
                     classiferState <= IP_SOURCE;
                     stateCounter := 0;
+                else 
+                    classiferState <= IP_DEST;
                 end if;
         
-                classiferState <= IP_DEST;
-                
            when IP_SOURCE =>
                 if stateCounter = 4 then
                     
                     -- Check fields
                     for i in 0 to ruleSize-1 loop
-                        if RULES_MEMORY(i)(3) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
+                        if RULES_MEMORY(i)(104 + 3) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
-                        elsif packet_in(31 downto 0) = RULES_MEMORY(i)(71 downto 40)  and rulesMatch(i) = '1' then
+                        elsif packet_in(31 downto 0) = RULES_MEMORY(i)(71 downto 40) and rulesMatch(i) = '1' then
                             rulesMatch(i) <= '1';
                         else 
                             rulesMatch(i) <= '0';
@@ -109,16 +110,16 @@ begin
                 
                     classiferState <= PORT_DEST;
                     stateCounter := 0;
+                else
+                    classiferState <= IP_SOURCE;
                 end if;
-        
-                classiferState <= IP_SOURCE;
-                
+                        
             when PORT_DEST =>
                 if stateCounter = 2 then
                     
                     -- Check fields
                     for i in 0 to ruleSize-1 loop
-                        if RULES_MEMORY(i)(2) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
+                        if RULES_MEMORY(i)(104 + 2) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
                         elsif packet_in(15 downto 0) = RULES_MEMORY(i)(39 downto 24) and rulesMatch(i) = '1' then
                             rulesMatch(i) <= '1';
@@ -129,16 +130,16 @@ begin
                 
                     classiferState <= PORT_SOURCE;
                     stateCounter := 0;
+                else
+                    classiferState <= PORT_DEST;
                 end if;
-        
-                classiferState <= PORT_DEST;
-                
+
             when PORT_SOURCE =>
                 if stateCounter = 2 then
                     
                     -- Check fields
                     for i in 0 to ruleSize-1 loop
-                        if RULES_MEMORY(i)(1) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
+                        if RULES_MEMORY(i)(104 + 1) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
                         elsif packet_in(15 downto 0) = RULES_MEMORY(i)(23 downto 8) and rulesMatch(i) = '1' then
                             rulesMatch(i) <= '1';
@@ -149,15 +150,15 @@ begin
                 
                     classiferState <= PROTO;
                     stateCounter := 0;
+                else 
+                    classiferState <= PORT_SOURCE;
                 end if;
-        
-                classiferState <= PORT_SOURCE;
-                
+   
             when PROTO =>
                     
                     -- Check fields
                     for i in 0 to ruleSize-1 loop
-                        if RULES_MEMORY(i)(0) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
+                        if RULES_MEMORY(i)(104 + 0) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
                         elsif packet_in(7 downto 0) = RULES_MEMORY(i)(7 downto 0) and rulesMatch(i) = '1' then
                             rulesMatch(i) <= '1';
@@ -166,15 +167,8 @@ begin
                         end if;
                     end loop;
                     
-                    if rulesMatch = x"00000000" then
-                        -- No match
-                        valid  <= '1'; 
-                        forward <= '0';
-                    else
-                        -- Match
-                        valid  <= '1'; 
-                        forward <= '1';
-                    end if;
+                    -- Forward handled outside of the process statement.
+                    valid  <= '1'; 
                 
                     classiferState <= IDLE;
                     stateCounter := 0;
@@ -184,7 +178,7 @@ begin
     end if;
 end process;
 
-
+forward <= '0' when rulesMatch = x"00000000" else '1';
 
 --test_port <= RULES_MEMORY(0) & x"00";
 
@@ -213,7 +207,7 @@ begin
             spiCounter := 0;
         end if;
         
-        test_port <= x"00" & RULES_MEMORY(0);
+        
     end if;
 end process;
 
