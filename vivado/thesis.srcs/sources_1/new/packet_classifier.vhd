@@ -26,13 +26,15 @@ entity packet_classifier is
     valid: out std_logic; -- Output "forward" is valid when 1. 
     forward: out std_logic;
     
-    packet_in: in std_logic_vector(7 downto 0);
+    packet_in: in std_logic_vector(31 downto 0);
     packet_valid: in std_logic;
     
     spi_clk: in std_logic;
     spi_mosi: in std_logic;
     spi_miso: out std_logic;
-    spi_csn: in std_logic
+    spi_csn: in std_logic;
+    
+    test_port : out std_logic_vector(119 downto 0)
    );
 end packet_classifier;
 
@@ -49,14 +51,11 @@ shared variable RULES_MEMORY : ramType;
 type classifer_state is (IDLE, IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
 signal classiferState : classifer_state := IDLE;
 
-signal spi_mosi_data : std_logic_vector(119 downto 0); -- 14 bytes = 112 bits for data + 8 bits addr  (1byte)
+signal spi_mosi_data : std_logic_vector(119 downto 0); -- 14 bytes = 112 bits for data + 8 bits addr + 8bits wildcard  (1byte)
 
 -- Hard set max count of rules to 32. Each bit represents if the rule is still valid. 
 -- After iteratting over each field, if the value is non-zero, it is allowed through.
 signal rulesMatch : std_logic_vector(31 downto 0) := (others => '0');
-
--- Stores the most recent 4 bytes incoming from the network interface. 
-signal incommingDataPipe : std_logic_vector(31 downto 0);
 
 begin
 
@@ -81,7 +80,7 @@ begin
                     for i in 0 to ruleSize-1 loop
                         if RULES_MEMORY(i)(4) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
-                        elsif incommingDataPipe(31 downto 0) = RULES_MEMORY(i)(103 downto 72) then
+                        elsif packet_in(31 downto 0) = RULES_MEMORY(i)(103 downto 72) then
                             rulesMatch(i) <= '1';
                         else 
                             rulesMatch(i) <= '0';
@@ -101,7 +100,7 @@ begin
                     for i in 0 to ruleSize-1 loop
                         if RULES_MEMORY(i)(3) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
-                        elsif incommingDataPipe(31 downto 0) = RULES_MEMORY(i)(71 downto 40)  and rulesMatch(i) = '1' then
+                        elsif packet_in(31 downto 0) = RULES_MEMORY(i)(71 downto 40)  and rulesMatch(i) = '1' then
                             rulesMatch(i) <= '1';
                         else 
                             rulesMatch(i) <= '0';
@@ -121,7 +120,7 @@ begin
                     for i in 0 to ruleSize-1 loop
                         if RULES_MEMORY(i)(2) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
-                        elsif incommingDataPipe(15 downto 0) = RULES_MEMORY(i)(39 downto 24) and rulesMatch(i) = '1' then
+                        elsif packet_in(15 downto 0) = RULES_MEMORY(i)(39 downto 24) and rulesMatch(i) = '1' then
                             rulesMatch(i) <= '1';
                         else 
                             rulesMatch(i) <= '0';
@@ -141,7 +140,7 @@ begin
                     for i in 0 to ruleSize-1 loop
                         if RULES_MEMORY(i)(1) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
-                        elsif incommingDataPipe(15 downto 0) = RULES_MEMORY(i)(23 downto 8) and rulesMatch(i) = '1' then
+                        elsif packet_in(15 downto 0) = RULES_MEMORY(i)(23 downto 8) and rulesMatch(i) = '1' then
                             rulesMatch(i) <= '1';
                         else 
                             rulesMatch(i) <= '0';
@@ -160,7 +159,7 @@ begin
                     for i in 0 to ruleSize-1 loop
                         if RULES_MEMORY(i)(0) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                             rulesMatch(i) <= '1';
-                        elsif incommingDataPipe(7 downto 0) = RULES_MEMORY(i)(7 downto 0) and rulesMatch(i) = '1' then
+                        elsif packet_in(7 downto 0) = RULES_MEMORY(i)(7 downto 0) and rulesMatch(i) = '1' then
                             rulesMatch(i) <= '1';
                         else 
                             rulesMatch(i) <= '0';
@@ -187,12 +186,12 @@ end process;
 
 
 
-
+test_port <= spi_mosi_data;
 
 spi_input : process(spi_clk)
 begin
     if rising_edge(spi_clk) and spi_csn = '0' then
-        spi_mosi_data <= spi_mosi_data(110 downto 0) & spi_mosi;
+        spi_mosi_data <= spi_mosi_data(118 downto 0) & spi_mosi;
     end if;
 end process;
 
@@ -208,9 +207,9 @@ begin
         
         spiCounter := spiCounter + 1;
                 
-        if spiCounter = 104 then
+        if spiCounter = 119 then
             -- Save the contents in the vector to the memory
-            RULES_MEMORY(to_integer(unsigned(spi_mosi_data(111 downto 104)))) := spi_mosi_data(103 downto 0);
+            RULES_MEMORY(to_integer(unsigned(spi_mosi_data(119 downto 112)))) := spi_mosi_data(111 downto 0);
             spiCounter := 0;
         end if;
     end if;
