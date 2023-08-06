@@ -71,11 +71,13 @@ signal test_port : std_logic_vector(119 downto 0);
 
 
 signal RULE_1 : std_logic_vector(119 downto 0) :=    x"00150A00009F0A0000010050005001";
+signal RULE_2 : std_logic_vector(119 downto 0) :=    x"01150A00009F0B0000010050005001";
 
 signal TEST_PACKET_1 : std_logic_vector(159 downto 0) := x"0000000A00009F0A000001005000500100000000"; -- Valid
 signal TEST_PACKET_2 : std_logic_vector(159 downto 0) := x"0000000A00009F0A100001005000500100000000"; -- Invalid
 signal TEST_PACKET_3 : std_logic_vector(159 downto 0) := x"0000000A0000240A000001013000501100000000"; -- Valid
 signal TEST_PACKET_4 : std_logic_vector(159 downto 0) := x"0000000300909507750202003000100100000000"; -- Invalid
+signal TEST_PACKET_5 : std_logic_vector(159 downto 0) := x"0000000A00009F0B000001005000500100000000"; -- Valid
 
 
 begin
@@ -107,15 +109,30 @@ begin
         spi_clk <= '0';
     end loop; 
     wait for 1ps;
+    spi_clk <= '1';
+    wait for 1ps;
+    spi_clk <= '0';
+    
+    for i in 0 to 119 loop
+        spi_mosi <= RULE_2(119-i);
+        wait for 1ps;
         spi_clk <= '1';
         wait for 1ps;
         spi_clk <= '0';
-    
+    end loop; 
+    wait for 1ps;
+    spi_clk <= '1';
+    wait for 1ps;
+    spi_clk <= '0';
+        
+        
+        
+        
+        
     
     -- Test packet 1
     packet_valid <= '1';
     for i in 0 to 13 loop
-        -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
         packet_in <= TEST_PACKET_1(159 - i * 8 downto 128 - i * 8);
         wait for 1ps;
         clk <= '1';
@@ -132,7 +149,6 @@ begin
      -- Test packet 2
     packet_valid <= '1';
     for i in 0 to 13 loop
-        -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
         packet_in <= TEST_PACKET_2(159 - i * 8 downto 128 - i * 8);
         wait for 1ps;
         clk <= '1';
@@ -150,7 +166,6 @@ begin
         -- Test packet 3
     packet_valid <= '1';
     for i in 0 to 13 loop
-        -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
         packet_in <= TEST_PACKET_3(159 - i * 8 downto 128 - i * 8);
         wait for 1ps;
         clk <= '1';
@@ -164,11 +179,27 @@ begin
     wait for 1ps;
     clk <= '0';
     
-        -- Test packet 4
+    -- Test packet 4
     packet_valid <= '1';
     for i in 0 to 13 loop
-        -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
         packet_in <= TEST_PACKET_4(159 - i * 8 downto 128 - i * 8);
+        wait for 1ps;
+        clk <= '1';
+        wait for 1ps;
+        clk <= '0';
+    end loop; 
+    packet_valid <= '0';
+    
+    wait for 1ps;
+    clk <= '1';
+    wait for 1ps;
+    clk <= '0';
+    
+    
+    -- Test packet 5
+    packet_valid <= '1';
+    for i in 0 to 13 loop
+        packet_in <= TEST_PACKET_5(159 - i * 8 downto 128 - i * 8);
         wait for 1ps;
         clk <= '1';
         wait for 1ps;
