@@ -46,7 +46,7 @@ constant ruleSize : integer := 8;
 
 -- Classifier rules memeory
 type ramType is array (ruleSize - 1 downto 0) of std_logic_vector(112 - 1 downto 0);
-shared variable RULES_MEMORY : ramType;
+shared variable RULES_MEMORY : ramType := (others => (others => '0'));
 
 type classifer_state is (IDLE, IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
 signal classiferState : classifer_state := IDLE;
@@ -186,7 +186,7 @@ end process;
 
 
 
-test_port <= spi_mosi_data;
+--test_port <= RULES_MEMORY(0) & x"00";
 
 spi_input : process(spi_clk)
 begin
@@ -207,11 +207,13 @@ begin
         
         spiCounter := spiCounter + 1;
                 
-        if spiCounter = 119 then
+        if spiCounter = 121 then
             -- Save the contents in the vector to the memory
             RULES_MEMORY(to_integer(unsigned(spi_mosi_data(119 downto 112)))) := spi_mosi_data(111 downto 0);
             spiCounter := 0;
         end if;
+        
+        test_port <= x"00" & RULES_MEMORY(0);
     end if;
 end process;
 

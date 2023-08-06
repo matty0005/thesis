@@ -105,6 +105,10 @@ begin
         wait for 1ps;
         spi_clk <= '0';
     end loop; 
+    wait for 1ps;
+        spi_clk <= '1';
+        wait for 1ps;
+        spi_clk <= '0';
     
     
     -- Test packet 1
