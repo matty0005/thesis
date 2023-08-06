@@ -116,13 +116,65 @@ begin
     packet_valid <= '1';
     for i in 0 to 13 loop
         -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
+        packet_in <= TEST_PACKET_1(159 - i * 8 downto 128 - i * 8);
+        wait for 1ps;
+        clk <= '1';
+        wait for 1ps;
+        clk <= '0';
+    end loop; 
+    packet_valid <= '0';
+ 
+    wait for 1ps;
+        clk <= '1';
+        wait for 1ps;
+        clk <= '0';
+        
+     -- Test packet 2
+    packet_valid <= '1';
+    for i in 0 to 13 loop
+        -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
+        packet_in <= TEST_PACKET_2(159 - i * 8 downto 128 - i * 8);
+        wait for 1ps;
+        clk <= '1';
+        wait for 1ps;
+        clk <= '0';
+    end loop; 
+    packet_valid <= '0';
+    
+    wait for 1ps;
+    clk <= '1';
+    wait for 1ps;
+    clk <= '0';
+    
+    
+        -- Test packet 3
+    packet_valid <= '1';
+    for i in 0 to 13 loop
+        -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
+        packet_in <= TEST_PACKET_3(159 - i * 8 downto 128 - i * 8);
+        wait for 1ps;
+        clk <= '1';
+        wait for 1ps;
+        clk <= '0';
+    end loop; 
+    packet_valid <= '0';
+    
+    wait for 1ps;
+    clk <= '1';
+    wait for 1ps;
+    clk <= '0';
+    
+        -- Test packet 4
+    packet_valid <= '1';
+    for i in 0 to 13 loop
+        -- packet_in <= TEST_PACKET_3(103 - i * 8 downto 72 - i * 8);
         packet_in <= TEST_PACKET_4(159 - i * 8 downto 128 - i * 8);
         wait for 1ps;
         clk <= '1';
         wait for 1ps;
         clk <= '0';
     end loop; 
- 
+    packet_valid <= '0';
     
     
     

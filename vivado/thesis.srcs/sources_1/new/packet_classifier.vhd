@@ -48,8 +48,8 @@ constant ruleSize : integer := 8;
 type ramType is array (ruleSize - 1 downto 0) of std_logic_vector(112 - 1 downto 0);
 shared variable RULES_MEMORY : ramType := (others => (others => '0'));
 
-type classifer_state is (IDLE, IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
-signal classiferState : classifer_state := IDLE;
+type classifer_state is (IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
+signal classiferState : classifer_state := IP_DEST;
 
 signal spi_mosi_data : std_logic_vector(119 downto 0); -- 14 bytes = 112 bits for data + 8 bits addr + 8bits wildcard  (1byte)
 
@@ -63,17 +63,20 @@ begin
 classifier : process(clk)
 variable stateCounter : integer := 0;
 begin
-    if rising_edge(clk) and packet_valid = '1' then
+    if rising_edge(clk) and packet_valid = '0' then -- reset state
+        valid  <= '0'; 
+        rulesMatch <= (others => '0');
+        classiferState <= IP_DEST;
+        stateCounter := 0;
+        
+    elsif rising_edge(clk) and packet_valid = '1' then
     
         stateCounter := stateCounter + 1;
         
         test_port <= rulesMatch(3 downto 0) & std_logic_vector(to_unsigned(stateCounter, 4)) & packet_in & RULES_MEMORY(0)(71 downto 0) & "00000000";
-        
+        valid  <= '0'; 
         -- determine if to continue or forward data.
         case classiferState is
-            when IDLE =>
-                valid  <= '0'; 
-                classiferState <= IP_DEST;
             when IP_DEST =>
                 if stateCounter = 4 then
                     
@@ -170,7 +173,7 @@ begin
                     -- Forward handled outside of the process statement.
                     valid  <= '1'; 
                 
-                    classiferState <= IDLE;
+                    classiferState <= IP_DEST;
                     stateCounter := 0;
 
                 
