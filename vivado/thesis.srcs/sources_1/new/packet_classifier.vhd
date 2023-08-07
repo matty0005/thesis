@@ -32,9 +32,9 @@ entity packet_classifier is
     spi_clk: in std_logic;
     spi_mosi: in std_logic;
     spi_miso: out std_logic;
-    spi_csn: in std_logic;
+    spi_csn: in std_logic
     
-    test_port : out std_logic_vector(119 downto 0)
+--    test_port : out std_logic_vector(119 downto 0)
    );
 end packet_classifier;
 
@@ -73,7 +73,7 @@ begin
     
         stateCounter := stateCounter + 1;
         
-        test_port <= rulesMatch(3 downto 0) & std_logic_vector(to_unsigned(stateCounter, 4)) & packet_in & RULES_MEMORY(0)(71 downto 0) & "00000000";
+--        test_port <= rulesMatch(3 downto 0) & std_logic_vector(to_unsigned(stateCounter, 4)) & packet_in & RULES_MEMORY(0)(71 downto 0) & "00000000";
         valid  <= '0'; 
         -- determine if to continue or forward data.
         case classiferState is
