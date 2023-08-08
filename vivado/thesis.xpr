@@ -97,14 +97,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/imports/new/eth_rx_mac.vhd">
-        <FileInfo>
-          <Attr Name="ImportPath" Val="$PSRCDIR/sources_1/new/eth_rx_mac.vhd"/>
-          <Attr Name="ImportTime" Val="1681573240"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PSRCDIR/sources_1/imports/new/eth_tx_mac.vhd">
         <FileInfo>
           <Attr Name="ImportPath" Val="$PSRCDIR/sources_1/new/eth_tx_mac.vhd"/>
@@ -539,6 +531,14 @@
           <Attr Name="ImportPath" Val="$PPRDIR/../../temp/project_1/project_1.srcs/sources_1/new/hardware_top.vhd"/>
           <Attr Name="ImportTime" Val="1681575120"/>
           <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/imports/new/eth_rx_mac.vhd">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="ImportPath" Val="$PSRCDIR/sources_1/new/eth_rx_mac.vhd"/>
+          <Attr Name="ImportTime" Val="1681573240"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
