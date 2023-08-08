@@ -55,6 +55,10 @@ end eth_mux;
 
 architecture Behavioral of eth_mux is
 
+-- FSMs 
+type packetStates is (IDLE, FORWARD, DROP);
+signal incomingState : packetStates := IDLE;
+
 signal OUTGOING_BUFF_0 : std_logic_vector((1526 * 8) - 1 downto 0);
 signal INCOMING_BUFF_1 : std_logic_vector((1526 * 8) - 1 downto 0);
 
@@ -108,7 +112,6 @@ port map (
 eth1_o_txen <= eth0_io_crs_dv;
 
 
-
 -- Outgoing direction: ETH0 -> ETH1
 eth0_outgoing_process: process(eth_clk) 
 begin
@@ -141,26 +144,47 @@ variable num_clk_cycles_behind : integer := 0; -- Last max value
 variable send_packet : std_logic := '0';
 begin
     if rising_edge(eth_clk) then
-        if classifier_packet_valid = '1' and classifier_forward = '1' then
-            send_packet := '0';
-        else
+        
+        -- Only increment if recieving packets.
+        if eth1_io_crs_dv = '1' then
             clk_cycles_behind := clk_cycles_behind + 1;
-        end if;
+        else 
+            clk_cycles_behind := 0;
+        end if;     
         
-        if send_packet = '1' then
-            
-            -- Dont need to change index as the bits get shifted 2 places each clock cycle
-            eth0_o_txd <= INCOMING_BUFF_1((num_clk_cycles_behind * 2) - 1 downto (num_clk_cycles_behind * 2) - 2);
-            
-            num_clk_cycles_behind := num_clk_cycles_behind - 1;
-            
-            -- Check if all bits have been sent. 
-            if num_clk_cycles_behind = 0 then
-                send_packet := '0';
-            end if;
-        end if;
-        
-        
+        case(incomingState) is 
+            when IDLE =>
+                
+                if classifier_packet_valid = '1' and classifier_forward = '1' then
+                    incomingState <= FORWARD;
+                    num_clk_cycles_behind := clk_cycles_behind;
+                    clk_cycles_behind := 0;
+                elsif classifier_packet_valid = '1' and classifier_forward = '0' then
+                    num_clk_cycles_behind := 0;
+                    incomingState <= DROP;
+                end if;
+                
+            when FORWARD =>
+                -- Dont need to change index as the bits get shifted 2 places each clock cycle
+                eth0_o_txd <= INCOMING_BUFF_1((num_clk_cycles_behind * 2) - 1 downto (num_clk_cycles_behind * 2) - 2);
+                eth0_o_txen <= '1';
+                
+                num_clk_cycles_behind := num_clk_cycles_behind - 1;
+                
+                -- Check if all bits have been sent. 
+                if num_clk_cycles_behind = 0 then
+                    incomingState <= IDLE;
+                    eth0_o_txen <= '0';
+                end if;
+                
+            when DROP =>
+                -- Ignore the packet incomming
+                
+                if eth1_io_crs_dv = '0' then
+                    incomingState <= IDLE;
+                end if;                
+        end case;
+       
     end if;
 end process;
 
