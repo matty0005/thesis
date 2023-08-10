@@ -17,10 +17,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity eth_mux is
     Port (
-    
     -- Classifier 
     clk:  in std_logic;
-    rst:  in std_logic;
+    rstn:  in std_logic;
     spi_clk: in std_logic;
     spi_mosi: in std_logic;
     spi_miso: out std_logic;
@@ -29,27 +28,26 @@ entity eth_mux is
     eth_clk: in std_logic;
 
     -- Phy Chip Nexys
-    eth0_io_mdc: inout std_logic;
-    eth0_io_mdio: inout std_logic;
-    eth0_o_rstn: out std_logic;
     eth0_io_crs_dv: in std_logic;
-    eth0_i_rxerr: in std_logic;
     eth0_io_rxd: in std_logic_vector(1 downto 0);
     eth0_o_txen: out std_logic;
     eth0_o_txd: out std_logic_vector(1 downto 0);
     eth0_o_refclk: out std_logic;
-    eth0_i_intn: in std_logic;
     
     
     -- Phy Chip PMOD
-    eth1_io_mdc: inout std_logic;
-    eth1_io_mdio: inout std_logic;
     eth1_io_crs_dv: in std_logic;
     eth1_io_rxd: in std_logic_vector(1 downto 0);
     eth1_o_txen: out std_logic;
     eth1_o_txd: out std_logic_vector(1 downto 0);
     eth1_o_refclk: out std_logic;
-    eth1_i_intn: in std_logic
+    
+    
+    -- Wishbone Eth
+    ethwb_o_txd : in std_logic_vector(1 downto 0);
+    ethwb_o_txen : out std_logic;
+    ethwb_io_rxd : out std_logic_vector(1 downto 0); -- Change to in
+    ethwb_io_crs_dv   : in std_logic 
     );
 end eth_mux;
 
@@ -86,8 +84,16 @@ component packet_classifier is
    );
 end component; 
 
+signal rst : std_logic;
 
 begin
+
+rst <= not rstn;
+eth0_o_refclk <= eth_clk;
+eth1_o_refclk <= eth_clk;
+
+-- Need to buffer.
+eth0_o_txd <= ethwb_o_txd;
 
 
 pk : packet_classifier 
@@ -110,6 +116,8 @@ port map (
 
 -- Static assignemnts.
 eth1_o_txen <= eth0_io_crs_dv;
+
+ethwb_io_rxd <= eth0_io_rxd;
 
 
 -- Outgoing direction: ETH0 -> ETH1

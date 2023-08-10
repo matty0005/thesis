@@ -25,6 +25,11 @@ The Digilent Nexys A7-100T FPGA development board was used for this project. Nam
 
 As a packet filter, a second Ethernet interface was required. Hence, a secondary LAN8720A breakout board was used and connected using the PMOD connectors on the development board. 
 
+
+\subsubsection{PMOD Interface}
+
+Have some eye diagrams here to show the validity of using PMOD.
+
 \section{System on Chip}
 
 The NEORV32 processor by GitHub user stnolting was used in this project. It's a highly configurable microcontroller-like SoC. 
@@ -70,3 +75,10 @@ There were two main options for the network stack, LwIP and FreeRTOS-Plus-TCP. T
 
 \subsection{Webserver}
 A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. 
+
+
+\subsection{Improvements}
+
+\begin{itemize}
+    \item Bidirectional filtering - currently only doing incomming filtering
+\end{itemize}

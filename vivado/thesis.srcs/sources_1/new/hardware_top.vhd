@@ -74,6 +74,15 @@ entity hardware_top is
     eth_o_refclk: out std_logic;
     eth_i_intn: in std_logic;
     
+    -- Phy PMOD 
+    eth1_io_crs_dv: in std_logic;
+    eth1_io_rxd: in std_logic_vector(1 downto 0);
+    eth1_o_txen: out std_logic;
+    eth1_o_txd: out std_logic_vector(1 downto 0);
+    eth1_o_refclk: out std_logic;
+    eth1_i_intn: in std_logic;
+    eth1_io_mdc: inout std_logic;
+    eth1_io_mdio: inout std_logic;
     
     t_btnc : in std_logic;
     t_btnl : in std_logic;
@@ -153,6 +162,46 @@ port (
 );
 end component;
 
+
+component eth_mux is
+    Port (
+    
+    -- Classifier 
+    clk:  in std_logic;
+    rstn:  in std_logic;
+    spi_clk: in std_logic;
+    spi_mosi: in std_logic;
+    spi_miso: out std_logic;
+    spi_csn: in std_logic;
+    
+    eth_clk: in std_logic;
+
+    -- Phy Chip Nexys
+    eth0_io_crs_dv: in std_logic;
+    eth0_io_rxd: in std_logic_vector(1 downto 0);
+    eth0_o_txen: out std_logic;
+    eth0_o_txd: out std_logic_vector(1 downto 0);
+    eth0_o_refclk: out std_logic;
+    
+    
+    -- Phy Chip PMOD
+    eth1_io_crs_dv: in std_logic;
+    eth1_io_rxd: in std_logic_vector(1 downto 0);
+    eth1_o_txen: out std_logic;
+    eth1_o_txd: out std_logic_vector(1 downto 0);
+    eth1_o_refclk: out std_logic;
+    
+    
+    -- Wishbone Eth
+    ethwb_o_txd : out std_logic_vector(1 downto 0);
+    ethwb_o_txen : out std_logic;
+    ethwb_io_rxd : in std_logic_vector(1 downto 0); -- Change to in
+    ethwb_io_crs_dv   : in std_logic
+
+    );
+end component;
+    
+
 component clk_master is
   Port ( 
     clk_100 : out std_logic;
@@ -209,6 +258,13 @@ signal eth_txen : std_logic;
 signal eth_rxerr : std_logic;
 signal eth_crs_dv : std_logic;
 
+-- Signals for WB Eth
+signal ethwb_txd : std_logic_vector(1 downto 0);
+signal ethwb_rxd : std_logic_vector(1 downto 0);
+signal ethwb_txen : std_logic;
+signal ethwb_rxerr : std_logic;
+signal ethwb_crs_dv : std_logic;
+
 
 signal exti_lines : std_ulogic_vector(31 downto 0);
 signal eth_exti_lines : std_logic_vector(3 downto 0);
@@ -257,16 +313,17 @@ ethernet_mac : wb_ethernet
         -- GPIO Interface
         --
          -- Ethernet --
-        eth_o_txd => eth_txd,
-        eth_o_txen => eth_txen,
-        eth_io_rxd => eth_io_rxd,
-        t_eth_io_rxd => test_eth,
+        eth_o_txd => ethwb_txd,
+        eth_o_txen => ethwb_txen,
+        eth_io_rxd => ethwb_rxd,
         eth_i_rxderr => eth_rxerr,
         eth_i_refclk => clk_p50,
-        eth_o_refclk => eth_o_refclk,
+    
+        t_eth_io_rxd => test_eth,
+
         
         eth_o_rstn => eth_o_rstn,
-        eth_io_crs_dv => eth_io_crs_dv,
+        eth_io_crs_dv => ethwb_crs_dv,
         eth_i_intn => eth_i_intn,
         
         eth_io_mdc => open,
@@ -275,8 +332,42 @@ ethernet_mac : wb_ethernet
         eth_o_exti => eth_exti_lines
     );
     
+ethernet_mux : eth_mux 
+    port map (
+        -- Classifier 
+        clk => clk_50,
+        rstn => rstn_i,
+        spi_clk => spi_clk_o,
+        spi_mosi => spi_dat_o,
+        spi_miso => spi_dat_i,
+        spi_csn => spi_csn_o(1),
+  
+ 
+        eth_clk => clk_p50,
     
+        -- Phy Chip Nexys
+        eth0_io_crs_dv => eth_io_crs_dv,
+        eth0_io_rxd => eth_io_rxd,
+        eth0_o_txen => eth_txen,
+        eth0_o_txd => eth_txd,
+        eth0_o_refclk => eth_o_refclk,
+        
+        
+        -- Phy Chip PMOD
+        eth1_io_crs_dv => eth1_io_crs_dv,
+        eth1_io_rxd => eth1_io_rxd,
+        eth1_o_txen => eth1_o_txen,
+        eth1_o_txd => eth1_o_txd,
+        eth1_o_refclk => eth1_o_refclk,
+        
+        -- Wishbone Ethernet
+        ethwb_o_txd => ethwb_txd,
+        ethwb_o_txen => ethwb_txen,
+        ethwb_io_rxd => ethwb_rxd,
+        ethwb_io_crs_dv => ethwb_crs_dv
     
+    );
+
     
     
     
@@ -377,7 +468,10 @@ ethernet_mac : wb_ethernet
   eth_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
   eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
-  gpio_i <= x"000000000000" & "00000" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
+  eth1_io_mdc <= eth_io_mdc;
+  eth1_io_mdio <= eth_io_mdio;
+  
+  gpio_i <= x"000000000000" & "000" & eth1_io_mdc & eth1_io_mdio & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
   
   sd_o_rst <= gpio_o(11);
   
