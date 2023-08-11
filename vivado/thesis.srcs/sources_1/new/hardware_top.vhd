@@ -153,6 +153,8 @@ port (
     eth_io_crs_dv   : in std_logic;
     eth_io_mdc   : inout std_logic;
     eth_io_mdio   : inout std_logic;
+    
+    eth_ok_transmit : in std_logic;
    
     eth_o_rstn   : out std_logic;
     
@@ -193,10 +195,13 @@ component eth_mux is
     
     
     -- Wishbone Eth
-    ethwb_o_txd : out std_logic_vector(1 downto 0);
-    ethwb_o_txen : out std_logic;
-    ethwb_io_rxd : in std_logic_vector(1 downto 0); -- Change to in
-    ethwb_io_crs_dv   : in std_logic
+    ethwb_o_txd : in std_logic_vector(1 downto 0);
+    ethwb_o_txen : in std_logic;
+    ethwb_io_rxd : out std_logic_vector(1 downto 0); -- Change to in
+    ethwb_io_crs_dv   : out std_logic;
+    
+    eth_ok_transmit : out std_logic;
+    debug_out : out std_logic
 
     );
 end component;
@@ -212,6 +217,12 @@ component clk_master is
     locked : out std_logic;
     clk_in : in std_logic
   );
+end component;
+
+component sr_latch is
+    Port ( S : in    STD_LOGIC;
+           R : in    STD_LOGIC;
+           Q : out   STD_LOGIC);
 end component;
   
   
@@ -277,7 +288,9 @@ signal spi_dat_o : std_logic;
 signal spi_dat_i : std_logic;
 signal spi_csn_o : std_ulogic_vector(07 downto 0);
 
-    
+signal eth_ok_transmit : std_logic;
+signal latch_out : std_logic := '0';
+signal classifer_debug : std_logic := '0';
 
 begin
 
@@ -320,6 +333,8 @@ ethernet_mac : wb_ethernet
         eth_i_refclk => clk_p50,
     
         t_eth_io_rxd => test_eth,
+        
+        eth_ok_transmit => eth_ok_transmit,
 
         
         eth_o_rstn => eth_o_rstn,
@@ -364,7 +379,11 @@ ethernet_mux : eth_mux
         ethwb_o_txd => ethwb_txd,
         ethwb_o_txen => ethwb_txen,
         ethwb_io_rxd => ethwb_rxd,
-        ethwb_io_crs_dv => ethwb_crs_dv
+        ethwb_io_crs_dv => ethwb_crs_dv,
+        
+        eth_ok_transmit => eth_ok_transmit,
+        
+        debug_out => classifer_debug
     
     );
 
@@ -468,10 +487,10 @@ ethernet_mux : eth_mux
   eth_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
   eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
-  eth1_io_mdc <= eth_io_mdc;
-  eth1_io_mdio <= eth_io_mdio;
+  eth1_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
+  eth1_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
-  gpio_i <= x"000000000000" & "000" & eth1_io_mdc & eth1_io_mdio & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
+  gpio_i <= x"000000000000" & "00" & latch_out & eth1_io_mdc & eth1_io_mdio & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
   
   sd_o_rst <= gpio_o(11);
   
@@ -480,6 +499,14 @@ ethernet_mux : eth_mux
   sd_o_cmd <= spi_dat_o; -- MOSI
   spi_dat_i <= sd_i_miso;
   sd_o_csn <= spi_csn_o(0);   
+  
+  
+  classifier_latch: sr_latch
+  port map (
+    S => classifer_debug,
+    R => gpio_o(12),
+    Q => latch_out
+  );
 
 
   -- test SPI

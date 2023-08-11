@@ -52,6 +52,8 @@ port (
     eth_o_rstn   : out std_logic;
     eth_o_exti : out std_logic_vector(3 downto 0);    
     
+    eth_ok_transmit : in std_logic;
+    
     t_eth_io_rxd : out std_logic_vector(1 downto 0)
 );
 end wb_ethernet;
@@ -82,7 +84,9 @@ architecture Behavioral of wb_ethernet is
             rst_i  : in  std_logic := '0';
             start         : out std_logic := '0';
             dataPresent   : out std_logic := '0';
-            dataOut       : out std_logic_vector(7 downto 0)
+            dataOut       : out std_logic_vector(7 downto 0);
+            
+            eth_ok_transmit : in std_logic
             
         ); 
     end component;
@@ -219,6 +223,8 @@ begin
         wb_o_rty    => wb_tx_o_rty,
         wb_o_stall  => wb_tx_o_stall,
         wb_i_stb    => wb_stb_i,
+        
+        eth_ok_transmit => eth_ok_transmit,
         
         clk_i       => clk_i,
         rst_i       => rstn_i,

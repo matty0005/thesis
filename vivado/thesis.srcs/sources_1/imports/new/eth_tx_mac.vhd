@@ -40,6 +40,8 @@ entity eth_tx_mac is
         wb_o_rty        : out std_logic;
         wb_o_stall      : out std_logic;
         wb_i_stb        : in  std_logic;
+        
+        eth_ok_transmit : in std_logic;
     
         -- Interface
         clk_i  : in  std_logic;
@@ -267,44 +269,50 @@ begin
                 
                    
             when TRANSMIT =>
+            
+                -- Wait to trasnmit.
+                if eth_ok_transmit = '0' then
+                    nextState <= TRANSMIT;
+                else
                 
-                -- Ignore preamble + SFD
-                start <= '1';
-                crcData <= FRAME_BUFFER(sentAmount);
-                if sentAmount > 7 then
-                    crcLoadInit <= '0';
-                    crcCalc <= '1';
+                    -- Ignore preamble + SFD
+                    start <= '1';
+                    crcData <= FRAME_BUFFER(sentAmount);
+                    if sentAmount > 7 then
+                        crcLoadInit <= '0';
+                        crcCalc <= '1';
+                        
+                        crcDValid <= '1';
+                    end if;
                     
-                    crcDValid <= '1';
-                end if;
-                
-                dataPresent <= '1';
-                dataOut <= FRAME_BUFFER(sentAmount);
-                sentAmount := sentAmount + 1;
-                
-    
-    
-                -- Add 22 to account for mac header
-                if to_integer(unsigned(payloadLen)) < 46 then
+                    dataPresent <= '1';
+                    dataOut <= FRAME_BUFFER(sentAmount);
+                    sentAmount := sentAmount + 1;
                     
-                    if sentAmount = 69 then
+        
+        
+                    -- Add 22 to account for mac header
+                    if to_integer(unsigned(payloadLen)) < 46 then
+                        
+                        if sentAmount = 69 then
+                            sentAmount := 0;
+                            dataPresent <= '0';
+                            crcCalc <= '0';
+    
+                            nextState <= FCS;
+           
+                        end if;
+                    elsif (to_integer(unsigned(payloadLen)) + 22) = sentAmount then
                         sentAmount := 0;
                         dataPresent <= '0';
                         crcCalc <= '0';
-
-                        nextState <= FCS;
-       
+                        
+                        nextState <= FCS;                    
                     end if;
-                elsif (to_integer(unsigned(payloadLen)) + 22) = sentAmount then
-                    sentAmount := 0;
-                    dataPresent <= '0';
-                    crcCalc <= '0';
                     
-                    nextState <= FCS;                    
+                    nextCrcData <= crcReg8;
+                    
                 end if;
-                
-                nextCrcData <= crcReg8;
-                
     
             when FCS =>
                 -- Transmitting has already started - can disable flag now. 

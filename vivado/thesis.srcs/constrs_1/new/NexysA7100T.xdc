@@ -8,6 +8,8 @@ set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets neorv32_top_inst/neorv32_t
 set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets neorv32_top_inst/neorv32_trng_inst_true.neorv32_trng_inst/neoTRNG_inst/neoTRNG_cell_inst[0].neoTRNG_cell_inst_i/real_hardware.inv_chain_s_reg[2]_i_1]
 set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets neorv32_top_inst/neorv32_trng_inst_true.neorv32_trng_inst/neoTRNG_inst/neoTRNG_cell_inst[2].neoTRNG_cell_inst_i/real_hardware.inv_chain_s_reg[2]_i_3]
 
+# Allow SRLAtch
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets neorv32_top_inst/neorv32_gpio_inst_true.neorv32_gpio_inst/din[13]_i_2_n_0]
 
 #CPU Reset Button
 set_property -dict { PACKAGE_PIN C12   IOSTANDARD LVCMOS33 } [get_ports { rstn_i }]; #IO_L3P_T0_DQS_AD1P_15 Sch=cpu_resetn

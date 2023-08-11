@@ -45,16 +45,21 @@ entity eth_mux is
     
     -- Wishbone Eth
     ethwb_o_txd : in std_logic_vector(1 downto 0);
-    ethwb_o_txen : out std_logic;
+    ethwb_o_txen : in std_logic;
     ethwb_io_rxd : out std_logic_vector(1 downto 0); -- Change to in
-    ethwb_io_crs_dv   : in std_logic 
+    ethwb_io_crs_dv   : out std_logic;
+    
+    eth_ok_transmit : out std_logic;
+    
+    
+    debug_out : out std_logic
     );
 end eth_mux;
 
 architecture Behavioral of eth_mux is
 
 -- FSMs 
-type packetStates is (IDLE, FORWARD, DROP);
+type packetStates is (IDLE, FORWARD, FORWARD_HOLD, DROP);
 signal incomingState : packetStates := IDLE;
 
 signal OUTGOING_BUFF_0 : std_logic_vector((1526 * 8) - 1 downto 0);
@@ -95,6 +100,8 @@ eth1_o_refclk <= eth_clk;
 -- Need to buffer.
 eth0_o_txd <= ethwb_o_txd;
 
+debug_out <= classifier_valid and classifier_forward;
+
 
 pk : packet_classifier 
 port map (
@@ -124,7 +131,7 @@ ethwb_io_rxd <= eth0_io_rxd;
 eth0_outgoing_process: process(eth_clk) 
 begin
     if rising_edge(eth_clk) then
-        OUTGOING_BUFF_0 <= OUTGOING_BUFF_0((1526 * 8) - 4 downto 0) & eth0_io_rxd;
+        OUTGOING_BUFF_0 <= OUTGOING_BUFF_0((1526 * 8) - 3 downto 0) & eth0_io_rxd;
     end if;
 end process;
 
@@ -142,7 +149,7 @@ end process;
 eth1_incoming_process: process(eth_clk) 
 begin
     if rising_edge(eth_clk) then
-        INCOMING_BUFF_1 <= INCOMING_BUFF_1((1526 * 8) - 4 downto 0) & eth1_io_rxd;
+        INCOMING_BUFF_1 <= INCOMING_BUFF_1((1526 * 8) - 3 downto 0) & eth1_io_rxd;
     end if;
 end process;
 
@@ -162,8 +169,11 @@ begin
         
         case(incomingState) is 
             when IDLE =>
+            
                 
-                if classifier_packet_valid = '1' and classifier_forward = '1' then
+                if classifier_packet_valid = '1' and classifier_forward = '1' and ethwb_o_txen = '1' then
+                    incomingState <= FORWARD_HOLD;
+                elsif classifier_packet_valid = '1' and classifier_forward = '1' and ethwb_o_txen = '0' then
                     incomingState <= FORWARD;
                     num_clk_cycles_behind := clk_cycles_behind;
                     clk_cycles_behind := 0;
@@ -172,10 +182,19 @@ begin
                     incomingState <= DROP;
                 end if;
                 
+            when FORWARD_HOLD =>
+                -- wait till ethwb_o_txen = '0'
+                if ethwb_o_txen = '0' then 
+                    incomingState <= FORWARD;
+                    num_clk_cycles_behind := clk_cycles_behind;
+                    clk_cycles_behind := 0;
+                end if;
             when FORWARD =>
                 -- Dont need to change index as the bits get shifted 2 places each clock cycle
                 eth0_o_txd <= INCOMING_BUFF_1((num_clk_cycles_behind * 2) - 1 downto (num_clk_cycles_behind * 2) - 2);
                 eth0_o_txen <= '1';
+                
+                eth_ok_transmit <= '0';
                 
                 num_clk_cycles_behind := num_clk_cycles_behind - 1;
                 
@@ -183,6 +202,7 @@ begin
                 if num_clk_cycles_behind = 0 then
                     incomingState <= IDLE;
                     eth0_o_txen <= '0';
+                    eth_ok_transmit <= '1';
                 end if;
                 
             when DROP =>
