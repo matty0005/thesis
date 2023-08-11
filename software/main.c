@@ -108,6 +108,7 @@ void freertos_risc_v_application_interrupt_handler(void) {
     eth_ack_irq();
 
     BaseType_t pxHigherPriorityTaskWoken;
+    // neorv32_uart0_printf("\n<NEORV32-IRQ> ETH </NEORV32-IRQ>\n",irq_channel);
 
     if( xEMACTaskHandle != NULL )
       vTaskNotifyGiveFromISR(xEMACTaskHandle, &pxHigherPriorityTaskWoken);

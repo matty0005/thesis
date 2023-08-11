@@ -22,6 +22,7 @@
 
 #include "ethernet.h"
 #include "sd.h"
+#include "packet_classifier.h"
 
 #include <neorv32.h>
 #include <stdio.h>

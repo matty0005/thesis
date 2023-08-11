@@ -29,6 +29,14 @@ static BaseType_t cli_cmd_sd_init(char *pcWriteBuffer, size_t xWriteBufferLen, c
 static BaseType_t cli_cmd_sd_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_sd_write(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_fat_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_packet_classifier_init(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+
+CLI_Command_Definition_t xPCInit = {	
+	"pcinit",							
+	"pcinit:\r\n    Initialise the packet classifier with a default rule\r\n\r\n",
+	cli_packet_classifier_init,
+	0				
+};
 
 CLI_Command_Definition_t xFATRead = {	
 	"fatr",							
@@ -971,6 +979,33 @@ static BaseType_t cli_cmd_gpio_ctrl(char *pcWriteBuffer, size_t xWriteBufferLen,
 }
 
 
+static BaseType_t cli_packet_classifier_init(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+
+    taskENTER_CRITICAL();
+
+
+    pc_init();
+
+    uint8_t wildcard = 0b11111;
+    uint8_t destIP[4] = {10, 20, 1, 120};
+    uint8_t sourceIP[4] = {10, 20, 1, 2};
+    uint16_t destPort = 80;
+    uint16_t sourcePort = 80;
+    uint8_t protocol = 0x06;
+
+    sprintf(pcWriteBuffer, "Writing rule to packet classifier\r\n");  
+    pc_save_rule(0, wildcard, destIP, sourceIP, destPort, sourcePort, protocol);
+
+
+    taskEXIT_CRITICAL(); 
+
+    return pdFALSE;
+
+}
+
+
+
+
 void tsk_cli_daemon(void *pvParameters) {
 
     /* Register the command with the FreeRTOS+CLI command interpreter. */
@@ -992,6 +1027,7 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xSDRead);
     FreeRTOS_CLIRegisterCommand(&xSDWrite);
     FreeRTOS_CLIRegisterCommand(&xFATRead);
+    FreeRTOS_CLIRegisterCommand(&xPCInit);
     
     
     
