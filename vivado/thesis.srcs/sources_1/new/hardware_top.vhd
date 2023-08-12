@@ -74,15 +74,6 @@ entity hardware_top is
     eth_o_refclk: out std_logic;
     eth_i_intn: in std_logic;
     
-    -- Phy PMOD 
-    eth1_io_crs_dv: in std_logic;
-    eth1_io_rxd: in std_logic_vector(1 downto 0);
-    eth1_o_txen: out std_logic;
-    eth1_o_txd: out std_logic_vector(1 downto 0);
-    eth1_o_refclk: out std_logic;
-    eth1_i_intn: in std_logic;
-    eth1_io_mdc: inout std_logic;
-    eth1_io_mdio: inout std_logic;
     
     t_btnc : in std_logic;
     t_btnl : in std_logic;
@@ -108,18 +99,6 @@ architecture neorv32_test_setup_bootloader_rtl of hardware_top is
   signal gpio_o : std_ulogic_vector(63 downto 0);
   signal gpio_i : std_ulogic_vector(63 downto 0);
 
-
-component packet_classfier
-port (
-    clk:  in std_logic;
-    valid: out std_logic; -- Output "forward" is valid when 1. 
-    forward: out std_logic;
-    
-    spi_clk: in std_logic;
-    spi_mosi: in std_logic;
-    spi_miso: out std_logic;
-    spi_csn: in std_logic);
-end component;
 
 
 component wb_ethernet 
@@ -153,8 +132,6 @@ port (
     eth_io_crs_dv   : in std_logic;
     eth_io_mdc   : inout std_logic;
     eth_io_mdio   : inout std_logic;
-    
-    eth_ok_transmit : in std_logic;
    
     eth_o_rstn   : out std_logic;
     
@@ -163,49 +140,6 @@ port (
     t_eth_io_rxd : out std_logic_vector(1 downto 0)
 );
 end component;
-
-
-component eth_mux is
-    Port (
-    
-    -- Classifier 
-    clk:  in std_logic;
-    rstn:  in std_logic;
-    spi_clk: in std_logic;
-    spi_mosi: in std_logic;
-    spi_miso: out std_logic;
-    spi_csn: in std_logic;
-    
-    eth_clk: in std_logic;
-
-    -- Phy Chip Nexys
-    eth0_io_crs_dv: in std_logic;
-    eth0_io_rxd: in std_logic_vector(1 downto 0);
-    eth0_o_txen: out std_logic;
-    eth0_o_txd: out std_logic_vector(1 downto 0);
-    eth0_o_refclk: out std_logic;
-    
-    
-    -- Phy Chip PMOD
-    eth1_io_crs_dv: in std_logic;
-    eth1_io_rxd: in std_logic_vector(1 downto 0);
-    eth1_o_txen: out std_logic;
-    eth1_o_txd: out std_logic_vector(1 downto 0);
-    eth1_o_refclk: out std_logic;
-    
-    
-    -- Wishbone Eth
-    ethwb_o_txd : in std_logic_vector(1 downto 0);
-    ethwb_o_txen : in std_logic;
-    ethwb_io_rxd : out std_logic_vector(1 downto 0); -- Change to in
-    ethwb_io_crs_dv   : out std_logic;
-    
-    eth_ok_transmit : out std_logic;
-    debug_out : out std_logic
-
-    );
-end component;
-    
 
 component clk_master is
   Port ( 
@@ -217,12 +151,6 @@ component clk_master is
     locked : out std_logic;
     clk_in : in std_logic
   );
-end component;
-
-component sr_latch is
-    Port ( S : in    STD_LOGIC;
-           R : in    STD_LOGIC;
-           Q : out   STD_LOGIC);
 end component;
   
   
@@ -269,13 +197,6 @@ signal eth_txen : std_logic;
 signal eth_rxerr : std_logic;
 signal eth_crs_dv : std_logic;
 
--- Signals for WB Eth
-signal ethwb_txd : std_logic_vector(1 downto 0);
-signal ethwb_rxd : std_logic_vector(1 downto 0);
-signal ethwb_txen : std_logic;
-signal ethwb_rxerr : std_logic;
-signal ethwb_crs_dv : std_logic;
-
 
 signal exti_lines : std_ulogic_vector(31 downto 0);
 signal eth_exti_lines : std_logic_vector(3 downto 0);
@@ -288,9 +209,7 @@ signal spi_dat_o : std_logic;
 signal spi_dat_i : std_logic;
 signal spi_csn_o : std_ulogic_vector(07 downto 0);
 
-signal eth_ok_transmit : std_logic;
-signal latch_out : std_logic := '0';
-signal classifer_debug : std_logic := '0';
+    
 
 begin
 
@@ -326,19 +245,16 @@ ethernet_mac : wb_ethernet
         -- GPIO Interface
         --
          -- Ethernet --
-        eth_o_txd => ethwb_txd,
-        eth_o_txen => ethwb_txen,
-        eth_io_rxd => ethwb_rxd,
+        eth_o_txd => eth_txd,
+        eth_o_txen => eth_txen,
+        eth_io_rxd => eth_io_rxd,
+        t_eth_io_rxd => test_eth,
         eth_i_rxderr => eth_rxerr,
         eth_i_refclk => clk_p50,
-    
-        t_eth_io_rxd => test_eth,
-        
-        eth_ok_transmit => eth_ok_transmit,
-
+        eth_o_refclk => eth_o_refclk,
         
         eth_o_rstn => eth_o_rstn,
-        eth_io_crs_dv => ethwb_crs_dv,
+        eth_io_crs_dv => eth_io_crs_dv,
         eth_i_intn => eth_i_intn,
         
         eth_io_mdc => open,
@@ -347,46 +263,8 @@ ethernet_mac : wb_ethernet
         eth_o_exti => eth_exti_lines
     );
     
-ethernet_mux : eth_mux 
-    port map (
-        -- Classifier 
-        clk => clk_50,
-        rstn => rstn_i,
-        spi_clk => spi_clk_o,
-        spi_mosi => spi_dat_o,
-        spi_miso => spi_dat_i,
-        spi_csn => spi_csn_o(1),
-  
- 
-        eth_clk => clk_p50,
     
-        -- Phy Chip Nexys
-        eth0_io_crs_dv => eth_io_crs_dv,
-        eth0_io_rxd => eth_io_rxd,
-        eth0_o_txen => eth_txen,
-        eth0_o_txd => eth_txd,
-        eth0_o_refclk => eth_o_refclk,
-        
-        
-        -- Phy Chip PMOD
-        eth1_io_crs_dv => eth1_io_crs_dv,
-        eth1_io_rxd => eth1_io_rxd,
-        eth1_o_txen => eth1_o_txen,
-        eth1_o_txd => eth1_o_txd,
-        eth1_o_refclk => eth1_o_refclk,
-        
-        -- Wishbone Ethernet
-        ethwb_o_txd => ethwb_txd,
-        ethwb_o_txen => ethwb_txen,
-        ethwb_io_rxd => ethwb_rxd,
-        ethwb_io_crs_dv => ethwb_crs_dv,
-        
-        eth_ok_transmit => eth_ok_transmit,
-        
-        debug_out => classifer_debug
     
-    );
-
     
     
     
@@ -487,10 +365,7 @@ ethernet_mux : eth_mux
   eth_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
   eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
-  eth1_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
-  eth1_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
-  
-  gpio_i <= x"000000000000" & "00" & latch_out & eth1_io_mdc & eth1_io_mdio & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
+  gpio_i <= x"000000000000" & "00000" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
   
   sd_o_rst <= gpio_o(11);
   
@@ -499,14 +374,6 @@ ethernet_mux : eth_mux
   sd_o_cmd <= spi_dat_o; -- MOSI
   spi_dat_i <= sd_i_miso;
   sd_o_csn <= spi_csn_o(0);   
-  
-  
-  classifier_latch: sr_latch
-  port map (
-    S => classifer_debug,
-    R => gpio_o(12),
-    Q => latch_out
-  );
 
 
   -- test SPI

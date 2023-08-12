@@ -51,9 +51,7 @@ port (
     eth_io_mdio   : inout std_logic;
     eth_o_rstn   : out std_logic;
     eth_o_exti : out std_logic_vector(3 downto 0);    
-    
-    eth_ok_transmit : in std_logic;
-    
+        
     t_eth_io_rxd : out std_logic_vector(1 downto 0)
 );
 end wb_ethernet;
@@ -84,10 +82,8 @@ architecture Behavioral of wb_ethernet is
             rst_i  : in  std_logic := '0';
             start         : out std_logic := '0';
             dataPresent   : out std_logic := '0';
-            dataOut       : out std_logic_vector(7 downto 0);
-            
-            eth_ok_transmit : in std_logic
-            
+            dataOut       : out std_logic_vector(7 downto 0)
+                        
         ); 
     end component;
     
@@ -207,8 +203,7 @@ begin
 
     );
     
---    eth_o_txen <= eth_tx_dat_pres_o;
---    eth_o_txd <= eth_tx_dat_o(1 downto 0);
+
     eth_tx : eth_tx_mac
     port map (
         wb_i_dat    => wb_dat_i,
@@ -223,9 +218,7 @@ begin
         wb_o_rty    => wb_tx_o_rty,
         wb_o_stall  => wb_tx_o_stall,
         wb_i_stb    => wb_stb_i,
-        
-        eth_ok_transmit => eth_ok_transmit,
-        
+                
         clk_i       => clk_i,
         rst_i       => rstn_i,
         start       => eth_tx_start,
@@ -257,87 +250,6 @@ begin
     
 wb_ack_o <= wb_tx_ack or wb_rx_ack;
 wb_dat_o <= wb_rx_dat_o when wb_rx_ack = '1' else wb_tx_dat_o;
-
--------------------------------------------
--- Controller - looks after the Phy chip --
--------------------------------------------
-
---CONTROLLER : process(clk_i, rstn_i)
---begin
---    if rising_edge(clk_i) then
-        
---        if ctrl_rst_ack = '1' then
---            ctrl_start_rst <= '0';
---        end if;
-        
---        -- Only handle data when strobe
---        if wb_stb_i = '1' and wb_adr_i = CTRL_PHY_MODE then 
---            wb_ctrl_ack <= '1';
-            
---            -- Ensure write enable is set.
---            if wb_we_i = '0' then -- Read
-                
-
---            elsif wb_we_i = '1' then -- Write
-            
---                if wb_dat_i(0) = '1' then --reset chip
---                    ctrl_start_rst <= '1';
-                    
-               
---                end if;
-                
---            end if;
---        end if;
---    end if;
-
---end process;
-
-
---PHY_FSM : process(clk_i, rstn_i)
---variable timerCounter : natural range 0 to 200 := 0;
---begin 
-
---    if rising_edge(clk_i) then 
---        case currentCtrlState is
---            when IDLE =>
---                if ctrl_start_rst = '1' then
---                    ctrl_rst_ack <= '1';
---                    currentCtrlState <= RESET_START;
---                    timerCounter := 0;
---                else
---                    currentCtrlState <= IDLE;
---                    ctrl_rst_ack <= '0';
---                end if;
---                eth_o_rstn <= '1';
-                
---            when RESET_START => 
---                eth_io_crs_dv <= '0'; 
---                eth_io_rxd <= "11"; -- Set mode to 011
---                eth_o_rstn <= '0'; -- active low
---                t_eth_io_rxd <= "11";
-                
---                timerCounter := timerCounter + 1;
---                if timerCounter = 200 then
---                    currentCtrlState <= RESET_1;
---                    timerCounter := 0;
---                end if;
-                
---            when RESET_1 =>
---                eth_o_rstn <= '0'; -- active low
---                currentCtrlState <= RESET_2;
-                
---            when RESET_2 =>
---                eth_io_crs_dv <= 'Z'; -- Set to high impeadance - now this is an input.
---                eth_io_rxd <= "ZZ";
---                t_eth_io_rxd <= "00";
---                currentCtrlState <= IDLE;
---                eth_o_rstn <= '1';
-
---        end case;
---    end if;
-    
---end process;
-
 
 end Behavioral;
 
