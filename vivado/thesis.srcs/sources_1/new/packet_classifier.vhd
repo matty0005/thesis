@@ -76,8 +76,8 @@ begin
         case pcState is
                 when IDLE => 
                    
-                    --  Wait for valid packet with Preamble + SFD
-                    if data_pipe = x"D555555555555555" and packet_valid = '1' then
+                    --  Wait for valid packet with Preamble + SFD: 55555555555555D5
+                    if data_pipe = x"AAAAAAAAAAAAAAAB" and packet_valid = '1' then
                         pcState <= PACKET_TYPE;
                     end if;
                     valid <= '0';
