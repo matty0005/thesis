@@ -26,15 +26,13 @@ entity packet_classifier is
     valid: out std_logic; -- Output "forward" is valid when 1. 
     forward: out std_logic;
     
-    packet_in: in std_logic_vector(31 downto 0);
+    packet_in: in std_logic_vector(1 downto 0);
     packet_valid: in std_logic;
     
     spi_clk: in std_logic;
     spi_mosi: in std_logic;
     spi_miso: out std_logic;
     spi_csn: in std_logic
-    
---    test_port : out std_logic_vector(119 downto 0)
    );
 end packet_classifier;
 
@@ -48,8 +46,8 @@ constant ruleSize : integer := 8;
 type ramType is array (ruleSize - 1 downto 0) of std_logic_vector(112 - 1 downto 0);
 shared variable RULES_MEMORY : ramType := (others => (others => '0'));
 
-type classifer_state is (IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
-signal classiferState : classifer_state := IP_DEST;
+type classifer_state is (IDLE, PACKET_TYPE, IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
+signal pcState : classifer_state := IDLE;
 
 signal spi_mosi_data : std_logic_vector(119 downto 0); -- 14 bytes = 112 bits for data + 8 bits addr + 8bits wildcard  (1byte)
 
@@ -57,133 +55,183 @@ signal spi_mosi_data : std_logic_vector(119 downto 0); -- 14 bytes = 112 bits fo
 -- After iteratting over each field, if the value is non-zero, it is allowed through.
 signal rulesMatch : std_logic_vector(31 downto 0) := (others => '0');
 
+constant PIPE_SIZE : integer := 64 - 1;
+signal data_pipe : std_logic_vector(PIPE_SIZE downto 0) := x"0000000000000000";
+
 begin
 
+data_processer: process(clk)
+begin
+    if rising_edge(clk) then
+        data_pipe <= data_pipe(PIPE_SIZE - 2 downto 0) & packet_in;
+    end if;
+end process;
 
-classifier : process(clk)
+classifier_new : process(clk)
 variable stateCounter : integer := 0;
+variable ipHeaderLen : std_logic_vector(3 downto 0);
+variable ipProto : std_logic_vector(7 downto 0);
 begin
     if rising_edge(clk) then 
-    
-        if packet_valid = '0' then -- reset state
-            valid  <= '0'; 
-            rulesMatch <= (others => '0');
-            classiferState <= IP_DEST;
-            stateCounter := 0;
-            
-        else
-            stateCounter := stateCounter + 1;
-            
-    --        test_port <= rulesMatch(3 downto 0) & std_logic_vector(to_unsigned(stateCounter, 4)) & packet_in & RULES_MEMORY(0)(71 downto 0) & "00000000";
-            valid  <= '0'; 
-            -- determine if to continue or forward data.
-            case classiferState is
-                when IP_DEST =>
-                    if stateCounter = 4 then
+        case pcState is
+                when IDLE => 
+                   
+                    --  Wait for valid packet with Preamble + SFD
+                    if data_pipe = x"D555555555555555" and packet_valid = '1' then
+                        pcState <= PACKET_TYPE;
+                    end if;
+                    valid <= '0';
+                    forward <= '0';
+                    rulesMatch <= (others => '0');
+                when PACKET_TYPE =>
+                    -- Need to wait for dest and src mac addr = 12 bytes
+                    if stateCounter = (12 * 4 + (2 * 4)) then
+                    
+                            -- Check that packet is type IPV4
+                            if data_pipe(15 downto 0) = x"0800" then 
+                                pcState <= PROTO;
+                                
+                            elsif data_pipe(15 downto 0) = x"0806" then -- ARP packet - forward. 
+                                valid <= '1';
+                                forward <= '1';
+                                pcState <= IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
+                            else -- Don't forward unknown packet.
+                                valid <= '1';
+                                forward <= '0';
+                                pcState <= IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
+                            end if;
+                            stateCounter := 0;
+                    else
+                        stateCounter := stateCounter + 1;
+                    end if;
+                    
+                when PROTO =>
+                
+                    -- Get IHL 
+                    if stateCounter = (4) then 
+                        ipHeaderLen := data_pipe(3 downto 0);
+                    end if;
+                    -- Need to wait for 64bits + 8 bits = 9 bytes - 1 byte wide.
+                    if stateCounter = (9 * 4 + (1 * 4)) then
+                    
+                            -- Check fields
+                        for i in 0 to ruleSize-1 loop
+                            if RULES_MEMORY(i)(104 + 0) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
+                                rulesMatch(i) <= '1';
+                            elsif data_pipe(7 downto 0) = RULES_MEMORY(i)(7 downto 0) and rulesMatch(i) = '1' then
+                                rulesMatch(i) <= '1';
+                            else 
+                                rulesMatch(i) <= '0';
+                            end if;
+                        end loop;
                         
+                        ipProto := data_pipe(7 downto 0);
+                        
+                        pcState <= IP_DEST;
+                        stateCounter := 0;
+                    else
+                        stateCounter := stateCounter + 1;
+                    end if;
+                    
+                when IP_DEST =>
+                    -- Need to wait for 16bits = 2 bytes - 4 byte wide.
+                    if stateCounter = (2 * 4 + (4 * 4)) then
+                    
                         -- Check fields
                         for i in 0 to ruleSize-1 loop
                             if RULES_MEMORY(i)(104 + 4) = '1' then -- If wildcard entry is here accept by default
                                 rulesMatch(i) <= '1';
-                            elsif packet_in(31 downto 0) = RULES_MEMORY(i)(103 downto 72) then
+                            elsif data_pipe(31 downto 0) = RULES_MEMORY(i)(103 downto 72) then
                                 rulesMatch(i) <= '1';
                             else 
                                 rulesMatch(i) <= '0';
                             end if;
                         end loop;
-                    
-                        classiferState <= IP_SOURCE;
-                        stateCounter := 0;
-                    else 
-                        classiferState <= IP_DEST;
-                    end if;
-            
-               when IP_SOURCE =>
-                    if stateCounter = 4 then
                         
+                        pcState <= IP_SOURCE;
+                        stateCounter := 0;
+                    else
+                        stateCounter := stateCounter + 1;
+                    end if;
+                    
+                when IP_SOURCE =>
+                    -- Need to wait for 0bits = 0 bytes - 4 byte wide.
+                    if stateCounter = (0 * 4 + (4 * 4)) then
+                    
                         -- Check fields
                         for i in 0 to ruleSize-1 loop
                             if RULES_MEMORY(i)(104 + 3) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                                 rulesMatch(i) <= '1';
-                            elsif packet_in(31 downto 0) = RULES_MEMORY(i)(71 downto 40) and rulesMatch(i) = '1' then
+                            elsif data_pipe(31 downto 0) = RULES_MEMORY(i)(71 downto 40) and rulesMatch(i) = '1' then
                                 rulesMatch(i) <= '1';
                             else 
                                 rulesMatch(i) <= '0';
                             end if;
                         end loop;
-                    
-                        classiferState <= PORT_DEST;
+                        
+                        pcState <= PORT_DEST;
                         stateCounter := 0;
                     else
-                        classiferState <= IP_SOURCE;
+                        stateCounter := stateCounter + 1;
                     end if;
-                            
+                    
                 when PORT_DEST =>
-                    if stateCounter = 2 then
+                
+                    -- If proto was either UDP or TCP, need to wait (ipHeaderLen - 20) + 0bytes - 2 bytes wide. 
+                    if ipProto /= x"06" and ipProto /= x"11" then -- If not TCP or UDP forward - no ports.
+                        valid <= '1';
+                        forward <= '1';
+                        pcState <= IDLE;
+                    else 
+                        -- wait for bytes. 
+                        -- Need to wait for 0bits = 0 bytes - 4 byte wide.
+                        if stateCounter = ((unsigned(ipHeaderLen) - 20) * 4 + (2 * 4)) then
                         
-                        -- Check fields
-                        for i in 0 to ruleSize-1 loop
-                            if RULES_MEMORY(i)(104 + 2) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
-                                rulesMatch(i) <= '1';
-                            elsif packet_in(15 downto 0) = RULES_MEMORY(i)(39 downto 24) and rulesMatch(i) = '1' then
-                                rulesMatch(i) <= '1';
-                            else 
-                                rulesMatch(i) <= '0';
-                            end if;
-                        end loop;
-                    
-                        classiferState <= PORT_SOURCE;
-                        stateCounter := 0;
-                    else
-                        classiferState <= PORT_DEST;
+                            -- Check fields
+                            for i in 0 to ruleSize-1 loop
+                                if RULES_MEMORY(i)(104 + 2) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
+                                    rulesMatch(i) <= '1';
+                                elsif data_pipe(15 downto 0) = RULES_MEMORY(i)(39 downto 24) and rulesMatch(i) = '1' then
+                                    rulesMatch(i) <= '1';
+                                else 
+                                    rulesMatch(i) <= '0';
+                                end if;
+                            end loop;
+                            
+                            pcState <= PORT_SOURCE;
+                            stateCounter := 0;
+                        else
+                            stateCounter := stateCounter + 1;
+                        end if;
                     end if;
-    
+                
+                    
                 when PORT_SOURCE =>
-                    if stateCounter = 2 then
-                        
+                    -- Need to wait for 0bits = 0 bytes - 4 byte wide.
+                    if stateCounter = (0 * 4 + (2 * 4)) then
+                    
                         -- Check fields
                         for i in 0 to ruleSize-1 loop
                             if RULES_MEMORY(i)(104 + 1) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
-                                rulesMatch(i) <= '1';
-                            elsif packet_in(15 downto 0) = RULES_MEMORY(i)(23 downto 8) and rulesMatch(i) = '1' then
-                                rulesMatch(i) <= '1';
+                                valid <= '1';
+                                forward <= '1';
+                            elsif data_pipe(15 downto 0) = RULES_MEMORY(i)(23 downto 8) and rulesMatch(i) = '1' then
+                                valid <= '1';
+                                forward <= '1';
                             else 
-                                rulesMatch(i) <= '0';
+                                valid <= '1';
+                                forward <= '0';
                             end if;
                         end loop;
-                    
-                        classiferState <= PROTO;
+                        
+                        pcState <= IDLE;
                         stateCounter := 0;
-                    else 
-                        classiferState <= PORT_SOURCE;
+                    else
+                        stateCounter := stateCounter + 1;
                     end if;
-       
-                when PROTO =>
-                        
-                        -- Check fields
-                        for i in 0 to ruleSize-1 loop
-                            if RULES_MEMORY(i)(104 + 0) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
-                                rulesMatch(i) <= '1';
-                            elsif packet_in(7 downto 0) = RULES_MEMORY(i)(7 downto 0) and rulesMatch(i) = '1' then
-                                rulesMatch(i) <= '1';
-                            else 
-                                rulesMatch(i) <= '0';
-                            end if;
-                        end loop;
-                        
-                        -- Forward handled outside of the process statement.
-                        valid  <= '1'; 
-                    
-                        classiferState <= IP_DEST;
-                        stateCounter := 0;
-    
-                    
-            end case;
-        end if;
+        end case;
     end if;
 end process;
-
-forward <= '0' when rulesMatch = x"00000000" else '1';
 
 --test_port <= RULES_MEMORY(0) & x"00";
 

@@ -35,6 +35,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 library neorv32;
 use neorv32.neorv32_package.all;
@@ -84,7 +85,10 @@ entity hardware_top is
     sd_o_sck : out std_logic; -- clock
     sd_o_cmd : out std_logic; -- MOSI
     sd_i_miso: in std_logic;
-    sd_o_csn: out std_logic
+    sd_o_csn: out std_logic;
+    
+    ssd : out std_logic_vector (6 downto 0);
+    anode : out std_logic_vector (7 downto 0)
 
   );
 end entity;
@@ -100,6 +104,22 @@ architecture neorv32_test_setup_bootloader_rtl of hardware_top is
   signal gpio_i : std_ulogic_vector(63 downto 0);
 
 
+component packet_classifier is 
+  Port (
+    clk:  in std_logic;
+    rst:  in std_logic;
+    valid: out std_logic; -- Output "forward" is valid when 1. 
+    forward: out std_logic;
+    
+    packet_in: in std_logic_vector(1 downto 0);
+    packet_valid: in std_logic;
+    
+    spi_clk: in std_logic;
+    spi_mosi: in std_logic;
+    spi_miso: out std_logic;
+    spi_csn: in std_logic
+   );
+end component; 
 
 component wb_ethernet 
 port (
@@ -151,6 +171,13 @@ component clk_master is
     locked : out std_logic;
     clk_in : in std_logic
   );
+end component;
+
+component sevensegdisplay is
+    Port ( 
+        value : in STD_LOGIC_VECTOR (3 downto 0);
+        display : out STD_LOGIC_VECTOR (6 downto 0)
+    );
 end component;
   
   
@@ -209,14 +236,24 @@ signal spi_dat_o : std_logic;
 signal spi_dat_i : std_logic;
 signal spi_csn_o : std_ulogic_vector(07 downto 0);
 
-    
+signal pc_valid : std_logic;
+signal pc_forward : std_logic;
+signal pc_valid_counter: std_logic_vector(3 downto 0) := "0000";
+
+signal rst : std_logic;
+
+
 
 begin
+
+rst <= not rstn_i;
 
 -- Connections
 eth_o_txd <= eth_txd;
 eth_o_txen <= eth_txen;
 eth_rxerr <= eth_i_rxerr;
+
+eth_rxd <= eth_io_rxd;
 
 sd_o_csn <= spi_csn(0);
 
@@ -265,7 +302,21 @@ ethernet_mac : wb_ethernet
     
     
     
-    
+    pc: packet_classifier 
+    port map(
+        clk => clk_50,
+        rst => rst,
+        valid => pc_valid,
+        forward => pc_forward,
+        
+        packet_in => eth_rxd,
+        packet_valid => eth_io_crs_dv,
+        
+        spi_clk => spi_clk_o,
+        spi_mosi => spi_dat_o,
+        spi_miso => spi_dat_i,
+        spi_csn => spi_csn_o(1)
+   );
     
     
    clk_control : clk_master
@@ -278,6 +329,22 @@ ethernet_mac : wb_ethernet
         locked => clk_locked,
         clk_in => clk_i
     );
+    
+    
+    pc_ssd: sevensegdisplay
+    port map (
+        display => ssd,
+        value => pc_valid_counter
+    );
+    anode <= "11111110";
+    
+    pc_coutner: process(pc_valid)
+    begin
+        if pc_valid = '1' and pc_forward = '1' then
+            pc_valid_counter <= pc_valid_counter + 1;
+        end if;
+    end process;
+  
     
   -- The Core Of The Problem ----------------------------------------------------------------
   -- -------------------------------------------------------------------------------------------
