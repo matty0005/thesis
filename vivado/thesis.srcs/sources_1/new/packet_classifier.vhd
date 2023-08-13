@@ -19,6 +19,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 use IEEE.std_logic_unsigned.all; 
 
+use work.utils_pkg.ALL;
+
 entity packet_classifier is
   Port (
     clk:  in std_logic;
@@ -76,24 +78,25 @@ begin
         case pcState is
                 when IDLE => 
                    
-                    --  Wait for valid packet with Preamble + SFD: 55555555555555D5
-                    if data_pipe = x"AAAAAAAAAAAAAAAB" and packet_valid = '1' then
+                    --  Wait for valid packet with Preamble + SFD: 55555555555555D5 - AAAAAAAAAAAAAABA
+                    if data_pipe = x"555555555555555D" and packet_valid = '1' then
                         pcState <= PACKET_TYPE;
                     end if;
                     valid <= '0';
                     forward <= '0';
+                    
                     rulesMatch <= (others => '0');
                 when PACKET_TYPE =>
                     -- Need to wait for dest and src mac addr = 12 bytes
                     if stateCounter = (12 * 4 + (2 * 4)) then
                     
                             -- Check that packet is type IPV4
-                            if data_pipe(15 downto 0) = x"0800" then 
-                                pcState <= PROTO;
+                            if  eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = x"0800" then 
+                                pcState <= PROTO;                               
                                 
-                            elsif data_pipe(15 downto 0) = x"0806" then -- ARP packet - forward. 
+                            elsif eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = x"0806" then -- ARP packet - forward. 
                                 valid <= '1';
-                                forward <= '1';
+                                forward <= '0';
                                 pcState <= IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
                             else -- Don't forward unknown packet.
                                 valid <= '1';
@@ -108,40 +111,52 @@ begin
                 when PROTO =>
                 
                     -- Get IHL 
-                    if stateCounter = (4) then 
-                        ipHeaderLen := data_pipe(3 downto 0);
-                    end if;
-                    -- Need to wait for 64bits + 8 bits = 9 bytes - 1 byte wide.
-                    if stateCounter = (9 * 4 + (1 * 4)) then
-                    
-                            -- Check fields
-                        for i in 0 to ruleSize-1 loop
-                            if RULES_MEMORY(i)(104 + 0) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
-                                rulesMatch(i) <= '1';
-                            elsif data_pipe(7 downto 0) = RULES_MEMORY(i)(7 downto 0) and rulesMatch(i) = '1' then
-                                rulesMatch(i) <= '1';
-                            else 
-                                rulesMatch(i) <= '0';
-                            end if;
-                        end loop;
-                        
-                        ipProto := data_pipe(7 downto 0);
-                        
-                        pcState <= IP_DEST;
+                    if stateCounter = (4) then
+                        valid <= '1';
+                        forward <= '1';
+                        pcState <= IDLE;
                         stateCounter := 0;
-                    else
+--                        if data_pipe(1 downto 0) & data_pipe(3 downto 2) = "0101" then
+--                            valid <= '1';
+--                            forward <= '1';
+--                            pcState <= IDLE;
+--                            stateCounter := 0;
+--                        end if;
+                        ipHeaderLen := data_pipe(1 downto 0) & data_pipe(3 downto 2);
+                    else 
                         stateCounter := stateCounter + 1;
                     end if;
+--                    -- Need to wait for 64bits + 8 bits = 9 bytes - 1 byte wide.
+--                    if stateCounter = (9 * 4 + (1 * 4) - 1) then
+                    
+--                            -- Check fields
+--                        for i in 0 to ruleSize-1 loop
+--                            if RULES_MEMORY(i)(104 + 0) = '1' then -- If wildcard entry is here accept by default
+--                                rulesMatch(i) <= '1';
+--                            elsif eth_swap_bits(data_pipe(7 downto 0)) = RULES_MEMORY(i)(7 downto 0) then
+--                                rulesMatch(i) <= '1';
+--                            else 
+--                                rulesMatch(i) <= '0';
+--                            end if;
+--                        end loop;
+                        
+--                        ipProto := eth_swap_bits(data_pipe(7 downto 0));
+                        
+--                        pcState <= IP_DEST;
+--                        stateCounter := 0;
+--                    else
+--                        stateCounter := stateCounter + 1;
+--                    end if;
                     
                 when IP_DEST =>
                     -- Need to wait for 16bits = 2 bytes - 4 byte wide.
-                    if stateCounter = (2 * 4 + (4 * 4)) then
+                    if stateCounter = (2 * 4 + (4 * 4) - 1) then
                     
                         -- Check fields
                         for i in 0 to ruleSize-1 loop
-                            if RULES_MEMORY(i)(104 + 4) = '1' then -- If wildcard entry is here accept by default
+                            if RULES_MEMORY(i)(104 + 4) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                                 rulesMatch(i) <= '1';
-                            elsif data_pipe(31 downto 0) = RULES_MEMORY(i)(103 downto 72) then
+                            elsif eth_swap_bits(data_pipe(31 downto 24)) & eth_swap_bits(data_pipe(23 downto 16)) & eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = RULES_MEMORY(i)(103 downto 72) and rulesMatch(i) = '1' then
                                 rulesMatch(i) <= '1';
                             else 
                                 rulesMatch(i) <= '0';
@@ -156,13 +171,13 @@ begin
                     
                 when IP_SOURCE =>
                     -- Need to wait for 0bits = 0 bytes - 4 byte wide.
-                    if stateCounter = (0 * 4 + (4 * 4)) then
+                    if stateCounter = (0 * 4 + (4 * 4) - 1) then
                     
                         -- Check fields
                         for i in 0 to ruleSize-1 loop
                             if RULES_MEMORY(i)(104 + 3) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                                 rulesMatch(i) <= '1';
-                            elsif data_pipe(31 downto 0) = RULES_MEMORY(i)(71 downto 40) and rulesMatch(i) = '1' then
+                            elsif eth_swap_bits(data_pipe(31 downto 24)) & eth_swap_bits(data_pipe(23 downto 16)) & eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = RULES_MEMORY(i)(71 downto 40) and rulesMatch(i) = '1' then
                                 rulesMatch(i) <= '1';
                             else 
                                 rulesMatch(i) <= '0';
@@ -180,18 +195,18 @@ begin
                     -- If proto was either UDP or TCP, need to wait (ipHeaderLen - 20) + 0bytes - 2 bytes wide. 
                     if ipProto /= x"06" and ipProto /= x"11" then -- If not TCP or UDP forward - no ports.
                         valid <= '1';
-                        forward <= '1';
+                        forward <= '0';
                         pcState <= IDLE;
                     else 
                         -- wait for bytes. 
                         -- Need to wait for 0bits = 0 bytes - 4 byte wide.
-                        if stateCounter = ((unsigned(ipHeaderLen) - 20) * 4 + (2 * 4)) then
+                        if stateCounter = ((unsigned(ipHeaderLen) - 20) * 4 + (2 * 4) - 1) then
                         
                             -- Check fields
                             for i in 0 to ruleSize-1 loop
                                 if RULES_MEMORY(i)(104 + 2) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                                     rulesMatch(i) <= '1';
-                                elsif data_pipe(15 downto 0) = RULES_MEMORY(i)(39 downto 24) and rulesMatch(i) = '1' then
+                                elsif eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = RULES_MEMORY(i)(39 downto 24) and rulesMatch(i) = '1' then
                                     rulesMatch(i) <= '1';
                                 else 
                                     rulesMatch(i) <= '0';
@@ -208,14 +223,14 @@ begin
                     
                 when PORT_SOURCE =>
                     -- Need to wait for 0bits = 0 bytes - 4 byte wide.
-                    if stateCounter = (0 * 4 + (2 * 4)) then
+                    if stateCounter = (0 * 4 + (2 * 4) - 1) then
                     
                         -- Check fields
                         for i in 0 to ruleSize-1 loop
                             if RULES_MEMORY(i)(104 + 1) = '1' and rulesMatch(i) = '1' then -- If wildcard entry is here accept by default
                                 valid <= '1';
                                 forward <= '1';
-                            elsif data_pipe(15 downto 0) = RULES_MEMORY(i)(23 downto 8) and rulesMatch(i) = '1' then
+                            elsif eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = RULES_MEMORY(i)(23 downto 8) and rulesMatch(i) = '1' then
                                 valid <= '1';
                                 forward <= '1';
                             else 

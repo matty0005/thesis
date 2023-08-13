@@ -35,6 +35,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 library neorv32;
@@ -340,7 +341,9 @@ ethernet_mac : wb_ethernet
     
     pc_coutner: process(pc_valid)
     begin
-        if pc_valid = '1' and pc_forward = '1' then
+        if rstn_i = '0' then
+            pc_valid_counter <= "0010";
+        elsif pc_valid = '1' and pc_valid'event and pc_forward = '1' then
             pc_valid_counter <= pc_valid_counter + 1;
         end if;
     end process;
