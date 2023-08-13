@@ -112,41 +112,38 @@ begin
                 
                     -- Get IHL 
                     if stateCounter = (4) then
-                        valid <= '1';
-                        forward <= '1';
-                        pcState <= IDLE;
-                        stateCounter := 0;
---                        if data_pipe(1 downto 0) & data_pipe(3 downto 2) = "0101" then
---                            valid <= '1';
---                            forward <= '1';
---                            pcState <= IDLE;
---                            stateCounter := 0;
---                        end if;
-                        ipHeaderLen := data_pipe(1 downto 0) & data_pipe(3 downto 2);
-                    else 
-                        stateCounter := stateCounter + 1;
+                        ipHeaderLen := eth_swap_bits(data_pipe(7 downto 0))(3 downto 0);
                     end if;
---                    -- Need to wait for 64bits + 8 bits = 9 bytes - 1 byte wide.
---                    if stateCounter = (9 * 4 + (1 * 4) - 1) then
                     
---                            -- Check fields
+                    -- Need to wait for 64bits + 8 bits = 9 bytes - 1 byte wide.
+                    if stateCounter = (9 * 4 + (0 * 4)) then
+                    
+                            -- Check fields
 --                        for i in 0 to ruleSize-1 loop
 --                            if RULES_MEMORY(i)(104 + 0) = '1' then -- If wildcard entry is here accept by default
 --                                rulesMatch(i) <= '1';
 --                            elsif eth_swap_bits(data_pipe(7 downto 0)) = RULES_MEMORY(i)(7 downto 0) then
 --                                rulesMatch(i) <= '1';
+--                                valid <= '1';
+--                                forward <= '1';
 --                            else 
 --                                rulesMatch(i) <= '0';
 --                            end if;
 --                        end loop;
-                        
---                        ipProto := eth_swap_bits(data_pipe(7 downto 0));
+                        if eth_swap_bits(data_pipe(7 downto 0)) = x"01" or data_pipe(7 downto 0) = x"01" then
+                            valid <= '1';
+                            forward <= '1';
+                        end if;
+                        pcState <= IDLE;
+                        stateCounter := 0;
+                    
+                        ipProto := eth_swap_bits(data_pipe(7 downto 0));
                         
 --                        pcState <= IP_DEST;
 --                        stateCounter := 0;
---                    else
---                        stateCounter := stateCounter + 1;
---                    end if;
+                    else
+                        stateCounter := stateCounter + 1;
+                    end if;
                     
                 when IP_DEST =>
                     -- Need to wait for 16bits = 2 bytes - 4 byte wide.

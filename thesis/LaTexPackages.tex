@@ -44,6 +44,7 @@
 \usepackage[figuresright]{rotating}	%Allows large tables to be rotated to landscape.
 \usepackage{makecell}
 \usepackage{tabularx}
+\usepackage{listings}
 
 \usetikzlibrary{shapes.geometric, arrows}
 %You can add more packages here if you need
@@ -69,3 +70,20 @@
 \newcommand{\apriori}{\textit{a priori}} %Before hand.
 \newcommand{\etal}{\textit{et al.}} %And others, with correct punctuation.
 \newcommand{\naive}{na\"\i{}ve} %Queen Amidala is young and \naive{}.
+
+\lstset{
+  language=C,                          % Choose the language
+  basicstyle=\ttfamily\footnotesize,    % Set the basic style (smaller)
+  keywordstyle=\color{blue},            % Set keyword style
+  commentstyle=\color{green},           % Set comment style
+  stringstyle=\color{red},              % Set string literal style
+  directivestyle=\color{magenta},       % Set directive style (for #define, etc.)
+  numbers=left,                         % Where to put line numbers
+  numberstyle=\tiny\color{gray},        % Line number style
+  stepnumber=1,                         % Step between line numbers
+  showstringspaces=false,               % Don't emphasize spaces in strings
+  breaklines=true,                      % Break long lines
+  frame=single,                         % Frame code
+  captionpos=b, 
+  rulecolor=\color{black}               % Rule/frame color
+}

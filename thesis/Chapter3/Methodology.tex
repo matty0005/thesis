@@ -77,6 +77,60 @@ There were two main options for the network stack, LwIP and FreeRTOS-Plus-TCP. T
 \subsection{Webserver}
 A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. 
 
+\subsection{Drivers}
+\subsubsection{Ethernet drivers}
+Since the ethernet hardware was custom, drivers were needed to interface with the hardware in software. There were two types of commands that were needed, first the RMII serial managment interface (SMI) and secondly the MAC drivers - the drivers that would handle the data.  The SMI interface is used to control the mode of operation of the PHY chip including the speed, Auto-MDIX, duplex settings. The LAN8720A datasheet, (\cite{LAN8720ADatasheet}) provided some details (seen in figure \ref{fig:smi_packet_structure}) into how the protocol operated. The datasheet also outlined that a maximum frequency of 2.5MHz, but no lower bound. As such the interface was \textit{'bitbanged'} to reduce complexity. The maximum switching frequency of the NEORV32's GPIO was measured to be $\approx 1$MHz, thus the interface could operate without any additional delays.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images/SMIWriteStructure.png}
+    \caption[SMI Write message structure]{SMI Write message structure. \cite{LAN8720ADatasheet}}
+    \label{fig:smi_packet_structure}
+\end{figure}
+
+
+As the Ethernet hardware used the Wishbone interface, the register locations were mapped into the processors address space. Simple macros can be created for ease of use. 
+
+\begin{lstlisting}[language=C, caption=Python example]
+#define ETH_MAC_TX_BASE 0x13371000
+#define ETH_MAC_CMD_BASE 0x13370000
+
+#define ETH_MAC_CMD  (*(volatile uint32_t *)ETH_MAC_CMD_BASE)
+#define ETH_MAC_TX ((EthMacTx *) ETH_MAC_TX_BASE)
+
+typedef struct __attribute__((__packed__))  {
+    volatile uint32_t SIZE;
+    volatile uint32_t DATA[375]; // 1500 / 4 = 375.
+} EthMacTx;
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption=Python example]
+    #define ETH_MAC_TX_BASE 0x13371000
+    #define ETH_MAC_CMD_BASE 0x13370000
+    
+    #define ETH_MAC_CMD  (*(volatile uint32_t *)ETH_MAC_CMD_BASE)
+    #define ETH_MAC_TX ((EthMacTx *) ETH_MAC_TX_BASE)
+    
+    typedef struct __attribute__((__packed__))  {
+        volatile uint32_t SIZE;
+        volatile uint32_t DATA[375]; // 1500 / 4 = 375.
+    } EthMacTx;
+    \end{lstlisting}
+    
+
+
+
+
+\subsubsection{SD card drivers}
+As part of the documentation for the FreeRTOS-Plus-FAT file system, drivers for the media was required. Like the Ethernet hardware, the driver had to implement at least three functions: function that reads sectors from the media, one that rights sectors to the media and one to initialise the media. 
+
+
+
+
+
+\subsection{Command line interface}
+
 
 \subsection{Improvements}
 
