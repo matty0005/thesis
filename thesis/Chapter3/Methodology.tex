@@ -105,19 +105,7 @@ typedef struct __attribute__((__packed__))  {
 } EthMacTx;
 \end{lstlisting}
 
-\begin{lstlisting}[language=C, caption=Python example]
-    #define ETH_MAC_TX_BASE 0x13371000
-    #define ETH_MAC_CMD_BASE 0x13370000
-    
-    #define ETH_MAC_CMD  (*(volatile uint32_t *)ETH_MAC_CMD_BASE)
-    #define ETH_MAC_TX ((EthMacTx *) ETH_MAC_TX_BASE)
-    
-    typedef struct __attribute__((__packed__))  {
-        volatile uint32_t SIZE;
-        volatile uint32_t DATA[375]; // 1500 / 4 = 375.
-    } EthMacTx;
-    \end{lstlisting}
-    
+
 
 
 

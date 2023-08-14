@@ -60,7 +60,7 @@ entity hardware_top is
     uart0_rxd_i : in  std_ulogic;  -- UART0 receive data
     
     -- Test Ethernet outof PMOD JD --
---    pmod_o : out std_logic_vector(3 downto 0);
+    pmod_o : out std_logic_vector(7 downto 0);
 --    pmod_i : in std_logic_vector(3 downto 0);
     
     
@@ -118,7 +118,9 @@ component packet_classifier is
     spi_clk: in std_logic;
     spi_mosi: in std_logic;
     spi_miso: out std_logic;
-    spi_csn: in std_logic
+    spi_csn: in std_logic;
+    
+    test_out: out std_logic_vector(7 downto 0)
    );
 end component; 
 
@@ -316,7 +318,10 @@ ethernet_mac : wb_ethernet
         spi_clk => spi_clk_o,
         spi_mosi => spi_dat_o,
         spi_miso => spi_dat_i,
-        spi_csn => spi_csn_o(1)
+        spi_csn => spi_csn_o(1),
+        
+        
+        test_out => pmod_o
    );
     
     
