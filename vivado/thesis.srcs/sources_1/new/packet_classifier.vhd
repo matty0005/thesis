@@ -127,12 +127,10 @@ begin
                     -- Get IHL 
                     if stateCounter = (4) then
                         ipHeaderLen := eth_swap_bits(data_pipe(7 downto 0))(3 downto 0);
-                        test_out(6 downto 4) <= "010";
                     end if;
                     
                     -- Need to wait for 64bits + 8 bits = 9 bytes - 1 byte wide.
                     if stateCounter = (9 * 4 + (1 * 4) - 1) then
-                        test_out(6 downto 4) <= "011";
                     
                             -- Check fields
                         for i in 0 to ruleSize-1 loop
@@ -142,8 +140,10 @@ begin
                                 rulesMatch(i) <= '1';
                             else 
                                 rulesMatch(i) <= '0';
+                            
                             end if;
                         end loop;
+                        test_out(6 downto 4) <= "0" & RULES_MEMORY(0)(104 + 0) & rulesMatch(0);
                     
                         ipProto := eth_swap_bits(data_pipe(7 downto 0));
                         
@@ -165,19 +165,20 @@ begin
                                 rulesMatch(i) <= '1';
                             else 
                                 rulesMatch(i) <= '0';
+                                test_out(6 downto 4) <= "000";
                             end if;
                         end loop;
                         
                         pcState <= IP_DEST;
                         stateCounter := 0;
+                        test_out(6 downto 4) <= '0' & RULES_MEMORY(0)(104 + 3) & rulesMatch(0);
                     else
                         stateCounter := stateCounter + 1;
                     end if;
                     
                 when IP_DEST =>
                     -- Need to wait for 16bits = 2 bytes - 4 byte wide.
-                    if stateCounter = (0 * 4 + (4 * 4) - 1) then
-                        test_out(6 downto 4) <= "110";
+                    if stateCounter = (0 * 4 + (4 * 4) - 1) then -- SEEMS TO RUN WITHOUT DELAY/CLOCK CYCLES.
                     
                         -- Check fields
                         for i in 0 to ruleSize-1 loop
@@ -192,6 +193,8 @@ begin
                         
                         pcState <= PORT_SOURCE;
                         stateCounter := 0;
+                        
+                        test_out(6 downto 4) <= '1' & RULES_MEMORY(0)(104 + 4) & rulesMatch(0);
                     else
                         stateCounter := stateCounter + 1;
                     end if;
@@ -205,19 +208,17 @@ begin
                         valid <= '1';
                         forward <= '0';
                         pcState <= IDLE;
-                        test_out(6 downto 4) <= "100";
                     -- Check if ICMP then determine if it matches the other rules.
                     elsif ipProto = x"01" then
                         
                         if rulesMatch(7 downto 0) = x"00" then
                             valid <= '1';
-                            test_out(6 downto 4) <= "101";
                             forward <= '0';
                         else
                             valid <= '1';
                             forward <= '1';
-                            test_out(6 downto 4) <= "111";
                         end if;
+                        test_out(6 downto 4) <= "11" & rulesMatch(0);
                         pcState <= IDLE;
                         stateCounter := 0;
                     else 
@@ -280,34 +281,45 @@ end process;
 
 --test_port <= RULES_MEMORY(0) & x"00";
 
-spi_input : process(spi_clk)
-begin
-    if rising_edge(spi_clk) and spi_csn = '0' then
-        spi_mosi_data <= spi_mosi_data(118 downto 0) & spi_mosi;
-    end if;
-end process;
-
-spi_control : process(spi_clk, rst)
-
-variable ruleAddr : std_logic_vector(7 downto 0) := x"00";
+spi_input : process(spi_clk, rst)
 variable spiCounter : integer := 0;
-
 begin
     if rst = '1' then
         spiCounter := 0;
     elsif rising_edge(spi_clk) and spi_csn = '0' then
-        
-        spiCounter := spiCounter + 1;
-                
-        if spiCounter = 121 then
+        spi_mosi_data <= spi_mosi_data(118 downto 0) & spi_mosi;
+                        
+        if spiCounter = 119 then
             -- Save the contents in the vector to the memory
-            RULES_MEMORY(to_integer(unsigned(spi_mosi_data(119 downto 112)))) := spi_mosi_data(111 downto 0);
+            RULES_MEMORY(to_integer(unsigned(spi_mosi_data(119 downto 112)))) := spi_mosi_data(110 downto 0) & spi_mosi;
             spiCounter := 0;
+        else 
+            spiCounter := spiCounter + 1;
         end if;
-        
-        
     end if;
 end process;
+
+--spi_control : process(spi_clk, rst)
+
+--variable ruleAddr : std_logic_vector(7 downto 0) := x"00";
+--variable spiCounter : integer := 0;
+
+--begin
+--    if rst = '1' then
+--        spiCounter := 0;
+--    elsif rising_edge(spi_clk) and spi_csn = '0' then
+        
+--        spiCounter := spiCounter + 1;
+                
+--        if spiCounter = 121 then
+--            -- Save the contents in the vector to the memory
+--            RULES_MEMORY(to_integer(unsigned(spi_mosi_data(119 downto 112)))) := spi_mosi_data(111 downto 0);
+--            spiCounter := 0;
+--        end if;
+        
+        
+--    end if;
+--end process;
 
 
 end Behavioral;
