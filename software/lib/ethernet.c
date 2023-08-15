@@ -36,16 +36,6 @@ uint8_t eth_init() {
  */
 uint8_t eth_send(uint8_t *data, size_t len) {
     
-    // char buff[60] = {0};
-    // sprintf(buff, "size %d, \r\n", len);
-    // neorv32_uart0_printf(buff);
-
-    // for (int i = 0; i < len; i++) {
-    //     sprintf(buff, "%02x", data[i]);
-    //     neorv32_uart0_printf(buff);
-    // }
-    // neorv32_uart0_printf("\n");
-
     // Check the length of the packet.
     if (len > 1500) {
         return ETH_ERR_TOO_BIG;
@@ -57,14 +47,12 @@ uint8_t eth_send(uint8_t *data, size_t len) {
 
     // Initialise the buffers in hardware
     ETH_MAC_CMD = ETH_MAC_CMD_INIT;
-
     ETH_MAC_TX->SIZE = len; 
 
     // Set the data of the packet.
-    for (int i = 0; i < len; i = i + 4) {
-
+    for (int i = 0; i < len; i = i + 4) 
         ETH_MAC_TX->DATA[i >> 2] = (data[i] << 24) | (data[i + 1] << 16) | (data[i + 2] << 8) | (data[i + 3]);
-    }
+    
 
     // Send a packet.
     ETH_MAC_CMD = ETH_MAC_CMD_START_TX;

@@ -29,7 +29,7 @@ void pc_init() {
     // f_spi = f_cpu / (2 * prescalar * (1 + clk_div))
     // f_spi = 50 MHz / (2 * 64 * (1 + 0)) = 390.625 kHz
     // f_spi = 50 MHz / (2 * 64 * (1 + 1)) = 195.3125 kHz
-    uint8_t spi_prsc = 0b011, clk_div = 1, clk_phase = 0, clk_pol = 0;
+    uint8_t spi_prsc = 0b011, clk_div = 3, clk_phase = 0, clk_pol = 0;
     spi_prsc = 1;
     clk_div = 0;
     clk_phase = 0;

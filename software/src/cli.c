@@ -33,9 +33,9 @@ static BaseType_t cli_packet_classifier_init(char *pcWriteBuffer, size_t xWriteB
 
 CLI_Command_Definition_t xPCInit = {	
 	"pcinit",							
-	"pcinit:\r\n    Initialise the packet classifier with a default rule\r\n\r\n",
+	"pcinit [wildcard]:\r\n    Initialise the packet classifier with a default rule\r\n\r\n",
 	cli_packet_classifier_init,
-	0				
+	1				
 };
 
 CLI_Command_Definition_t xFATRead = {	
@@ -983,12 +983,22 @@ static BaseType_t cli_packet_classifier_init(char *pcWriteBuffer, size_t xWriteB
 
     taskENTER_CRITICAL();
 
+    const char *pcCmd;
+    BaseType_t xCmdLen;
+    uint16_t data = 0;
+    uint8_t registerNum, phyAddr;
+
+    // Obtain the first parameter string.
+    pcCmd = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xCmdLen);
+ 
+
+    registerNum = str_to_int(pcCmd, xCmdLen);
 
     pc_init();
 
-    uint8_t wildcard = 0b11111;
+    uint8_t wildcard = registerNum;
     uint8_t destIP[4] = {10, 20, 1, 120};
-    uint8_t sourceIP[4] = {10, 20, 1, 2};
+    uint8_t sourceIP[4] = {10, 0, 0, 159};
     uint16_t destPort = 80;
     uint16_t sourcePort = 80;
     uint8_t protocol = 0x06;
