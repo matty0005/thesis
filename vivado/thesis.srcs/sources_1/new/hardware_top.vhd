@@ -61,6 +61,7 @@ entity hardware_top is
     
     -- Test Ethernet outof PMOD JD --
     pmod_o : out std_logic_vector(7 downto 0);
+    sw : in std_logic_vector(7 downto 0);
 --    pmod_i : in std_logic_vector(3 downto 0);
     
     
@@ -242,8 +243,16 @@ signal spi_csn_o : std_ulogic_vector(07 downto 0);
 signal pc_valid : std_logic;
 signal pc_forward : std_logic;
 signal pc_valid_counter: std_logic_vector(3 downto 0) := "0000";
+signal pc_invalid_counter: std_logic_vector(3 downto 0) := "0000";
+
+constant FILTER_DELAY_TICKS : integer := 224;
+signal rxd_reg : std_logic_vector((FILTER_DELAY_TICKS * 2) - 1 downto 0) := (others => '0');
+signal crs_dv_reg : std_logic_vector(FILTER_DELAY_TICKS - 1 downto 0) := (others => '0');
+signal crs_dv_allow : std_logic := '0';
+signal pf_allow : std_logic := '0';
 
 signal rst : std_logic;
+
 
 
 
@@ -281,20 +290,19 @@ ethernet_mac : wb_ethernet
         wb_rty_o    => wb_rty,
         wb_stall_o  => wb_stall,
         wb_stb_i    => wb_stb,
-        --
-        -- GPIO Interface
-        --
+
          -- Ethernet --
         eth_o_txd => eth_txd,
         eth_o_txen => eth_txen,
-        eth_io_rxd => eth_io_rxd,
+--        eth_io_rxd => eth_io_rxd,
+        eth_io_rxd => rxd_reg((FILTER_DELAY_TICKS * 2) - 1 downto (FILTER_DELAY_TICKS * 2) - 2),
         t_eth_io_rxd => test_eth,
         eth_i_rxderr => eth_rxerr,
         eth_i_refclk => clk_p50,
         eth_o_refclk => eth_o_refclk,
         
         eth_o_rstn => eth_o_rstn,
-        eth_io_crs_dv => eth_io_crs_dv,
+        eth_io_crs_dv => crs_dv_allow,
         eth_i_intn => eth_i_intn,
         
         eth_io_mdc => open,
@@ -320,8 +328,7 @@ ethernet_mac : wb_ethernet
         spi_miso => spi_dat_i,
         spi_csn => spi_csn_o(1),
         
-        
-        test_out => pmod_o
+        test_out => open
    );
     
     
@@ -344,15 +351,56 @@ ethernet_mac : wb_ethernet
     );
     anode <= "11111110";
     
+    pmod_o(2) <= eth_io_crs_dv;
+    pmod_o(5) <= pc_valid;
+    pmod_o(6) <= pc_forward;
+    pmod_o(1 downto 0) <= pc_valid_counter(1 downto 0);
+    
     pc_coutner: process(pc_valid)
     begin
-        if rstn_i = '0' then
-            pc_valid_counter <= "0000";
-        elsif pc_valid = '1' and pc_valid'event and pc_forward = '1' then
-            pc_valid_counter <= pc_valid_counter + 1;
+--        if rstn_i = '0' then
+--            pc_valid_counter <= "0000";
+        if pc_valid'event and pc_valid = '1' then
+            
+            if pc_forward = '1' then
+                pf_allow <= '1';
+                pc_valid_counter <= pc_valid_counter + 1;
+            elsif sw(0) = '1' then
+                pf_allow <= '1';
+            else
+                pf_allow <= '0';
+                pc_invalid_counter <= pc_invalid_counter + 1;
+            end if;
+        end if;
+    end process;
+    
+    
+--    crs_dv_allow <= crs_dv_reg(FILTER_DELAY_TICKS - 1);
+    crs_dv_allow <= crs_dv_reg(FILTER_DELAY_TICKS - 1) when pf_allow = '1' else '0';
+    
+--    pf_allow_crs_dv: process(pc_valid)
+--    begin
+--        if pc_valid'event and pc_valid = '1' then
+--            if pc_forward = '1' or sw(0) = '1' then
+--                pf_allow <= '1';
+--            else
+--                pf_allow <= '0';
+--            end if;
+--        end if;
+--    end process;
+    
+    
+    pf_registers: process(clk_p50)
+    begin
+        if rising_edge(clk_p50) then
+            rxd_reg <= rxd_reg((FILTER_DELAY_TICKS * 2) - 3 downto 0) & eth_rxd;
+            crs_dv_reg <= crs_dv_reg(FILTER_DELAY_TICKS - 2 downto 0) & eth_io_crs_dv;
         end if;
     end process;
   
+  
+  
+ 
     
   -- The Core Of The Problem ----------------------------------------------------------------
   -- -------------------------------------------------------------------------------------------
@@ -451,9 +499,4 @@ ethernet_mac : wb_ethernet
   sd_o_csn <= spi_csn_o(0);   
 
 
-  -- test SPI
---  pmod_o <=  gpio_o(11) & spi_csn_o(0) & spi_dat_o & spi_clk_o;
---  spi_dat_i <= pmod_i(0);
- 
-  
 end architecture;
