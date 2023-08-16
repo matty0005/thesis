@@ -347,7 +347,7 @@ ethernet_mac : wb_ethernet
     pc_coutner: process(pc_valid)
     begin
         if rstn_i = '0' then
-            pc_valid_counter <= "0010";
+            pc_valid_counter <= "0000";
         elsif pc_valid = '1' and pc_valid'event and pc_forward = '1' then
             pc_valid_counter <= pc_valid_counter + 1;
         end if;

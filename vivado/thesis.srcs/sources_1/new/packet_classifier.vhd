@@ -62,6 +62,9 @@ signal rulesMatch : std_logic_vector(31 downto 0) := (others => '0');
 constant PIPE_SIZE : integer := 64 - 1;
 signal data_pipe : std_logic_vector(PIPE_SIZE downto 0) := x"0000000000000000";
 
+signal pc_forward : std_logic;
+signal pc_valid : std_logic;
+
 begin
 
 data_processer: process(clk)
@@ -76,17 +79,17 @@ test_out(1 downto 0) <= data_pipe(1 downto 0);
 test_out(7) <= clk;
 test_out(2) <= packet_valid;
 
+forward <= pc_forward;
+valid <= pc_valid;
+test_out(5 downto 4) <= pc_forward & pc_valid;
+test_out(6) <= rst;
+
 classifier_new : process(clk, rst)
 variable stateCounter : integer := 0;
 variable ipHeaderLen : std_logic_vector(3 downto 0);
 variable ipProto : std_logic_vector(7 downto 0);
 begin
-    if rst = '1' then
-    
-        valid <= '0';
-        forward <= '0';
-        test_out(6 downto 4) <= "000";
-    elsif rising_edge(clk) then 
+    if rising_edge(clk) then 
         case pcState is
                 when IDLE => 
                    
@@ -94,27 +97,25 @@ begin
                     if data_pipe = x"5555555555555557" and packet_valid = '1' then
                         pcState <= PACKET_TYPE;
                     end if;
-                    valid <= '0';
-                    forward <= '0';
-                    test_out(6 downto 4) <= "000";
+                    pc_valid <= '0';
+                    pc_forward <= '0';
                     
                     rulesMatch <= (others => '0');
                 when PACKET_TYPE =>
                     -- Need to wait for dest and src mac addr = 12 bytes
                     if stateCounter = (12 * 4 + (2 * 4) - 1) then
-                            test_out(6 downto 4) <= "001";
                     
                             -- Check that packet is type IPV4
                             if  eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = x"0800" then 
                                 pcState <= PROTO;                               
                                 
                             elsif eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = x"0806" then -- ARP packet - forward. 
-                                valid <= '1';
-                                forward <= '0';
+                                pc_valid <= '1';
+                                pc_forward <= '0';
                                 pcState <= IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
                             else -- Don't forward unknown packet.
-                                valid <= '1';
-                                forward <= '0';
+                                pc_valid <= '1';
+                                pc_forward <= '0';
                                 pcState <= IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
                             end if;
                             stateCounter := 0;
@@ -143,7 +144,6 @@ begin
                             
                             end if;
                         end loop;
-                        test_out(6 downto 4) <= "0" & RULES_MEMORY(0)(104 + 0) & rulesMatch(0);
                     
                         ipProto := eth_swap_bits(data_pipe(7 downto 0));
                         
@@ -165,20 +165,18 @@ begin
                                 rulesMatch(i) <= '1';
                             else 
                                 rulesMatch(i) <= '0';
-                                test_out(6 downto 4) <= "000";
                             end if;
                         end loop;
                         
                         pcState <= IP_DEST;
                         stateCounter := 0;
-                        test_out(6 downto 4) <= '0' & RULES_MEMORY(0)(104 + 3) & rulesMatch(0);
                     else
                         stateCounter := stateCounter + 1;
                     end if;
                     
                 when IP_DEST =>
                     -- Need to wait for 16bits = 2 bytes - 4 byte wide.
-                    if stateCounter = (0 * 4 + (4 * 4) - 1) then -- SEEMS TO RUN WITHOUT DELAY/CLOCK CYCLES.
+                    if stateCounter = ((4 * 4) - 1) then
                     
                         -- Check fields
                         for i in 0 to ruleSize-1 loop
@@ -194,7 +192,6 @@ begin
                         pcState <= PORT_SOURCE;
                         stateCounter := 0;
                         
-                        test_out(6 downto 4) <= '1' & RULES_MEMORY(0)(104 + 4) & rulesMatch(0);
                     else
                         stateCounter := stateCounter + 1;
                     end if;
@@ -205,20 +202,21 @@ begin
                 
                     -- If proto was either UDP or TCP, need to wait (ipHeaderLen - 20) + 0bytes - 2 bytes wide. 
                     if ipProto /= x"06" and ipProto /= x"11" and ipProto /= x"01" then -- If not TCP or UDP forward - no ports.
-                        valid <= '1';
-                        forward <= '0';
+                        pc_valid <= '1';
+                        pc_forward <= '0';
                         pcState <= IDLE;
                     -- Check if ICMP then determine if it matches the other rules.
                     elsif ipProto = x"01" then
                         
                         if rulesMatch(7 downto 0) = x"00" then
-                            valid <= '1';
-                            forward <= '0';
+                            pc_valid <= '1';
+                            pc_forward <= '0';
+                            
                         else
-                            valid <= '1';
-                            forward <= '1';
+                            pc_valid <= '1';
+                            pc_forward <= '1';
                         end if;
-                        test_out(6 downto 4) <= "11" & rulesMatch(0);
+                                                
                         pcState <= IDLE;
                         stateCounter := 0;
                     else 
@@ -261,13 +259,11 @@ begin
                         end loop;
                         
                         if rulesMatch(7 downto 0) = x"00" then
-                            valid <= '1';
-                            test_out(6 downto 4) <= "101";
-                            forward <= '0';
+                            pc_valid <= '1';
+                            pc_forward <= '0';
                         else
-                            valid <= '1';
-                            forward <= '1';
-                            test_out(6 downto 4) <= "111";
+                            pc_valid <= '1';
+                            pc_forward <= '1';
                         end if;
                         
                         pcState <= IDLE;
@@ -298,28 +294,5 @@ begin
         end if;
     end if;
 end process;
-
---spi_control : process(spi_clk, rst)
-
---variable ruleAddr : std_logic_vector(7 downto 0) := x"00";
---variable spiCounter : integer := 0;
-
---begin
---    if rst = '1' then
---        spiCounter := 0;
---    elsif rising_edge(spi_clk) and spi_csn = '0' then
-        
---        spiCounter := spiCounter + 1;
-                
---        if spiCounter = 121 then
---            -- Save the contents in the vector to the memory
---            RULES_MEMORY(to_integer(unsigned(spi_mosi_data(119 downto 112)))) := spi_mosi_data(111 downto 0);
---            spiCounter := 0;
---        end if;
-        
-        
---    end if;
---end process;
-
 
 end Behavioral;
