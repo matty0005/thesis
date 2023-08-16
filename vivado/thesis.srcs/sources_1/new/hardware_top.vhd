@@ -374,21 +374,7 @@ ethernet_mac : wb_ethernet
         end if;
     end process;
     
-    
---    crs_dv_allow <= crs_dv_reg(FILTER_DELAY_TICKS - 1);
     crs_dv_allow <= crs_dv_reg(FILTER_DELAY_TICKS - 1) when pf_allow = '1' else '0';
-    
---    pf_allow_crs_dv: process(pc_valid)
---    begin
---        if pc_valid'event and pc_valid = '1' then
---            if pc_forward = '1' or sw(0) = '1' then
---                pf_allow <= '1';
---            else
---                pf_allow <= '0';
---            end if;
---        end if;
---    end process;
-    
     
     pf_registers: process(clk_p50)
     begin
