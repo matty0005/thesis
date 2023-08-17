@@ -307,6 +307,9 @@ disconnecting stage will timeout after a period of non-activity. */
 
 #define ipconfigUSE_HTTP					1
 
+#define ipconfigUSE_IPv6 0
+#define ipconfigIPv4_BACKWARD_COMPATIBLE 1
+
 #define portINLINE __inline
 
 
