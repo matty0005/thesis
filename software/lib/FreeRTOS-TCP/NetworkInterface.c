@@ -69,8 +69,8 @@ uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress, uint16_t 
     neorv32_trng_get(trng_data + 1);
     neorv32_trng_get(trng_data + 2);
     neorv32_trng_get(trng_data + 3);
-      
-    return (uint32_t) trng_data[3] << 3 | (uint32_t)trng_data[3] << 2 | (uint32_t) trng_data[3] << 1 | (uint32_t) trng_data[3];
+
+    return (uint32_t) trng_data[3] << 3 | (uint32_t)trng_data[2] << 2 | (uint32_t) trng_data[1] << 1 | (uint32_t) trng_data[0];
 }
 
 
@@ -224,7 +224,6 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
                 pxBufferDescriptor structure. */
                 eth_recv(pxBufferDescriptor->pucEthernetBuffer, xBytesReceived);
                 pxBufferDescriptor->xDataLength = xBytesReceived;
-                    // neorv32_uart0_printf("From: %x:%x:%x:%x:%x:%x\nBytes Recv: %d\n", pxBufferDescriptor->pucEthernetBuffer[1], pxBufferDescriptor->pucEthernetBuffer[2], pxBufferDescriptor->pucEthernetBuffer[3], pxBufferDescriptor->pucEthernetBuffer[4], pxBufferDescriptor->pucEthernetBuffer[5], pxBufferDescriptor->pucEthernetBuffer[6]);
 
                 taskEXIT_CRITICAL();
 
