@@ -57,6 +57,8 @@ const char *webCodename (int aCode)
 	switch (aCode) {
 	case WEB_REPLY_OK:	//  = 200,
 		return "OK";
+	case WEB_CREATED:	//  = 201,
+		return "Created";
 	case WEB_NO_CONTENT:    // 204
 		return "No content";
 	case WEB_BAD_REQUEST:	//  = 400,

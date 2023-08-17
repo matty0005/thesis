@@ -178,42 +178,49 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 		xRc = prvSendReply( pxClient, WEB_REPLY_OK );
 	}
 
-	if( xRc >= 0 ) do
-	{
-		uxSpace = FreeRTOS_tx_space( pxClient->xSocket );
+	if( xRc >= 0 ) {
+		do {
+			uxSpace = FreeRTOS_tx_space( pxClient->xSocket );
 
-		if( pxClient->uxBytesLeft < uxSpace )
-		{
-			uxCount = pxClient->uxBytesLeft;
-		}
-		else
-		{
-			uxCount = uxSpace;
-		}
+			FreeRTOS_printf( ("prvSendFile: HERE ======== %d\n",  uxSpace));
 
-		if( uxCount > 0u )
-		{
-			if( uxCount > sizeof( pxClient->pxParent->pcFileBuffer ) )
+
+			if( pxClient->uxBytesLeft < uxSpace )
 			{
-				uxCount = sizeof( pxClient->pxParent->pcFileBuffer );
+				uxCount = pxClient->uxBytesLeft;
 			}
-			ff_fread( pxClient->pxParent->pcFileBuffer, 1, uxCount, pxClient->pxFileHandle );
-			pxClient->uxBytesLeft -= uxCount;
+			else
+			{
+				uxCount = uxSpace;
+			}
 
+
+			FreeRTOS_printf( ("prvSendFile: HERE uxCount:  %d\n",  uxCount));
+
+			if( uxCount > 0u )
+			{
+				if( uxCount > sizeof( pxClient->pxParent->pcFileBuffer ) )
+				{
+					uxCount = sizeof( pxClient->pxParent->pcFileBuffer );
+				}
+				ff_fread( pxClient->pxParent->pcFileBuffer, 1, uxCount, pxClient->pxFileHandle );
+				pxClient->uxBytesLeft -= uxCount;
+
+
+				xRc = FreeRTOS_send( pxClient->xSocket, pxClient->pxParent->pcFileBuffer, uxCount, 0 );
+				FreeRTOS_FD_SET( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
+
+				FreeRTOS_printf( ( "prvSendFile: Data left= %d, xRc = %d, uxCount = %d\n",
+					pxClient->uxBytesLeft, xRc, uxCount) );
+
+				if( xRc < 0 )
+				{
+					break;
+				}
+			}
 			
-
-			xRc = FreeRTOS_send( pxClient->xSocket, pxClient->pxParent->pcFileBuffer, uxCount, 0 );
-			FreeRTOS_FD_SET( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
-
-			FreeRTOS_printf( ( "prvSendFile: Data left= %d, xRc = %d\n",
-				pxClient->uxBytesLeft, xRc) );
-
-			if( xRc < 0 )
-			{
-				break;
-			}
-		}
-	} while( uxCount > 0u );
+		} while( pxClient->uxBytesLeft > 0u );
+	}
 
 	if( pxClient->uxBytesLeft == 0u )
 	{
@@ -299,6 +306,25 @@ char pcSlash[ 2 ];
 }
 /*-----------------------------------------------------------*/
 
+
+static BaseType_t prvPostRequest(HTTPClient_t *pxClient) {
+	BaseType_t xRc = 0;
+	
+	FreeRTOS_printf(("Received POST request\n"));
+
+	snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
+			"%s", "text/plain" );
+
+	snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+			"Content-Length: %d\r\n%s", 12, "Hello world!" );
+	
+
+	xRc = prvSendReply( pxClient, WEB_CREATED );
+
+	return xRc;
+}
+
+
 static BaseType_t prvProcessCmd( HTTPClient_t *pxClient, BaseType_t xIndex )
 {
 BaseType_t xResult = 0;
@@ -312,6 +338,10 @@ BaseType_t xResult = 0;
 
 	case ECMD_HEAD:
 	case ECMD_POST:
+		xResult = prvPostRequest( pxClient );
+		prvFileClose( pxClient );
+		FreeRTOS_printf( ( "prvProcessCmd: sent Reply to POST\n") );
+		break;
 	case ECMD_PUT:
 	case ECMD_DELETE:
 	case ECMD_TRACE:
@@ -397,7 +427,7 @@ HTTPClient_t *pxClient = ( HTTPClient_t * ) pxTCPClient;
 	else if( xRc < 0 )
 	{
 		/* The connection will be closed and the client will be deleted. */
-		FreeRTOS_printf( ( "xHTTPClientWork: rc = %ld\n", xRc ) );
+		FreeRTOS_printf( ( "xHTTPClientWork: rc = %d\n", xRc ) );
 	}
 	return xRc;
 }

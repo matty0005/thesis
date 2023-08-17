@@ -67,7 +67,7 @@ TCPServer_t *FreeRTOS_CreateTCPServer( const struct xSERVER_CONFIG *pxConfigs, B
 		if (pxServer != NULL) {
 
 			struct freertos_sockaddr xAddress;
-			BaseType_t xNoTimeout = 0;
+			BaseType_t xNoTimeout = 5000;
 			BaseType_t xIndex;
 
 			memset( pxServer, '\0', xSize );
@@ -82,19 +82,19 @@ TCPServer_t *FreeRTOS_CreateTCPServer( const struct xSERVER_CONFIG *pxConfigs, B
 
 					xSocket = FreeRTOS_socket( FREERTOS_AF_INET, FREERTOS_SOCK_STREAM, FREERTOS_IPPROTO_TCP );
 					FreeRTOS_printf( ( "TCP socket on port %d.\n", ( int )xPortNumber ) );
-					FreeRTOS_printf( ( "IP to bind: %d\n", ( int )FreeRTOS_GetIPAddress() ) );
 
 					if ( xSocket != FREERTOS_INVALID_SOCKET ) {
-						// xAddress.sin_addr = FreeRTOS_GetIPAddress(); // Single NIC, currently not used
+						// xAddress.sin_address = FreeRTOS_GetIPAddress(); // Single NIC, currently not used
 						xAddress.sin_port = FreeRTOS_htons( xPortNumber );
-
-						FreeRTOS_bind( xSocket, &xAddress, sizeof( xAddress ) );
-						FreeRTOS_listen( xSocket, pxConfigs[ xIndex ].xBackLog );
 
 						// Set timeouts for sockets. 
 						FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_RCVTIMEO, ( void * ) &xNoTimeout, sizeof( BaseType_t ) );
 						FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_SNDTIMEO, ( void * ) &xNoTimeout, sizeof( BaseType_t ) );
-						
+
+						FreeRTOS_bind( xSocket, &xAddress, sizeof( xAddress ) );
+						FreeRTOS_listen( xSocket, pxConfigs[ xIndex ].xBackLog );
+
+					
                         if (pxConfigs[ xIndex ].eType == eSERVER_HTTP) {
                             WinProperties_t xWinProps;
 
@@ -182,7 +182,7 @@ const char *pcType = "Unknown";
 	{
 	struct freertos_sockaddr xRemoteAddress;
 		FreeRTOS_GetRemoteAddress( pxClient->xSocket, &xRemoteAddress );
-		FreeRTOS_printf( ( "TPC-server: new %s client %xip\n", pcType, (unsigned)FreeRTOS_ntohl( xRemoteAddress.sin_addr ) ) );
+		// FreeRTOS_printf( ( "TPC-server: new %s client %xip\n", pcType, (unsigned)FreeRTOS_ntohl( xRemoteAddress.sin_address ) ) );
 	}
 
 	/* Remove compiler warnings in case FreeRTOS_printf() is not used. */
@@ -197,30 +197,36 @@ BaseType_t xIndex;
 BaseType_t xRc;
 
 	/* Let the server do one working cycle */
-	xRc = FreeRTOS_select( pxServer->xSocketSet, xBlockingTime );
+	// xRc = FreeRTOS_select( pxServer->xSocketSet, xBlockingTime );
+	// FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: xRc %d\n", xRc ) );
 
-	if( xRc != 0 )
-	{
+
+
+	// if( xRc != 0 )
+	// {
 		for( xIndex = 0; xIndex < pxServer->xServerCount; xIndex++ )
 		{
 		struct freertos_sockaddr xAddress;
 		Socket_t xNexSocket;
 		socklen_t xSocketLength;
+	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: before\n") );
 
 			if( pxServer->xServers[ xIndex ].xSocket == FREERTOS_NO_SOCKET )
 			{
 				continue;
 			}
 
+	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: after\n") );
 			xSocketLength = sizeof( xAddress );
 			xNexSocket = FreeRTOS_accept( pxServer->xServers[ xIndex ].xSocket, &xAddress, &xSocketLength);
+			FreeRTOS_printf( ( "FreeRTOS_TCPServerWork Accept: %d\n", xNexSocket ) );
 
 			if( ( xNexSocket != FREERTOS_NO_SOCKET ) && ( xNexSocket != FREERTOS_INVALID_SOCKET ) )
 			{
 				prvReceiveNewClient( pxServer, xIndex, xNexSocket );
 			}
 		}
-	}
+	// }
 
 	ppxClient = &pxServer->pxClients;
 
@@ -245,6 +251,7 @@ BaseType_t xRc;
 		}
 	}
 }
+
 /*-----------------------------------------------------------*/
 
 static char *strnew( const char *pcString )

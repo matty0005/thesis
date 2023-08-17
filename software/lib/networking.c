@@ -128,7 +128,7 @@ static void tsk_udp_send( void *pvParameters ) {
     const TickType_t x1000ms = 1000UL / portTICK_PERIOD_MS;
 
     /* Send strings to port 10000 on IP address 192.168.0.50. */
-    xDestinationAddress.sin_addr = FreeRTOS_inet_addr( "10.0.0.159" );
+    xDestinationAddress.sin_address.ulIP_IPv4 = FreeRTOS_inet_addr( "10.0.0.159" );
     xDestinationAddress.sin_port = FreeRTOS_htons( 10000 );
 
     /* Create the socket. */
@@ -171,22 +171,11 @@ static void tsk_udp_send( void *pvParameters ) {
 
 
 
-
-
-
-
-
-
-
-
 static void tsk_HTTP_server(void *pvParameters) {
 	TCPServer_t *pxTCPServer = NULL;
 	const TickType_t xInitialBlockTime = pdMS_TO_TICKS( 5000UL );
 	const TickType_t xSDCardInsertDelay = pdMS_TO_TICKS( 1000UL );
 
-	/* A structure that defines the servers to be created.  Which servers are
-	included in the structure depends on the mainCREATE_HTTP_SERVER and
-	mainCREATE_FTP_SERVER settings at the top of this file. */
 	static const struct xSERVER_CONFIG xServerConfiguration[] =
 	{
         /* Server type,		port number,	backlog, 	root dir. */
@@ -194,15 +183,10 @@ static void tsk_HTTP_server(void *pvParameters) {
 	};
 
 
-    /* Can't serve web pages or start an FTP session until the card is
-    inserted.  The Xplained Pro hardware cannot generate an interrupt when
-    the card is inserted - so periodically look for the card until it is
-    inserted. */
     while (pxDisk = FF_SDDiskInit("/"), pxDisk == NULL) 
         vTaskDelay(xSDCardInsertDelay);
     
-    /* A disk is going to be created, so register the example file CLI
-    commands (which are very basic). */
+
     vRegisterFileSystemCLICommands();
 
     /* The priority of this task can be raised now the disk has been
@@ -217,16 +201,14 @@ static void tsk_HTTP_server(void *pvParameters) {
 
     for( ;; )
     {
+        neorv32_uart0_printf("TCP run http\n\n");
+
         /* Run the HTTP and/or FTP servers, as configured above. */
-        FreeRTOS_TCPServerWork( pxTCPServer, xInitialBlockTime );
-        
+        FreeRTOS_TCPServerWork( pxTCPServer, xInitialBlockTime );       
+
+        vTaskDelay( pdMS_TO_TICKS( 1 ) ); 
     }
 }
-
-
-
-
-
 
 
 
@@ -251,9 +233,9 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
              */
 
             // Create tasks here as TCP/IP stack has been created
-            xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
+            // xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
             // xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
-            // xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY, &xServerWorkTaskHandle );
+            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 4, &xServerWorkTaskHandle );
 
             xTasksAlreadyCreated = pdTRUE;
         }

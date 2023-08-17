@@ -58,15 +58,15 @@ void pc_save_rule(uint8_t address, uint8_t wildcard, uint8_t *destIP, uint8_t *s
     neorv32_spi_trans(address);
     neorv32_spi_trans(wildcard);
 
-    neorv32_spi_trans(destIP[3]);
-    neorv32_spi_trans(destIP[2]);
-    neorv32_spi_trans(destIP[1]);
     neorv32_spi_trans(destIP[0]);
+    neorv32_spi_trans(destIP[1]);
+    neorv32_spi_trans(destIP[2]);
+    neorv32_spi_trans(destIP[3]);
 
-    neorv32_spi_trans(srcIP[3]);
-    neorv32_spi_trans(srcIP[2]);
-    neorv32_spi_trans(srcIP[1]);
     neorv32_spi_trans(srcIP[0]);
+    neorv32_spi_trans(srcIP[1]);
+    neorv32_spi_trans(srcIP[2]);
+    neorv32_spi_trans(srcIP[3]);
 
     neorv32_spi_trans((destPort >> 8) & 0xFF);
     neorv32_spi_trans(destPort & 0xFF);
