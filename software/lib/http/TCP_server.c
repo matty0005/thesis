@@ -84,7 +84,7 @@ TCPServer_t *FreeRTOS_CreateTCPServer( const struct xSERVER_CONFIG *pxConfigs, B
 					FreeRTOS_printf( ( "TCP socket on port %d.\n", ( int )xPortNumber ) );
 
 					if ( xSocket != FREERTOS_INVALID_SOCKET ) {
-						// xAddress.sin_address = FreeRTOS_GetIPAddress(); // Single NIC, currently not used
+						xAddress.sin_addr = FreeRTOS_GetIPAddress(); // Single NIC, currently not used
 						xAddress.sin_port = FreeRTOS_htons( xPortNumber );
 
 						// Set timeouts for sockets. 

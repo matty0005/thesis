@@ -73,17 +73,6 @@ uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress, uint16_t 
     return (uint32_t) trng_data[3] << 3 | (uint32_t)trng_data[3] << 2 | (uint32_t) trng_data[3] << 1 | (uint32_t) trng_data[3];
 }
 
-static BaseType_t xNetworkGetPhyLinkStatus( NetworkInterface_t * pxInterface )
-{
-    BaseType_t xReturn = pdTRUE;
-
-    /* Avoid warning about unused parameter. */
-    ( void ) pxInterface;
-
-
-
-    return xReturn;
-}
 
 
 
@@ -117,24 +106,6 @@ BaseType_t xNetworkInterfaceInitialise( void )
 }
 
 
-static BaseType_t xNetworkInterfaceOutput( NetworkInterface_t * pxInterface,
-                                               NetworkBufferDescriptor_t * const pxDescriptor,
-                                               BaseType_t xReleaseAfterSend )
-{
-    BaseType_t xReturn = pdFAIL;
-
-    // pxDescriptor->pucEthernetBuffer is just a pointer to the start of the buffer. (uint8_t *)
-    // pxDescriptor->xDataLength is the length of the buffer. (size_t)
-    if (eth_send(pxDescriptor->pucEthernetBuffer, pxDescriptor->xDataLength) == ETH_ERR_OK) 
-        xReturn = pdPASS;
-    
-
-    if (xReleaseAfterSend != pdFALSE)
-        vReleaseNetworkBufferAndDescriptor(pxDescriptor);
-    
-
-    return xReturn;
-}
 /**
  * @brief  The TCP/IP stack calls xNetworkInterfaceOutput() whenever a network buffer is ready to be transmitted.
  * The buffer to transmit is described by the descriptor passed into the function using the function's pxDescriptor parameter. 
@@ -152,7 +123,7 @@ static BaseType_t xNetworkInterfaceOutput( NetworkInterface_t * pxInterface,
  * @param xReleaseAfterSend 
  * @return BaseType_t 
  */
-BaseType_t _xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescriptor, BaseType_t xReleaseAfterSend) 
+BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescriptor, BaseType_t xReleaseAfterSend) 
 {
 
     /* Call the standard trace macro to log the send event. */
@@ -171,31 +142,6 @@ BaseType_t _xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescript
     
 
     return xReturn;
-}
-
-
-NetworkInterface_t * pxFillInterfaceDescriptor( BaseType_t xEMACIndex,
-                                                    NetworkInterface_t * pxInterface )
-{
-    // static char pcNames[ XPAR_XEMACPS_NUM_INSTANCES ][ 8 ];
-
-    // configASSERT( xEMACIndex >= 0 );
-    // configASSERT( xEMACIndex < XPAR_XEMACPS_NUM_INSTANCES );
-
-    /* This function pxZynq_FillInterfaceDescriptor() adds a network-interface.
-    * Make sure that the object pointed to by 'pxInterface'
-    * is declared static or global, and that it will remain to exist. */
-
-    // snprintf( pcNames[ xEMACIndex ], sizeof( pcNames[ xEMACIndex ] ), "eth%ld", xEMACIndex );
-
-    memset( pxInterface, '\0', sizeof( *pxInterface ) );
-    pxInterface->pcName = "ETH0";// pcNames[ xEMACIndex ];     /* Just for logging, debugging. */
-    pxInterface->pvArgument = ( void * ) xEMACIndex; /* Has only meaning for the driver functions. */
-    pxInterface->pfInitialise = xNetworkInterfaceInitialise;
-    pxInterface->pfOutput = xNetworkInterfaceOutput;
-    pxInterface->pfGetPhyLinkStatus = xNetworkGetPhyLinkStatus;
-
-    FreeRTOS_AddNetworkInterface( pxInterface );
 }
 
 /**
