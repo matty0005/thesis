@@ -182,9 +182,6 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 		do {
 			uxSpace = FreeRTOS_tx_space( pxClient->xSocket );
 
-			FreeRTOS_printf( ("prvSendFile: HERE ======== %d\n",  uxSpace));
-
-
 			if( pxClient->uxBytesLeft < uxSpace )
 			{
 				uxCount = pxClient->uxBytesLeft;
@@ -193,9 +190,6 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 			{
 				uxCount = uxSpace;
 			}
-
-
-			FreeRTOS_printf( ("prvSendFile: HERE uxCount:  %d\n",  uxCount));
 
 			if( uxCount > 0u )
 			{
@@ -316,7 +310,7 @@ static BaseType_t prvPostRequest(HTTPClient_t *pxClient) {
 			"%s", "text/plain" );
 
 	snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
-			"Content-Length: %d\r\n%s", 12, "Hello world!" );
+			"Content-Length: %d\r\n\r\n%s", 12, "Hello world!" );
 	
 
 	xRc = prvSendReply( pxClient, WEB_CREATED );
