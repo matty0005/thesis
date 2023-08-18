@@ -12,10 +12,11 @@ This chapter details the design decisions and steps taken to complete the projec
 
 
 \section{FPGA}
-Digilent, parented by National Instruments, make a wide range of Xilinx based FPGA development boards and test equipment. In this project, the Digilent Nexys A7-100T FPGA development board (figure \ref{fig:fpga_dev_board}) was used due to it's availability and features including: a Xilinx Artix 7 100T FPGA (part number XC7A100T-1CSG324C), LAN8720A 100MBit/s RMII PHY and PMOD (auxiliary outputs) amoung other IO. 
+Digilent, parented by National Instruments, make a wide range of Xilinx based FPGA development boards and test equipment. In this project, the Digilent Nexys A7-100T FPGA development board (figure \ref{fig:fpga_dev_board}) was used due to it's availability and features including: a Xilinx Artix 7 100T FPGA (part number XC7A100T-1CSG324C), LAN8720A 100MBit/s RMII PHY, micro SD card slot and PMOD (auxiliary outputs) among other IO. 
 
-Xilinx has multiple FPGAs in their 7-series lineup with different target audiences. The Artix-7 family is optimised for low power designs with high logic throughput. The XC7A100T has 101,440 logic cells, 4,860Kbits of Block RAM (BRAM) and 240 DSP blocks \cite{Xilinx7SeriesDatasheet}. 
+Xilinx has multiple FPGAs in their 7-series lineup with different target audiences. The Artix-7 family is optimised for low power designs with high logic throughput. The XC7A100T has 101,440 logic cells, 4,860Kbits of Block RAM (BRAM) and 240 DSP blocks \cite{Xilinx7SeriesDatasheet}. There is a varient of the Nexys A7 FPGA board that consists of a XC7A50T FPGA (fewer resources), but ultimately the XC7A100T variant was used due to its larger amount of resources.  
 
+Importantly, there are four ways this FPGA can be configured (essentially \textit{'programmed'}), at each power on cycle using JTAG, nonvolatile SPI flash, microSD card or using a USB stick through the HID interface. These modes are switchable using jumpers, JP1 and JP2, on the board. The JTAG interface is ideal for testing and as such it was used throughout development process, while storing these configurations on a microSD card was used once the design was solidified. 
 
 \begin{figure}[h!]
     \centering
@@ -31,7 +32,7 @@ Xilinx has multiple FPGAs in their 7-series lineup with different target audienc
 
 \subsubsection{PMOD Interface}
 
-There are 5 PMOD connectors on the development board. Initally, one of these would be used for a second Ethernet PHY, but due to bandwidth limitations of the interface, the design had to be altered. The recommended bandwidth of these ports are 25MHz while the Ethernet RMII PHY would have been using 50Mhz signals over the interface. As such, signal integrity issues arose and could be seen in figure \ref{fig:eye_diagram} and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
+There are 5 PMOD connectors on the development board. Initally, one of these would be used for a second Ethernet PHY, but due to bandwidth limitations of the interface, the design had to be altered. The recommended bandwidth of these ports are 25MHz while the Ethernet RMII PHY would have been using 50Mhz signals over the interface. As such, signal integrity issues arose (see figure \ref{fig:eye_diagram}) and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
 
 \begin{figure}[h]
     \centering
@@ -41,7 +42,21 @@ There are 5 PMOD connectors on the development board. Initally, one of these wou
 \end{figure}
 
 
+\subsection{MicroSD card}
 
+After the FPGA has been configured using the microSD card, the onboard microcontroller on the Nexys A7 board power cycles the microSD card and relinquishes control of the bus. On power up of the RISC-V softcore processor, it has full control of the card. 
+
+The selected MicroSD card for use in this project is the Patriot LX Series 32GB card, seen in figure \ref{fig:microsd_card}. SD cards, like the patriot card have 2 modes of operation: native SDIO mode and SPI mode. While the native SDIO mode allows for higher speeds, it adds complexity to the design. As the files stored on the SD card are minimal ($< 100KB$), to keep things simple, the microSD card was connected in SPI mode.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.2\textwidth]{Images/microsdcard.jpeg}
+    \caption[MicroSD card used in project]{MicroSD card used in project.}
+    \label{fig:microsd_card}
+\end{figure}
+
+
+The files that were stored on the microSD card include the bitstream file for the FPGA itself and web assets for the webserver. While the bitstream file needed to be at the root directory of the filesystem, the web assets were stored in their own folder structure to help segregate the files.  
 
 
 
@@ -57,8 +72,6 @@ The NEORV32 processor by GitHub user stnolting was used in this project. It's a 
 
 
 
-\subsection{MicroSD card}
-The web assets were stored on a MicroSD card. SD cards have 2 modes of operation: native SD mode and SPI mode. To keep things simple, the microSD card was connected to with SPI mode. 
 
 
 
