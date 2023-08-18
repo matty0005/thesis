@@ -30,6 +30,9 @@ Importantly, there are four ways this FPGA can be configured (essentially \texti
 
 
 
+
+
+
 \subsubsection{PMOD Interface}
 
 There are 5 PMOD connectors on the development board. Initally, one of these would be used for a second Ethernet PHY, but due to bandwidth limitations of the interface, the design had to be altered. The recommended bandwidth of these ports are 25MHz while the Ethernet RMII PHY would have been using 50Mhz signals over the interface. As such, signal integrity issues arose (see figure \ref{fig:eye_diagram}) and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
@@ -40,6 +43,12 @@ There are 5 PMOD connectors on the development board. Initally, one of these wou
     \caption[Eye diagram of TXD through PMOD interface]{Eye diagram of TXD through PMOD interface.}
     \label{fig:eye_diagram}
 \end{figure}
+
+
+
+
+
+
 
 
 \subsection{MicroSD card}
@@ -60,14 +69,37 @@ The files that were stored on the microSD card include the bitstream file for th
 
 
 
+
+
+
+
+
+ 
 \section{System on Chip}
 
-The NEORV32 processor by GitHub user stnolting was used in this project. It's a highly configurable microcontroller-like SoC. 
+A benefit to using an FPGA is that full control is given to the overall system design. At the heart of the SoC, a NEORV32 softcore processor\footnote[1]{See: https://github.com/stnolting/neorv32} controls the hardware and runs the higher layers of the network and webserver tasks.
+
+The NEORV32 processor is RISC-V compatible and designed by GitHub user \textit{stnolting} and is highly configurable. In this design, seen in figure \ref{fig:soc_architecture}, the Wishbone, SPI, UART and external interrupts interfaces were enabled and configured. In addition to these, the M extension (Multiplier) was configured to use the DSP blocks to reduce the number of LUTs needed to handle multiplication in the core. 
+
+The Wishbone B4 classic bus is an open source interface that allows for multiple bits of hardware to connect and communicate together. In this project, the bus is 32bits wide and clocked at 50MHz, giving a bandwidth of $32 \times 50 \times 10^6 = 1.6\times 10^9bit/s=1.6Gbit/s$. Due to its relatively high bandwidth, it was used to connect the MAC with the NEORV32 as packets of 1500 bytes would need to be transferred quickly to not bottleneck the 100Mbit Ethernet interface. In addition to this, the MAC had an interrupt line to the NEORV32 processor to notify it when a packet has been recieved and ready for processing in the higher layers. This connects into the XIRQ lines which creates a fast interrupt request by firing a mcause trap event (RISC-V terminology).
+
+Serial Perhipheral Interface (SPI) was used to connect to both the MicroSD card and Packet classifier. These are comparatively low speed and low priority perhipherals and so do not require a high speed interface. UART was connected to the onboard serial to USB converter chip for CLI commands and debugging. 
 
 
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/SoCArchitecture.png}
+    \caption[System on Chip high level architecture]{System on Chip high level architecture.}
+    \label{fig:soc_architecture}
+\end{figure}
+
+Since the design is only concerned about incoming filtering, the packet filter was only placed between the RMII PHY and the MAC. By filtering at the RMII interface level, the Ethernet MAC is indifferent to the filter and ultimately doesn't care about it. This allows for a simpler modular design compared to integrating the filter in the MAC hardware.
+
+It is assumed that any traffic leaving from the device is safe and trusted. In a larger network where there are several devices behind the firewall, it may be desirable to also have a packet filter on the output. 
 
 
+% amalgamates 
 
 
 
@@ -77,14 +109,21 @@ The NEORV32 processor by GitHub user stnolting was used in this project. It's a 
 
 
 \section{Ethernet Media Access Controller}
+\label{sec:ethernet_mac}
 The advantage of using an FPGA is that custom hardware can be designed for specific tasks. In this design the MAC layer was done purely in hardware to free up the microprocessor by handling all of the lower level logic. 
 
 This MAC was implemented as a memory-mapped perhipheral which used the MCU's Wishbone B4 classic interface. This then made it easily accessable over the memory address space of the MCU.  
 
 
 
-\section{Packet Classifier}
 
+
+
+
+
+
+\section{Packet Classifier}
+\label{sec:packet_classifier}
 To further save MCU resources, the packet classification was done in hardware. Not only did this reduce the load on the MCU itself - giving it more time to do other things - it allowed the interface to run at \textit{'wirespeed'}. That is, at the full speed of the interface - 100Mbit/s. 
 
 This was possible by having the rulset been evaluated in parallel as the data is coming into the firewall. This method however is not suitable for large rulesets as the fan-in and fan-out limit the maximum number of parallel comparisons. For every new rule, the number of gates grows exponentially. Hence a design decision of a maximum ruleset of size 8 was chosen. 
@@ -108,6 +147,11 @@ Importantly this does not effect the speed/bandwidth of the connection.
 
 
 \section{Firmware}
+
+
+
+
+
 
 
 \subsection{Drivers}
@@ -137,6 +181,13 @@ typedef struct __attribute__((__packed__))  {
     volatile uint32_t DATA[375]; // 1500 / 4 = 375.
 } EthMacTx;
 \end{lstlisting}
+
+
+
+
+
+
+
 
 \subsubsection{SD card drivers}
 As part of the documentation for the FreeRTOS-Plus-FAT file system, drivers for the media was required. Like the Ethernet hardware, the driver had to implement at least three functions: function that reads sectors from the media, one that rights sectors to the media and one to initialise the media. 
