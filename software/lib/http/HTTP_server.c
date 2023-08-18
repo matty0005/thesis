@@ -303,17 +303,20 @@ char pcSlash[ 2 ];
 
 static BaseType_t prvPostRequest(HTTPClient_t *pxClient) {
 	BaseType_t xRc = 0;
+	BaseType_t httpErrorCode = WEB_CREATED;
 	
 	FreeRTOS_printf(("Received POST request\n"));
+	FreeRTOS_printf(("Received pcUrlData : %s\n", pxClient->pcUrlData));
+	FreeRTOS_printf(("Received pcRestData : %s\n", pxClient->pcRestData));
 
-	snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
-			"%s", "text/plain" );
-
-	snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
-			"Content-Length: %d\r\n\r\n%s", 12, "Hello world!" );
+	// Branch here - routes
+	if (strcmp(pxClient->pcUrlData, "/api/firewall") == 0)
+		http_api_firewall_add(pxClient, &httpErrorCode);
+	else 
+		http_api_not_found(pxClient, &httpErrorCode);
 	
 
-	xRc = prvSendReply( pxClient, WEB_CREATED );
+	xRc = prvSendReply( pxClient, httpErrorCode);
 
 	return xRc;
 }
@@ -375,7 +378,7 @@ HTTPClient_t *pxClient = ( HTTPClient_t * ) pxTCPClient;
 	char *pcBuffer = pcCOMMAND_BUFFER;
 
 		if( xRc < ( BaseType_t ) sizeof( pcCOMMAND_BUFFER ) )
-		{
+		{ 
 			pcBuffer[ xRc ] = '\0';
 		}
 		while( xRc && ( pcBuffer[ xRc - 1 ] == 13 || pcBuffer[ xRc - 1 ] == 10 ) )
