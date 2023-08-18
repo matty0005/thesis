@@ -4,35 +4,57 @@
 % ***************************************************
 %This is an internal chapter of the thesis.
 %If you have a long title, you can supply an abbreviated version to print in the Table of Contents using the optional argument to the \chapter command.
-\chapter[Methodology]{Methodology}
+\chapter[Design overview]{Design overview}
 \label{chap:methodology}	%CREATE YOUR OWN LABEL.
 \pagestyle{headings}
 
-This chapter will detail the design decisions and steps taken to complete the project. 
+This chapter details the design decisions and steps taken to complete the project. The project itself can be broken down into three main areas: hardware, firmware and software. 
 
 
 \section{FPGA}
-The Digilent Nexys A7-100T FPGA development board was used for this project. Namely, this board featured a Xilinx Artix 7 100T FPGA (part number XC7A100T-1CSG324C), LAN8720A 100MBit/s RMII PHY and PMOD (auxiliary outputs) amoung other IO. 
+Digilent, parented by National Instruments, make a wide range of Xilinx based FPGA development boards and test equipment. In this project, the Digilent Nexys A7-100T FPGA development board (figure \ref{fig:fpga_dev_board}) was used due to it's availability and features including: a Xilinx Artix 7 100T FPGA (part number XC7A100T-1CSG324C), LAN8720A 100MBit/s RMII PHY and PMOD (auxiliary outputs) amoung other IO. 
+
+Xilinx has multiple FPGAs in their 7-series lineup with different target audiences. The Artix-7 family is optimised for low power designs with high logic throughput. The XC7A100T has 101,440 logic cells, 4,860Kbits of Block RAM (BRAM) and 240 DSP blocks \cite{Xilinx7SeriesDatasheet}. 
 
 
-\begin{figure}[h]
+\begin{figure}[h!]
     \centering
     \includegraphics[width=0.65\textwidth]{Images/nexysa7_board.jpg}
     \caption[Digilent Nexys A7 FPGA development board]{Digilent Nexys A7 FPGA development board.}
     \label{fig:fpga_dev_board}
 \end{figure}
 
+\newpage
 
-As a packet filter, a second Ethernet interface was required. Hence, a secondary LAN8720A breakout board was used and connected using the PMOD connectors on the development board. 
+
 
 
 \subsubsection{PMOD Interface}
 
-Have some eye diagrams here to show the validity of using PMOD.
+There are 5 PMOD connectors on the development board. Initally, one of these would be used for a second Ethernet PHY, but due to bandwidth limitations of the interface, the design had to be altered. The recommended bandwidth of these ports are 25MHz while the Ethernet RMII PHY would have been using 50Mhz signals over the interface. As such, signal integrity issues arose and could be seen in figure \ref{fig:eye_diagram} and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Images/EyeDiagramTX.png}
+    \caption[Eye diagram of TXD through PMOD interface]{Eye diagram of TXD through PMOD interface.}
+    \label{fig:eye_diagram}
+\end{figure}
+
+
+
+
+
 
 \section{System on Chip}
 
 The NEORV32 processor by GitHub user stnolting was used in this project. It's a highly configurable microcontroller-like SoC. 
+
+
+
+
+
+
+
 
 
 \subsection{MicroSD card}
@@ -66,24 +88,14 @@ To do the filtering itself, a shift register can be used to essentially delay th
 
 As the hardware in the MAC only processes the input if crs\_dv is high, we only need to gate the crs\_dv and can always have the rxd lines always attached. Howerver, these should also go through a shift register.
 
-By doing this, it means that we can operate the filter at wirespeed with the only downside is the extra latency that the shift registers bring. The delay that these registers add to the latency can be found to be $T_{latency} = N\times T_{clk}$ where $N$ is the size of the registers. In the design a size of 224 ticks was used. The thought process behind this was that at a minimum, the packet classifier needed to input a maximum of $22 + 24 + 4 = 50$ bytes (22 for MAC headers including preamble, maximum 24 bytes for IP header and 4 bytes for the TCP/UDP headers (only need to check the source and destination port)) need to be processed. While this is enough, a margin of 6 bytes was arbitarily chosen to allow propogation of other parts of the design to have taken effect. This gave 56 bytes, where each byte takes 4 clock cycles to input into the MAC meaning that we need a register size of $56 \times 4=224$ for the data to propagate to the end of the registers after the packet classifier has determined whether to drop or allow the packet. 
+By doing this, it means that we can operate the filter at wirespeed with the only downside is the extra latency that the shift registers bring. The delay that these registers add to the latency can be found to be $T_{latency} = N\times T_{clk}$ where $N$ is the size of the registers. In the design a size of 224 ticks was used. The thought process behind this was that at a minimum, the packet classifier needed to input a maximum of $22 + 24 + 4 = 50$ bytes (22 for MAC headers including preamble, maximum 24 bytes for IP header and 4 bytes for the TCP/UDP headers (only need to check the source and destination port)) need to be processed. While this is enough, a margin of 6 bytes was arbitarily chosen to allow propogation of other parts of the design to have taken effect. This gave 56 bytes, where each byte takes 4 clock cycles to input into the MAC meaning that we need a register size of $56 \times 4=224$ for the data to propagate to the end of the registers after the packet classifier has determined whether to drop or allow the packet. This means that at a clock frequency of 50Mhz, the added latency is $224 \times \frac{1}{50\times 10^6} = 4.48 \times 10^{-6} = 4.48uS$.
 
-importantly this does not effect the speed/bandwidth of the connection. 
+Importantly this does not effect the speed/bandwidth of the connection. 
 
 
 
 \section{Firmware}
 
-\subsection{Real Time Operating System}
-In addition to simplifying the project, and RTOS was used as this would allow the use of network TCP stacks. The RTOS that was used in this design was FreeRTOS V10.4.4 due to its familirity and compatability with the NEORV32 MCU.
-
-
-\subsection{Network Stack}
-There were two main options for the network stack, LwIP and FreeRTOS-Plus-TCP. The main concern with LwIP was that it was not threadsafe and had memory issues. In addition to this, as FreeRTOS was chosen as the RTOS, their own TCP stack was used as it was thought to have tighter integration. 
-
-
-\subsection{Webserver}
-A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. 
 
 \subsection{Drivers}
 \subsubsection{Ethernet drivers}
@@ -113,14 +125,42 @@ typedef struct __attribute__((__packed__))  {
 } EthMacTx;
 \end{lstlisting}
 
-
-
-
-
-
 \subsubsection{SD card drivers}
 As part of the documentation for the FreeRTOS-Plus-FAT file system, drivers for the media was required. Like the Ethernet hardware, the driver had to implement at least three functions: function that reads sectors from the media, one that rights sectors to the media and one to initialise the media. 
 
+
+
+
+\section{Software}
+
+
+
+\subsection{Real Time Operating System}
+In addition to simplifying the project, and RTOS was used as this would allow the use of network TCP stacks. The RTOS that was used in this design was FreeRTOS V10.4.4 due to its familirity and compatability with the NEORV32 MCU.
+
+
+\subsection{Network Stack}
+There were two main options for the network stack, LwIP and FreeRTOS-Plus-TCP. The main concern with LwIP was that it was not threadsafe and had memory issues. In addition to this, as FreeRTOS was chosen as the RTOS, their own TCP stack was used as it was thought to have tighter integration. 
+
+
+\subsection{Webserver}
+A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. 
+
+HTTP runs on top of TCP, as such, a TCP server was first created which handled all the TCP handshaking and then allowed HTTP data to be sent over the socket. The HTTP server would then process this data, access the filesystem if needed and respond on the socket. 
+
+
+\subsubsection{API server}
+A subset of the webserver is the API server itself. To make the design simpler, an API was created so that the interface to set and get the firewall rules was independant of the web content.
+
+For setting the firewall rules, a POST request to the \textit{'/api/firewall'} endpoint could be made. The body of the request would contain the rule in the following format
+
+\[
+payload=Index | Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
+\]
+
+Where $|$ is the concatination operator and all fields are in hexadecimal. As an example, to insert a rule at index 0, and with a wildcard operator for all items with a destination IP of 10.20.1.120, source IP of 10.0.0.159, source and destination port of 80 and a protocol of TCP, the following body would need to be sent to the API: \textit{'payload=003F0A1401780A00009F0050005006'}.
+
+This would then be decoded in the webserver itself and applied to the packet filter. 
 
 
 
