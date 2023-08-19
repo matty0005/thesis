@@ -45,6 +45,7 @@
 \usepackage{makecell}
 \usepackage{tabularx}
 \usepackage{listings}
+\usepackage[most]{tcolorbox}
 
 \usetikzlibrary{shapes.geometric, arrows}
 %You can add more packages here if you need
@@ -87,3 +88,6 @@
   captionpos=b, 
   rulecolor=\color{black}               % Rule/frame color
 }
+
+\definecolor{lightergray}{gray}{0.95}
+\newcommand{\codebg}[1]{\colorbox{lightergray}{\lstinline!#1!}}

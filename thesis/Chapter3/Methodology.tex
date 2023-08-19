@@ -126,6 +126,12 @@ This MAC was implemented as a memory-mapped perhipheral which used the MCU's Wis
 
 
 
+Also talk about the base addresses for the ethernet hardware.
+
+
+
+
+
 
 
 
@@ -174,17 +180,16 @@ Index | Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
 Notably, the data is received into a shift register and after all bits have been received the BRAM is updated at the corresponding index in a single clock cycle.
 
 
+
+
+
+
+
+
 \section{Firmware}
+\subsection{Ethernet drivers}
 
-
-
-
-
-
-
-\subsection{Drivers}
-\subsubsection{Ethernet drivers}
-Since the ethernet hardware was custom, drivers were needed to interface with the hardware in software. There were two types of commands that were needed, first the RMII serial managment interface (SMI) and secondly the MAC drivers - the drivers that would handle the data.  The SMI interface is used to control the mode of operation of the PHY chip including the speed, Auto-MDIX, duplex settings. The LAN8720A datasheet, (\cite{LAN8720ADatasheet}) provided some details (seen in figure \ref{fig:smi_packet_structure}) into how the protocol operated. The datasheet also outlined that a maximum frequency of 2.5MHz, but no lower bound. As such the interface was \textit{'bitbanged'} to reduce complexity. The maximum switching frequency of the NEORV32's GPIO was measured to be $\approx 1$MHz, thus the interface could operate without any additional delays.
+Since the Ethernet hardware was custom, drivers were needed to interface with the hardware in software. There were two types of commands that were needed, first the RMII serial managment interface (SMI) and secondly the MAC drivers - the drivers that would handle the data.  The SMI interface is used to control the mode of operation of the PHY chip including the speed, Auto-MDIX, duplex settings. The LAN8720A datasheet, (\cite{LAN8720ADatasheet}) provided some details (seen in figure \ref{fig:smi_packet_structure}) into how the protocol operated. The datasheet also outlined that a maximum frequency of 2.5MHz, but no lower bound. As such the interface was \textit{'bitbanged'} with GPIO pins to reduce complexity. The maximum switching frequency of the NEORV32's GPIO was measured to be $\approx 1$MHz, thus no additional delays were needed in the code and that the GPIO pin could be toggled at the fasted speed possible. 
 
 
 \begin{figure}[h!]
@@ -194,8 +199,14 @@ Since the ethernet hardware was custom, drivers were needed to interface with th
     \label{fig:smi_packet_structure}
 \end{figure}
 
+On power up the RMII interface would be set to full duplex, 100Mbps and auto-negotiate in accordance to the LAN8720A datasheet. 10Mbit and half duplex modes were excluded from the design as further hardware design would be required.  
 
-As the Ethernet hardware used the Wishbone interface, the register locations were mapped into the processors address space. Simple macros can be created for ease of use. 
+\newpage
+
+As the Ethernet hardware used the Wishbone interface, the register locations were mapped into the processors address space. Accessing these registers is analogous to accessing any other variable in memory, using pointers to the memory address. As an example, to access memory location \codebg{0x12345678} the following C code can be used \codebg{*(volatile uint32_t *) 0x12345678}
+
+
+To simplify the design and improve readability, a range of macros was setup, such example of macros can be seen below. 
 
 \begin{lstlisting}[language=C, caption=Python example]
 #define ETH_MAC_TX_BASE 0x13371000
@@ -210,6 +221,26 @@ typedef struct __attribute__((__packed__))  {
 } EthMacTx;
 \end{lstlisting}
 
+This allowed for the connected wishbone Ethernet to be accessed like any other register in the embedded system. 
+
+
+There are three fundamental functions that the driver itself must fulfill, initialisation, send data and receive data. The intialisation resets the Ethernet MAC and resets the interrupt registers. 
+
+The send method is also trivial, but importantly it takes in two parameters, the first is an array of data to send and the second is the amount or length of the data. Like with the SMI interface, these instructions and data transfers were actioned without any delays as the hardware was capable of handling the native speed of the processor. After the data had been transferred, the hardware is instructed to send out the packet. There is no need to provide the FCS as this is calculated on the fly in hardware. 
+
+Similarly, a receive method was created that took in a buffer to store the bytes into as it transfers the data into memory from the registers. Both the transmit and receive functions handled the data translation from 32bit values over the wishbone interface to 8bit bytes in software. In addition to this, as the Ethernet hardware used external interrupts to signal to the processor that there is an Ethernet packet ready for processing. This would use direct task notifications to signal to other functions in the code to call the receive method. 
+
+
+\subsection{SD card drivers}
+
+To use a micro SD card, drivers must be created so that the card can be initialised, written to and read from. More preciesly, in accordance to the  documentation for the FreeRTOS-Plus-FAT file system, the driver had to implement a function that reads sectors from the media and one that rights sectors to the media. 
+
+Unlike the Ethernet MAC, initialising a MicroSD card isn't as trivial and requires multiple steps. A guide online for AVRs\footnote[1]{See: http://www.rjhcoding.com/avrc-sd-interface-1.php} was followed and the code was ported to the NEORV32 system. In a nutshell, the SPI interface was initalised with a clock divisor of 1 and a prescalar of 3, several commands were sent and recieved from the SD card and then it was put into IDLE mode after increasing the speed of the SPI interface to have no clock divisor and a prescalar of 1.
+
+Similarly, the same guide was followed to implement the read and write sector functions. Importantly, these functions would read and write a whole block at a time. On a microSD card, a block is considered to be 512 bytes. 
+
+
+In addition to these, a simple function to determine if a SD card is present in the slot was also implemented to warn the user if data was attempted to be written to or read from without a physical card in the slot. 
 
 
 
@@ -217,8 +248,12 @@ typedef struct __attribute__((__packed__))  {
 
 
 
-\subsubsection{SD card drivers}
-As part of the documentation for the FreeRTOS-Plus-FAT file system, drivers for the media was required. Like the Ethernet hardware, the driver had to implement at least three functions: function that reads sectors from the media, one that rights sectors to the media and one to initialise the media. 
+
+\subsection{Packet classifier drivers}
+
+An itialisation function was created to enable and configure the SPI interface on the microprocessor for mode 0, and with no clock diviser and a prescalar of 1. The SPI hardware for the classifier can handle speeds in excess of 50Mhz (seen in section \ref{sec:timing_constraints}), hence there was no need to slow down the clock. Moreover, calling this initialise function is only required if the microSD card intialise function has not been called. 
+
+A single function was created that takes in all the attributes needed in the packet filter and that sends these out in the correct order and format to the hardware. 
 
 
 
@@ -230,6 +265,7 @@ As part of the documentation for the FreeRTOS-Plus-FAT file system, drivers for 
 \subsection{Real Time Operating System}
 In addition to simplifying the project, and RTOS was used as this would allow the use of network TCP stacks. The RTOS that was used in this design was FreeRTOS V10.4.4 due to its familirity and compatability with the NEORV32 MCU.
 
+\subsection{Filesystem}
 
 \subsection{Network Stack}
 There were two main options for the network stack, LwIP and FreeRTOS-Plus-TCP. The main concern with LwIP was that it was not threadsafe and had memory issues. In addition to this, as FreeRTOS was chosen as the RTOS, their own TCP stack was used as it was thought to have tighter integration. 
