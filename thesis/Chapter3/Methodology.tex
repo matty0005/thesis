@@ -11,7 +11,8 @@
 This chapter details the design decisions and steps taken to complete the project. The project itself can be broken down into three main areas: hardware, firmware and software. 
 
 
-\section{FPGA}
+\section{Hardware}
+\subsection{FPGA}
 Digilent, parented by National Instruments, make a wide range of Xilinx based FPGA development boards and test equipment. In this project, the Digilent Nexys A7-100T FPGA development board (figure \ref{fig:fpga_dev_board}) was used due to it's availability and features including: a Xilinx Artix 7 100T FPGA (part number XC7A100T-1CSG324C), LAN8720A 100MBit/s RMII PHY, micro SD card slot and PMOD (auxiliary outputs) among other IO. 
 
 Xilinx has multiple FPGAs in their 7-series lineup with different target audiences. The Artix-7 family is optimised for low power designs with high logic throughput. The XC7A100T has 101,440 logic cells, 4,860Kbits of Block RAM (BRAM) and 240 DSP blocks \cite{Xilinx7SeriesDatasheet}. There is a varient of the Nexys A7 FPGA board that consists of a XC7A50T FPGA (fewer resources), but ultimately the XC7A100T variant was used due to its larger amount of resources.  
@@ -75,7 +76,7 @@ The files that were stored on the microSD card include the bitstream file for th
 
 
  
-\section{System on Chip}
+\subsection{System on Chip}
 
 A benefit to using an FPGA is that full control is given to the overall system design. At the heart of the SoC, a NEORV32 softcore processor\footnote[1]{See: https://github.com/stnolting/neorv32} controls the hardware and runs the higher layers of the network and webserver tasks.
 
@@ -94,7 +95,14 @@ Serial Perhipheral Interface (SPI) was used to connect to both the MicroSD card 
     \label{fig:soc_architecture}
 \end{figure}
 
-Since the design is only concerned about incoming filtering, the packet filter was only placed between the RMII PHY and the MAC. By filtering at the RMII interface level, the Ethernet MAC is indifferent to the filter and ultimately doesn't care about it. This allows for a simpler modular design compared to integrating the filter in the MAC hardware.
+Since the design is only concerned about incoming filtering, the packet filter was only placed between the RMII PHY and the MAC. By filtering at the RMII interface level, the Ethernet MAC is indifferent to the filter and ultimately doesn't care about it. This allows for a simpler modular design compared to integrating the filter in the MAC hardware. This filter consists of classifier (discussed in section \ref{sec:packet_classifier}) which would determine whether to forward or block an incoming packet.
+
+To do the filtering itself, a shift register can be used to essentially delay the inputs from the RMII PHY until the packet classifier has determined whether to forward or drop the packet. A simple MUX can then be used to either allow the packet to enter the wishbone MAC or to not. 
+
+As the hardware in the MAC only processes the input if crs\_dv is high, we only need to gate the crs\_dv and can always have the rxd lines always attached. However, these should also go through a shift register.
+
+By doing this, it means that we can operate the filter at wirespeed with the only downside is the extra latency that the shift registers bring. The delay that these registers add to the latency can be found to be $T_{latency} = N\times T_{clk}$ where $N$ is the size of the registers. In the design a size of 224 ticks was used. This is because at a minimum, the packet classifier needed to input a maximum of $22 + 24 + 4 = 50$ bytes (22 for MAC headers including preamble, maximum 24 bytes for IP header and 4 bytes for the TCP/UDP headers (only need to check the source and destination port)) need to be processed. While this is enough, a margin of 6 bytes was arbitrarily chosen to allow propagation of other parts of the design to have taken effect. This gave 56 bytes, where each byte takes 4 clock cycles to input into the MAC meaning that we need a register size of $56 \times 4=224$ for the data to propagate to the end of the registers after the packet classifier has determined whether to drop or allow the packet. This means that at a clock frequency of 50Mhz, the added latency is $224 \times \frac{1}{50\times 10^6} = 4.48 \times 10^{-6} = 4.48uS$. Importantly this does not effect the speed/bandwidth of the connection. 
+
 
 It is assumed that any traffic leaving from the device is safe and trusted. In a larger network where there are several devices behind the firewall, it may be desirable to also have a packet filter on the output. 
 
@@ -108,7 +116,7 @@ It is assumed that any traffic leaving from the device is safe and trusted. In a
 
 
 
-\section{Ethernet Media Access Controller}
+\subsection{Ethernet Media Access Controller}
 \label{sec:ethernet_mac}
 The advantage of using an FPGA is that custom hardware can be designed for specific tasks. In this design the MAC layer was done purely in hardware to free up the microprocessor by handling all of the lower level logic. 
 
@@ -122,37 +130,48 @@ This MAC was implemented as a memory-mapped perhipheral which used the MCU's Wis
 
 
 
-\section{Packet Classifier}
+\subsection{Packet Classifier}
 \label{sec:packet_classifier}
 To further save MCU resources, the packet classification was done in hardware. Not only did this reduce the load on the MCU itself - giving it more time to do other things - it allowed the interface to run at \textit{'wirespeed'}. That is, at the full speed of the interface - 100Mbit/s. 
 
 This was possible by having the rulset been evaluated in parallel as the data is coming into the firewall. This method however is not suitable for large rulesets as the fan-in and fan-out limit the maximum number of parallel comparisons. For every new rule, the number of gates grows exponentially. Hence a design decision of a maximum ruleset of size 8 was chosen. 
 
-The way this classifier was designed was to be a \textit{'default-block'} where all connections were blocked except for the ones specifically whitelisted in the ruleset. 
-
-The specific rules had a few options, namely the source IP address, destination IP address, source port, destination port and protocol could be configured. In addition to these, each field had a wildcard operator which allowed all values for that specific option to be classified. 
-
-A block diagram of the classifier can be seen in figure XX below. To control the flow of the packets, a buffer was used on the input to store the packet as it was coming in. At the same time the classifier would start classifying the packet. If allowed, then the packet would be moved on to another buffer before been sent out the other interface. If the packet was blocked, then the data would be dropped by clearing the buffers and then just ignoring the remainder of the incomming packet. 
+The way this classifier was designed was to be a \textit{'default-block'} where all connections were blocked except for the ones specifically whitelisted in the ruleset. The specific rules had a few options, namely the source IP address, destination IP address, source port, destination port and protocol could be configured. In addition to these, each field had a wildcard operator which allowed all values for that specific option to be classified. 
 
 
+The design of the packet classifier hardware, figure \ref{fig:packet_classifier_architecture} stores the firewall rules in block memory which is 112 bits wide. The rules are stored in BRAM as an array of 112 bits in the following format:
 
-To do the filtering itself, a shift register can be used to essentially delay the inputs from the RMII PHY until the packet classifier has determined whether to forward or drop the packet. A simple MUX can then be used to either allow the packet to enter the wishbone MAC or to not. 
+\[
+Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
+\]
 
-As the hardware in the MAC only processes the input if crs\_dv is high, we only need to gate the crs\_dv and can always have the rxd lines always attached. Howerver, these should also go through a shift register.
+Where $|$ is the concatenation operator. The wildcard attribute signifies whether to allow all possible combinations (in other words, disregard) for the positional attribute where the most significant bit refers to the $IP_{Dest}$ and the least significant bit refers to the $Protocol$.
 
-By doing this, it means that we can operate the filter at wirespeed with the only downside is the extra latency that the shift registers bring. The delay that these registers add to the latency can be found to be $T_{latency} = N\times T_{clk}$ where $N$ is the size of the registers. In the design a size of 224 ticks was used. The thought process behind this was that at a minimum, the packet classifier needed to input a maximum of $22 + 24 + 4 = 50$ bytes (22 for MAC headers including preamble, maximum 24 bytes for IP header and 4 bytes for the TCP/UDP headers (only need to check the source and destination port)) need to be processed. While this is enough, a margin of 6 bytes was arbitarily chosen to allow propogation of other parts of the design to have taken effect. This gave 56 bytes, where each byte takes 4 clock cycles to input into the MAC meaning that we need a register size of $56 \times 4=224$ for the data to propagate to the end of the registers after the packet classifier has determined whether to drop or allow the packet. This means that at a clock frequency of 50Mhz, the added latency is $224 \times \frac{1}{50\times 10^6} = 4.48 \times 10^{-6} = 4.48uS$.
+A FSM then records the position of the incoming and configures the multiplexers on the BRAM to output the current property to the comparators where they compare with the shift register which contains the current field being classified. On a successful match, a bit is left set in the result register, otherwise clear if no match. Importantly, the bits only get set on the first iteration of the classification. 
 
-Importantly this does not effect the speed/bandwidth of the connection. 
+After passing through all the fields, if there is any bit set in the results register, it indicates that a rule matched and that a packet should be forwarded. 
 
 
-\begin{figure}[h]
+\begin{figure}[h!]
     \centering
     \includegraphics[width=1\textwidth]{Images/PacketFilterArchitecture.png}
-    \caption[Packet classifier architecture]{Packet classifier architecture.}
-    \label{fig:soc_architecture}
+    \caption[Packet classifier architecture]{Packet classifier architecture. Clock signals have been omitted.}
+    \label{fig:packet_classifier_architecture}
 \end{figure}
 
+This reduces the required resources as only 1 set of comparators are needed, which is important as for each rule that exists, another comparator is needed. In this design, there are a total of 8 comparators, 8 multiplexers and the results register is 8bits wide. 
 
+A more resource efficient design is possible at the cost of latency. This is one of the critiques of the design mentioned in \cite{FastRecongifFPGAFirewall} as multiple clock cycles would be needed to classify the headers. In theory the clock speed could be faster than Ethernet frequency and as only two bits from the RMII interface are processed at a time, it could be a viable alternative, however this may likely fall apart when higher speeds are required. 
+
+
+Several options exist for configuring the ruleset in the packet classifier such as: Wishbone, I2C, UART, SPI or a completely custom solution. For simplicity, SPI was used in configuring the packet filter. Importantly, data would only flow in one direction, from the microcontroller to the classifier and not the other way round. This means that the microcontroller needs to keep the state of the rules inside the packet filter and needs to resend the rules to be sure of the configuration. This is not an issue as the rules need to be stored in flash on the microSD card to keep settings between power cycles. The format that the SPI hardware expects is similar to how it's stored in BRAM to make it quick and easy to transfer. The format of the bytes is: 
+
+\[
+Index | Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
+\]
+
+
+Notably, the data is received into a shift register and after all bits have been received the BRAM is updated at the corresponding index in a single clock cycle.
 
 
 \section{Firmware}
