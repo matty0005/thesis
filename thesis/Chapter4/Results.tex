@@ -26,6 +26,15 @@ To test the speed of the packet classifier, a Agilent MSO6054A MSO was used (4GS
 As the shift register in the hardware has a length of 224 bits, at a clock frequency of 50Mhz, the added latency is $224 \times \frac{1}{50\times 10^6} = 4.48 \times 10^{-6} = 4.48uS$. 
 
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images/scope_4.png}
+    \caption[Added latency by packet filter waveform]{Added latency by packet filter waveform.}
+    \label{fig:packet_classifier_architecture}
+\end{figure}
+
+There is two pulses in this graph. This is due to when the crs\_dv line gets disasserted at the end of the packet. From this the time taken to receive the packet can be found to be 8.94uS. This is just an observation and is proportional to the packet size.
+
 
 
 The same setup was used to test the preexisting solution, except this time GPIO pins were set high and low. It is assumed that the latency of setting the pin high cancels out with the latency of setting the pin low. 
