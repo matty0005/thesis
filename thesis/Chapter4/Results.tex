@@ -20,6 +20,17 @@ Talk about wishbone bus speed.
 Initial tests were also conducted at 100MHz, but due to timing issues, it was reverted to 50MHz.
 
 
+To test the speed of the packet classifier, a Agilent MSO6054A MSO was used (4GSa/s). A pin was set to the output of the crs\_dv of the PHY and the crs\_dv after the packet filter. The time between the rising and falling edge of the output will be the delay added by the packet filter. 
+
+
+As the shift register in the hardware has a length of 224 bits, at a clock frequency of 50Mhz, the added latency is $224 \times \frac{1}{50\times 10^6} = 4.48 \times 10^{-6} = 4.48uS$. 
+
+
+
+
+The same setup was used to test the preexisting solution, except this time GPIO pins were set high and low. It is assumed that the latency of setting the pin high cancels out with the latency of setting the pin low. 
+
+
 \subsection{Testing setup}
 
 \subsection{Results}

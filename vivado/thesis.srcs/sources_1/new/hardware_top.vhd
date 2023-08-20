@@ -356,6 +356,9 @@ ethernet_mac : wb_ethernet
     pmod_o(6) <= pc_forward;
     pmod_o(1 downto 0) <= pc_valid_counter(1 downto 0);
     
+    pmod_o(7) <= crs_dv_allow xor eth_io_crs_dv;
+
+    
     pc_coutner: process(pc_valid)
     begin
 --        if rstn_i = '0' then
