@@ -149,9 +149,40 @@ end if;
 By splitting the address over 2 if conditions, the amount of resources can be greatly reduced as the nested if conditions only need to compare 16bits instead of 32bits each time. Another important design decision is that this version of the Ethernet MAC does not validate the FCS after receiving a packet, instead it assumes it's a valid packet. 
 
 
-The transmit logic is broken down into three parts: Wishbone handler, main FSM and RMII conversion. The process of creating and sending an Ethernet frame starts with the processor sending data over the Wishbone interface. Like the receive logic, there are two types of commands that can be sent over the Wishbone interface, one that controls the logic, the other that stores payload data into BRAM. There are three configuration commands, one to initialise the hardware and FSM, another to start the transmission of data (used after all data has been transferred into BRAM) and one to set the payload length of the packet. The other register addresses allow the processor to store the payload in the frame buffer (BRAM). The preamble, SFD and FCS are left out as these are appended in hardware. To be accurate, this is a quasi-MAC as the MAC addresses and type fields in the header are populated in software. 
+The transmit logic is broken down into three parts: Wishbone handler, main FSM and RMII conversion. The process of creating and sending an Ethernet frame starts with the processor sending data over the Wishbone interface. Like the receive logic, there are two types of commands that can be sent over the Wishbone interface, one that controls the logic, the other that stores payload data into BRAM. There are three configuration commands, one to initialise the hardware and FSM, another to start the transmission of data (used after all data has been transferred into BRAM) and one to set the payload length of the packet. The other register addresses allow the processor to store the payload in the frame buffer (BRAM). See figure \ref{fig:bram_frame_format} for the format of data in BRAM. The preamble, SFD and FCS are left out as these are appended in hardware. To be accurate, this is a quasi-MAC as the MAC addresses and type fields in the header (expanded view of payload in figure \ref{fig:bram_frame_format}) are populated in software. 
 
-... show format of frame stored in hardware ...
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}
+
+        % First bytefield
+        \node (a) {
+            \begin{bytefield}{8}
+                \bitbox{8}{Preamble} & \bitbox{4}{SFD} & \bitbox{16}{Payload} & \bitbox{6}{Padding} & \bitbox{4}{FCS} 
+            \end{bytefield}
+        };
+
+        % Expanded Payload
+        \node[below=1cm of a.south] (b) {
+            \begin{bytefield}{16}
+                \bitbox{5}{D.Addr} & \bitbox{5}{S.Addr} & \bitbox{4}{Type} & \bitbox{14}[bgcolor=lightergray]{IP payload}
+            \end{bytefield}
+        };
+
+        \node[right=0.5cm of b.east, anchor=west] {Populated in software};
+
+        % Connection lines
+        % Arrow from the left side of Payload to Field 1
+        \draw[->] ([xshift=4.8cm]a.south west) -- ([xshift=0.35cm]b.north west);
+
+        % Arrow from the right side of Payload to Field 3
+        \draw[->] ([xshift=10.8cm]a.south west) -- ([xshift=10.75cm]b.north west);
+
+    \end{tikzpicture}
+    \caption{Format of frame in BRAM}
+    \label{fig:bram_frame_format}
+\end{figure}
+
 
 Once a payload has been stored in the frame buffer, the main FSM takes control and at this point the CPU is free to do anything else. Since the FCS is calculated in hardware, the FSM resets the FCS hardware and begins to send the bytes to both the FCS hardware (to calculate the CRC32) and to a FIFO buffer. Once the payload has been transmitted to the FIFO, the resulting CRC32 FCS is sent out to the FIFO without missing a clock cycle. 
 
@@ -182,7 +213,7 @@ The documentation for the NEORV32 states that all memory accesses that do not ta
 % \memsection{ffff ffff}{0040 0000}{5}{Processor memory}\\
 \memsection{1338 05F8}{1338 0008}{5}{RX PAYLOAD}\\
 \memsection{1338 0007}{1338 0004}{2}{RX SIZE}\\
-\memsection{1338 0003}{1337 6411}{3}{Unused}\\
+\memsectioncolour{1338 0003}{1337 6411}{3}{Unused}\\
 \memsection{1337 6410}{1337 1004}{4}{TX PAYLOAD}\\
 \memsection{1337 1003}{1337 1000}{2}{TX SIZE}\\
 \memsection{1337 0003}{1337 0000}{2}{TX CONFIG}\\

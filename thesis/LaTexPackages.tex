@@ -47,7 +47,7 @@
 \usepackage{listings}
 \usepackage{bytefield}
 \usepackage[most]{tcolorbox}
-\usetikzlibrary{fit, patterns} % Import the fit library
+\usetikzlibrary{fit, patterns, positioning} % Import the fit library
 
 \usetikzlibrary{shapes.geometric, arrows}
 %You can add more packages here if you need
@@ -125,3 +125,18 @@
     }%
     \bitbox{16}{#4}% print box with caption
 }
+
+\newcommand{\memsectioncolour}[4]{
+    \bytefieldsetup{bitheight=#3\baselineskip}
+    \bitbox[]{10}{
+    \texttt{#1}% print end address
+    \\
+    % do some spacing
+    \vspace{#3\baselineskip}
+    \vspace{-2\baselineskip}
+    \vspace{-#3pt}
+    \texttt{#2}% print start address
+    }%
+    \bitbox{16}[bgcolor=lightergray]{#4}% print box with caption
+}
+
