@@ -118,15 +118,49 @@ It is assumed that any traffic leaving from the device is safe and trusted. In a
 
 \subsection{Ethernet Media Access Controller}
 \label{sec:ethernet_mac}
-The advantage of using an FPGA is that custom hardware can be designed for specific tasks. In this design the MAC layer was done purely in hardware to free up the microprocessor by handling all of the lower level logic. 
+The advantage of using an FPGA is that custom hardware can be designed for specific tasks. In this design the MAC layer was done in hardware to free up the microprocessor by handling the lower level logic. 
 
-This MAC was implemented as a memory-mapped perhipheral which used the MCU's Wishbone B4 classic interface. This then made it easily accessable over the memory address space of the MCU.  
+This MAC was implemented as a memory-mapped perhipheral which used the MCU's Wishbone B4 classic interface. This then made it easily accessible over the memory address space of the MCU.  
+
+
+
+The hardware can be broken down into two main sections: the transmit logic and receive logic. 
+
+In the receive logic, there are two main functions, one that stores the incoming frame into BRAM and then another to interface the BRAM with the Wishbone interface. On the input side the data is shifted into a 8bit wide shift register - shown in figure \ref{fig:soc_architecture}. While crs\_dv is asserted, after every four clock cycles (modulo four since 2 bits is received at a time) the contents of the shift register is stored into BRAM. After each byte has been added to BRAM, a counter is incremented to store the next byte in the next index. The end of the packet is signified when crs\_dv is deasserted, at which point the payload length is stored for use when the processor receives the frame over the wishbone interface. After the first two bits equals "01" (first 2 bits of the preamble) have been received, a trigger output is asserted so that it can fire a CPU interrupt.
+
+On the wishbone side of the receive logic, only read requests are accepted and processed. A register access returns the payload size of the received frame to help the driver (section \ref{sec:ethernet_mac_driver}) identify how much data it needs to extract from the hardware buffer. When accessing the BRAM memory locations over the Wishbone interface two things are considered. The first is that an offset of eight is needed since the BRAM stores the preamble and SFD which is not wanted by the processor. The second is that the payload is stored in 8bit values whereas the wishbone interface can send 32bits at once. Therefore some conversion between the memory addresses and the memory accesses to BRAM take place. 
+
+\begin{lstlisting}[language=VHDL, caption=Wishbone access logic for Ethernet receive]
+if wb_i_stb = '1' and wb_i_addr(31 downto 16) = x"1338" then 
+    wb_o_ack <= '1';
+    if wb_i_we = '0' then -- Ensure write enable is reset to read.
+        if wb_i_addr(15 downto 0) = MAC_DAT_SIZE then -- Payload size
+            wb_o_dat <= std_logic_vector(to_unsigned(payloadLen, 32));
+        elsif wb_i_addr(15 downto 0) >= x"0008" and wb_i_addr(15 downto 0) <= x"05F8" then -- BRAM access
+            virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 8));
+            wb_o_dat <= FRAME_BUFFER(virtAddr) &  FRAME_BUFFER(1 + virtAddr) & FRAME_BUFFER(2 + virtAddr) & FRAME_BUFFER(3 + virtAddr);
+        end if;
+    end if;
+else
+    wb_o_ack <= '0';
+end if;
+\end{lstlisting}
+
+By splitting the address over 2 if conditions, the amount of resources can be greatly reduced as the nested if conditions only need to compare 16bits instead of 32bits each time. Another important design decision is that this version of the Ethernet MAC does not validate the FCS after receiving a packet, instead it assumes it's a valid packet. 
+
+
+The transmit logic is broken down into three parts: Wishbone handler, main FSM and RMII conversion.
 
 
 
 
 
 Also talk about the base addresses for the ethernet hardware.
+
+The LAN8720A handles the Ethernet scrambling.
+
+
+
 
 
 
@@ -188,6 +222,7 @@ Notably, the data is received into a shift register and after all bits have been
 
 \section{Firmware}
 \subsection{Ethernet drivers}
+\label{sec:ethernet_mac_driver}
 
 Since the Ethernet hardware was custom, drivers were needed to interface with the hardware in software. There were two types of commands that were needed, first the RMII serial managment interface (SMI) and secondly the MAC drivers - the drivers that would handle the data.  The SMI interface is used to control the mode of operation of the PHY chip including the speed, Auto-MDIX, duplex settings. The LAN8720A datasheet, (\cite{LAN8720ADatasheet}) provided some details (seen in figure \ref{fig:smi_packet_structure}) into how the protocol operated. The datasheet also outlined that a maximum frequency of 2.5MHz, but no lower bound. As such the interface was \textit{'bitbanged'} with GPIO pins to reduce complexity. The maximum switching frequency of the NEORV32's GPIO was measured to be $\approx 1$MHz, thus no additional delays were needed in the code and that the GPIO pin could be toggled at the fasted speed possible. 
 
@@ -251,7 +286,7 @@ In addition to these, a simple function to determine if a SD card is present in 
 
 \subsection{Packet classifier drivers}
 
-An itialisation function was created to enable and configure the SPI interface on the microprocessor for mode 0, and with no clock diviser and a prescalar of 1. The SPI hardware for the classifier can handle speeds in excess of 50Mhz (seen in section \ref{sec:timing_constraints}), hence there was no need to slow down the clock. Moreover, calling this initialise function is only required if the microSD card intialise function has not been called. 
+An initialisation function was created to enable and configure the SPI interface on the microprocessor for mode 0, and with no clock diviser and a prescalar of 1. The SPI hardware for the classifier can handle speeds in excess of 50Mhz (seen in section \ref{sec:timing_constraints}), hence there was no need to slow down the clock. Moreover, calling this initialise function is only required if the microSD card intialise function has not been called. 
 
 A single function was created that takes in all the attributes needed in the packet filter and that sends these out in the correct order and format to the hardware. 
 

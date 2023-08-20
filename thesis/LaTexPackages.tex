@@ -89,5 +89,23 @@
   rulecolor=\color{black}               % Rule/frame color
 }
 
+
+\lstset{
+  language=VHDL,                          % Choose the language
+  basicstyle=\ttfamily\footnotesize,    % Set the basic style (smaller)
+  keywordstyle=\color{blue},            % Set keyword style
+  commentstyle=\color{green},           % Set comment style
+  stringstyle=\color{red},              % Set string literal style
+  directivestyle=\color{magenta},       % Set directive style (for #define, etc.)
+  numbers=left,                         % Where to put line numbers
+  numberstyle=\tiny\color{gray},        % Line number style
+  stepnumber=1,                         % Step between line numbers
+  showstringspaces=false,               % Don't emphasize spaces in strings
+  breaklines=true,                      % Break long lines
+  frame=single,                         % Frame code
+  captionpos=b, 
+  rulecolor=\color{black}               % Rule/frame color
+}
+
 \definecolor{lightergray}{gray}{0.95}
 \newcommand{\codebg}[1]{\colorbox{lightergray}{\lstinline!#1!}}

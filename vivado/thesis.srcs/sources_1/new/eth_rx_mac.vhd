@@ -175,26 +175,20 @@ begin
     if rst_i = '0' then
         wb_o_ack <= '0';
     elsif rising_edge(clk_i) then
---        wb_o_dat <= pipe(31 downto 0);
         -- Only handle data when strobe
-
         if wb_i_stb = '1' and wb_i_addr(31 downto 16) = x"1338" then 
             wb_o_ack <= '1';
             
             -- Ensure write enable is reset to read.
             if wb_i_we = '0' then
-                
                 if wb_i_addr(15 downto 0) = MAC_DAT_SIZE then 
                     wb_o_dat <= std_logic_vector(to_unsigned(payloadLen, 32));
                 elsif wb_i_addr(15 downto 0) >= x"0008" and wb_i_addr(15 downto 0) <= x"05F8" then
                             
                     -- 322375680 = 0x13371000.
                     virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 8));
-                    
                     wb_o_dat <= FRAME_BUFFER(virtAddr) &  FRAME_BUFFER(1 + virtAddr) & FRAME_BUFFER(2 + virtAddr) & FRAME_BUFFER(3 + virtAddr);
-                    
                 end if;
-            
             elsif wb_i_we = '1' then
                 if wb_i_addr(15 downto 0) = READ_CONFIG then
                     -- Initialise the buffers.
@@ -204,7 +198,6 @@ begin
         else
             wb_o_ack <= '0';
         end if;
-    
     end if;
 end process;
 
