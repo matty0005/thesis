@@ -163,8 +163,38 @@ A FIFO buffer is used to cross the domains since the RMII interface is 50MHz at 
 
 
 
+The documentation for the NEORV32 states that all memory accesses that do not target specific processor-internal address regions (see appendix \ref{app:mem_address}) get forwarded to the external interfaces, such as the Wishbone interface. As such, there is a large block of unused memory between the IMEM and DMEM regions. The memory mapping, figure \ref{fig:memory_layout}, used in this design ranges from 0x13370000 to 0x133805F8.
 
-Also talk about the base addresses for the ethernet hardware.
+
+% \begin{tikzpicture}[remember picture,overlay]
+%     % Define coordinates for shading
+%     \coordinate (top-left) at (3.95, -0.05);  % Adjust as necessary
+%     \coordinate (bottom-right) at (10, -2.5); % Adjust as necessary
+    
+%     % Draw shading
+%     \fill[gray!30] (top-left) rectangle (bottom-right); % Change gray!30 to your desired shading color and intensity
+% \end{tikzpicture}
+
+\begin{figure}[h!]
+    \begin{center}
+    
+\begin{bytefield}{24}
+% \memsection{ffff ffff}{0040 0000}{5}{Processor memory}\\
+\memsection{1338 05F8}{1338 0008}{5}{RX PAYLOAD}\\
+\memsection{1338 0007}{1338 0004}{2}{RX SIZE}\\
+\memsection{1338 0003}{1337 6411}{3}{Unused}\\
+\memsection{1337 6410}{1337 1004}{4}{TX PAYLOAD}\\
+\memsection{1337 1003}{1337 1000}{2}{TX SIZE}\\
+\memsection{1337 0003}{1337 0000}{2}{TX CONFIG}\\
+% \memsection{1336 ffff}{0000 0000}{5}{Processor memory}
+\end{bytefield}
+\caption{Memory Address Layout}
+\label{fig:memory_layout}
+\end{center}
+\end{figure}
+
+This mapping is required for developing the driver (section \ref{sec:ethernet_mac_driver}) to access the correct registers.
+
 
 
 
