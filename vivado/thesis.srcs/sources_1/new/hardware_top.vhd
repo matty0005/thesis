@@ -112,6 +112,7 @@ component packet_classifier is
     rst:  in std_logic;
     valid: out std_logic; -- Output "forward" is valid when 1. 
     forward: out std_logic;
+    ignore_count: out std_logic;
     
     packet_in: in std_logic_vector(1 downto 0);
     packet_valid: in std_logic;
@@ -250,6 +251,7 @@ signal rxd_reg : std_logic_vector((FILTER_DELAY_TICKS * 2) - 1 downto 0) := (oth
 signal crs_dv_reg : std_logic_vector(FILTER_DELAY_TICKS - 1 downto 0) := (others => '0');
 signal crs_dv_allow : std_logic := '0';
 signal pf_allow : std_logic := '0';
+signal pf_ignore_count : std_logic := '0';
 
 signal rst : std_logic;
 
@@ -319,6 +321,7 @@ ethernet_mac : wb_ethernet
         rst => rst,
         valid => pc_valid,
         forward => pc_forward,
+        ignore_count => pf_ignore_count,
         
         packet_in => eth_rxd,
         packet_valid => eth_io_crs_dv,
@@ -351,28 +354,34 @@ ethernet_mac : wb_ethernet
     );
     anode <= "11111110";
     
-    pmod_o(2) <= eth_io_crs_dv;
+    pmod_o(2) <= crs_dv_allow;
     pmod_o(5) <= pc_valid;
     pmod_o(6) <= pc_forward;
-    pmod_o(1 downto 0) <= pc_valid_counter(1 downto 0);
+    pmod_o(3) <= pf_allow;
     
-    pmod_o(7) <= crs_dv_allow xor eth_io_crs_dv;
+    pmod_o(1 downto 0) <= rxd_reg((FILTER_DELAY_TICKS * 2) - 1 downto (FILTER_DELAY_TICKS * 2) - 2);
+    
+    pmod_o(7) <= clk_50;
 
     
-    pc_coutner: process(pc_valid)
+    pc_coutner: process(clk_50)
     begin
 --        if rstn_i = '0' then
 --            pc_valid_counter <= "0000";
-        if pc_valid'event and pc_valid = '1' then
-            
-            if pc_forward = '1' then
-                pf_allow <= '1';
-                pc_valid_counter <= pc_valid_counter + 1;
-            elsif sw(0) = '1' then
-                pf_allow <= '1';
-            else
-                pf_allow <= '0';
-                pc_invalid_counter <= pc_invalid_counter + 1;
+        if rising_edge(clk_50) then
+            if pc_valid = '1' then
+                
+                if pc_forward = '1' then
+                    pf_allow <= '1';
+                    if pf_ignore_count = '0'  then
+                        pc_valid_counter <= pc_valid_counter + 1;
+                    end if;
+                elsif sw(0) = '1' then
+                    pf_allow <= '1';
+                else
+                    pf_allow <= '0';
+                    pc_invalid_counter <= pc_invalid_counter + 1;
+                end if;
             end if;
         end if;
     end process;

@@ -27,6 +27,7 @@ entity packet_classifier is
     rst:  in std_logic;
     valid: out std_logic; -- Output "forward" is valid when 1. 
     forward: out std_logic;
+    ignore_count: out std_logic;
     
     packet_in: in std_logic_vector(1 downto 0);
     packet_valid: in std_logic;
@@ -50,7 +51,7 @@ constant ruleSize : integer := 8;
 type ramType is array (ruleSize - 1 downto 0) of std_logic_vector(112 - 1 downto 0);
 shared variable RULES_MEMORY : ramType := (others => (others => '0'));
 
-type classifer_state is (IDLE, PACKET_TYPE, IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
+type classifer_state is (PRE_IDLE, IDLE, PACKET_TYPE, IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
 signal pcState : classifer_state := IDLE;
 
 signal spi_mosi_data : std_logic_vector(119 downto 0); -- 14 bytes = 112 bits for data + 8 bits addr + 8bits wildcard  (1byte)
@@ -91,6 +92,10 @@ variable ipProto : std_logic_vector(7 downto 0);
 begin
     if rising_edge(clk) then 
         case pcState is
+                when  PRE_IDLE => 
+                    pcState <= IDLE;
+                    pc_valid <= '0';
+                    pc_forward <= '0';
                 when IDLE => 
                    
                     --  Wait for valid packet with Preamble + SFD: 55555555555555D5
@@ -99,6 +104,7 @@ begin
                     end if;
                     pc_valid <= '0';
                     pc_forward <= '0';
+                    ignore_count <= '0';
                     
                     rulesMatch <= (others => '0');
                 when PACKET_TYPE =>
@@ -111,12 +117,14 @@ begin
                                 
                             elsif eth_swap_bits(data_pipe(15 downto 8)) & eth_swap_bits(data_pipe(7 downto 0)) = x"0806" then -- ARP packet - forward. 
                                 pc_valid <= '1';
-                                pc_forward <= '0';
-                                pcState <= IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
+                                pc_forward <= '1';
+                                ignore_count <= '1';
+                                pcState <= PRE_IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
                             else -- Don't forward unknown packet.
                                 pc_valid <= '1';
-                                pc_forward <= '0';
-                                pcState <= IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
+                                pc_forward <= '1';
+                                ignore_count <= '1';
+                                pcState <= PRE_IDLE; -- Could be an issue if "D555555555555555" is input into the packet. 
                             end if;
                             stateCounter := 0;
                     else
@@ -204,7 +212,7 @@ begin
                     if ipProto /= x"06" and ipProto /= x"11" and ipProto /= x"01" then -- If not TCP or UDP forward - no ports.
                         pc_valid <= '1';
                         pc_forward <= '0';
-                        pcState <= IDLE;
+                        pcState <= PRE_IDLE;
                     -- Check if ICMP then determine if it matches the other rules.
                     elsif ipProto = x"01" then
                         
@@ -217,7 +225,7 @@ begin
                             pc_forward <= '1';
                         end if;
                                                 
-                        pcState <= IDLE;
+                        pcState <= PRE_IDLE;
                         stateCounter := 0;
                     else 
                         -- wait for bytes. 
@@ -266,7 +274,7 @@ begin
                             pc_forward <= '1';
                         end if;
                         
-                        pcState <= IDLE;
+                        pcState <= PRE_IDLE;
                         stateCounter := 0;
                     else
                         stateCounter := stateCounter + 1;
