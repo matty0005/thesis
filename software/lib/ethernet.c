@@ -89,7 +89,6 @@ void eth_ack_irq() {
  * @param buffer 
  */
 void eth_recv(uint8_t *buffer, size_t size) {
-
     // May need to factor in MAC header stuff - depends what freertos tcp wants.
 
     // Copy the data from the receive buffer.

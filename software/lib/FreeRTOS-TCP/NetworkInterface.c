@@ -227,9 +227,6 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
 
                 taskEXIT_CRITICAL();
 
-	        FreeRTOS_printf(("Received packet\n"));
-
-
                 if (eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer) == eProcessBuffer) 
                 {
 
