@@ -39,6 +39,18 @@ There is two pulses in this graph. This is due to when the crs\_dv line gets dis
 
 The same setup was used to test the preexisting solution, except this time GPIO pins were set high and low. It is assumed that the latency of setting the pin high cancels out with the latency of setting the pin low. 
 
+\subsection{Limitations}
+\subsubsection{PMOD Interface}
+
+There are 5 PMOD connectors on the development board. Initally, one of these would be used for a second Ethernet PHY, but due to bandwidth limitations of the interface, the design had to be altered. The recommended bandwidth of these ports are 25MHz while the Ethernet RMII PHY would have been using 50Mhz signals over the interface. As such, signal integrity issues arose (see figure \ref{fig:eye_diagram}) and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Images/EyeDiagramTX.png}
+    \caption[Eye diagram of TXD through PMOD interface]{Eye diagram of TXD through PMOD interface.}
+    \label{fig:eye_diagram}
+\end{figure}
+
 
 \subsection{Testing setup}
 
