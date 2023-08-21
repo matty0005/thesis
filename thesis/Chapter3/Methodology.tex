@@ -186,10 +186,15 @@ The transmit logic is broken down into three parts: Wishbone handler, main FSM a
 
 Once a payload has been stored in the frame buffer, the main FSM takes control and at this point the CPU is free to do anything else. Since the FCS is calculated in hardware, the FSM resets the FCS hardware and begins to send the bytes to both the FCS hardware (to calculate the CRC32) and to a FIFO buffer. Once the payload has been transmitted to the FIFO, the resulting CRC32 FCS is sent out to the FIFO without missing a clock cycle. 
 
-A FIFO buffer is used to cross the domains since the RMII interface is 50MHz at 2bits wide, whereas the bytes are stored as 8bit vectors in the frame buffer. This also allows the FSM to have a higher clock speed as well. The current implementation of the FSM uses a 50MHz clock signal, consequently the equivalent bit rate is four times larger than the output needed to the RMII interface. The FIFO used in this design is slightly modified so that the read clock is one quarter the 50MHz output frequency since the FIFO itself returns 8 bits at a time. An FSM operating at 50MHz then sends each 2bit nibble out to the RMII PHY at a time in a circular fashion. The tx\_en line is asserted while the FIFO is non-empty.
+A FIFO buffer is used to cross the domains since the RMII interface is 50MHz at 2bits wide, whereas the bytes are stored as 8bit vectors in the frame buffer. This also allows the FSM to have a higher clock speed as well. The current implementation of the FSM uses a 50MHz clock signal, consequently the equivalent bit rate is four times larger than the output needed to the RMII interface. The FIFO used in this design, figure \ref{fig:fifo_diagram}, is slightly modified so that the read clock is one quarter the 50MHz output frequency since the FIFO itself returns 8 bits at a time. An FSM operating at 50MHz then sends each 2bit nibble out to the RMII PHY at a time in a circular fashion. The tx\_en line is asserted while the FIFO is non-empty.
 
 
-... show FIFO configuration ...
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images/EthFIFO.png}
+    \caption[8bit to 2bit FIFO used for RMII output]{8bit to 2bit FIFO used for RMII output.}
+    \label{fig:fifo_diagram}
+\end{figure}
 
 
 
@@ -243,13 +248,22 @@ This was possible by having the rulset been evaluated in parallel as the data is
 The way this classifier was designed was to be a \textit{'default-block'} where all connections were blocked except for the ones specifically whitelisted in the ruleset. The specific rules had a few options, namely the source IP address, destination IP address, source port, destination port and protocol could be configured. In addition to these, each field had a wildcard operator which allowed all values for that specific option to be classified. 
 
 
-The design of the packet classifier hardware, figure \ref{fig:packet_classifier_architecture} stores the firewall rules in block memory which is 112 bits wide. The rules are stored in BRAM as an array of 112 bits in the following format:
+The design of the packet classifier hardware, figure \ref{fig:packet_classifier_architecture} stores the firewall rules in block memory. The rules are stored in BRAM as an array of 112 bits with the format shown in figure \ref{fig:pc_rule_format}.
 
-\[
-Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
-\]
 
-Where $|$ is the concatenation operator. The wildcard attribute signifies whether to allow all possible combinations (in other words, disregard) for the positional attribute where the most significant bit refers to the $IP_{Dest}$ and the least significant bit refers to the $Protocol$.
+\begin{figure}[h!]
+    \centering
+
+    \begin{bytefield}{8}
+        \bitbox{6}{$Wildcard$} & \bitbox{5}{$IP_{Dest}$} & \bitbox{5}{$IP_{Src}$} & \bitbox{6}{$Port_{Dest}$} & \bitbox{6}{$Port_{Src}$} & \bitbox{6}{$Protocol$} 
+    \end{bytefield}
+    
+    \caption{Format of rules stored in BRAM}
+    \label{fig:pc_rule_format}
+\end{figure}
+
+
+The wildcard attribute signifies whether to allow all possible combinations (in other words, disregard) for the positional attribute where the most significant bit refers to the $IP_{Dest}$ and the least significant bit refers to the $Protocol$.
 
 A FSM then records the position of the incoming and configures the multiplexers on the BRAM to output the current property to the comparators where they compare with the shift register which contains the current field being classified. On a successful match, a bit is left set in the result register, otherwise clear if no match. Importantly, the bits only get set on the first iteration of the classification. 
 
@@ -268,11 +282,19 @@ This reduces the required resources as only 1 set of comparators are needed, whi
 A more resource efficient design is possible at the cost of latency. This is one of the critiques of the design mentioned in \cite{FastRecongifFPGAFirewall} as multiple clock cycles would be needed to classify the headers. In theory the clock speed could be faster than Ethernet frequency and as only two bits from the RMII interface are processed at a time, it could be a viable alternative, however this may likely fall apart when higher speeds are required. 
 
 
-Several options exist for configuring the ruleset in the packet classifier such as: Wishbone, I2C, UART, SPI or a completely custom solution. For simplicity, SPI was used in configuring the packet filter. Importantly, data would only flow in one direction, from the microcontroller to the classifier and not the other way round. This means that the microcontroller needs to keep the state of the rules inside the packet filter and needs to resend the rules to be sure of the configuration. This is not an issue as the rules need to be stored in flash on the microSD card to keep settings between power cycles. The format that the SPI hardware expects is similar to how it's stored in BRAM to make it quick and easy to transfer. The format of the bytes is: 
+Several options exist for configuring the ruleset in the packet classifier such as: Wishbone, I2C, UART, SPI or a completely custom solution. For simplicity, SPI was used in configuring the packet filter. Importantly, data would only flow in one direction, from the microcontroller to the classifier and not the other way round. This means that the microcontroller needs to keep the state of the rules inside the packet filter and needs to resend the rules to be sure of the configuration. This is not an issue as the rules need to be stored in flash on the microSD card to keep settings between power cycles. The format, figure \ref{fig:spi_message_format} that the SPI hardware expects is similar to how it's stored in BRAM to make it quick and easy to transfer.
 
-\[
-Index | Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
-\]
+\begin{figure}[h!]
+    \centering
+
+    \begin{bytefield}{8}
+        \bitbox{6}{$Index$} & \bitbox{6}{$Wildcard$} & \bitbox{5}{$IP_{Dest}$} & \bitbox{5}{$IP_{Src}$} & \bitbox{6}{$Port_{Dest}$} & \bitbox{6}{$Port_{Src}$} & \bitbox{6}{$Protocol$} 
+    \end{bytefield}
+    
+    \caption{Format of SPI messages}
+    \label{fig:spi_message_format}
+\end{figure}
+
 
 
 Notably, the data is received into a shift register and after all bits have been received the BRAM is updated at the corresponding index in a single clock cycle.
@@ -330,7 +352,7 @@ Similarly, a receive method was created that took in a buffer to store the bytes
 
 
 \subsection{SD card drivers}
-
+\label{sec:microsd_drivers}
 To use a micro SD card, drivers must be created so that the card can be initialised, written to and read from. More preciesly, in accordance to the  documentation for the FreeRTOS-Plus-FAT file system, the driver had to implement a function that reads sectors from the media and one that rights sectors to the media. 
 
 Unlike the Ethernet MAC, initialising a MicroSD card isn't as trivial and requires multiple steps. A guide online for AVRs\footnote[1]{See: http://www.rjhcoding.com/avrc-sd-interface-1.php} was followed and the code was ported to the NEORV32 system. In a nutshell, the SPI interface was initalised with a clock divisor of 1 and a prescalar of 3, several commands were sent and recieved from the SD card and then it was put into IDLE mode after increasing the speed of the SPI interface to have no clock divisor and a prescalar of 1.
@@ -344,11 +366,8 @@ In addition to these, a simple function to determine if a SD card is present in 
 
 
 
-
-
-
 \subsection{Packet classifier drivers}
-
+\label{sec:packet_filter_driver}
 An initialisation function was created to enable and configure the SPI interface on the microprocessor for mode 0, and with no clock diviser and a prescalar of 1. The SPI hardware for the classifier can handle speeds in excess of 50Mhz (seen in section \ref{sec:timing_constraints}), hence there was no need to slow down the clock. Moreover, calling this initialise function is only required if the microSD card intialise function has not been called. 
 
 A single function was created that takes in all the attributes needed in the packet filter and that sends these out in the correct order and format to the hardware. 
@@ -356,46 +375,49 @@ A single function was created that takes in all the attributes needed in the pac
 
 
 
+
+
+
+
 \section{Software}
 
-
-
 \subsection{Real Time Operating System}
-In addition to simplifying the project, and RTOS was used as this would allow the use of network TCP stacks. The RTOS that was used in this design was FreeRTOS V10.4.4 due to its familirity and compatability with the NEORV32 MCU.
+In addition to simplifying the software, an RTOS was used to allow the use of network TCP stacks and handle multiple concurrent connections at a time. FreeRTOS version V10.4.4 was used due to its familirity and compatability with the NEORV32 MCU. FreeRTOS also had integration with their own filesystem (section \ref{sec:freertos_filesystem}) and TCP/IP stack (section \ref{sec:freertos_tcpip_stack}).
 
 \subsection{Filesystem}
+\label{sec:freertos_filesystem}
+The FreeRTOS-Plus-FAT filesystem library was used to allow the system to read and write files (such as web assets) to a microSD card. The library is managed by FreeRTOS and is DOS compatible which allows FAT32 formatted drives to work. Other popular filesystem modules such as FatFS\footnote[1]{http://elm-chan.org/fsw/ff/00index\_e.html} and LittleFS \footnote[2]{https://github.com/littlefs-project/littlefs} were also considered, but did not have the same level of integration and active support as the FreeRTOS option. 
+
+The library then uses the microSD card drivers (section \ref{sec:microsd_drivers}) to access the disk. 
+
 
 \subsection{Network Stack}
-There were two main options for the network stack, LwIP and FreeRTOS-Plus-TCP. The main concern with LwIP was that it was not threadsafe and had memory issues. In addition to this, as FreeRTOS was chosen as the RTOS, their own TCP stack was used as it was thought to have tighter integration. 
+\label{sec:freertos_tcpip_stack}
+
+Two main options for the network stack were available, LwIP and FreeRTOS-Plus-TCP. The main concern with LwIP was that it was not threadsafe and had memory issues. In addition to this, as FreeRTOS was chosen as the RTOS, their own TCP stack had tighter integration. The stack provides a Berkeley sockets API which is the same used in full-blown operating systems such as Linux. It also includes support for ARP, DHCP, DNS and ICMP protocols, which were used throughout this project. 
+
+Like with the filesystem library, the stack needed to be ported to the NEORV32 processor and importantly the custom Etherent hardware. In addition to the transmit, receive and initalisation methods, functions to return random numbers were needed. These are for the TCP sequence numbers and are required to truely random for security. As such, the hardware based true random number generator in the NEORV32 core was used. 
 
 
 \subsection{Webserver}
-A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. 
+A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. FreeRTOS give an example of how to setup a TCP and HTTP server that uses the FAT filesystem to get the content such as the html, css and javascript files. 
 
-HTTP runs on top of TCP, as such, a TCP server was first created which handled all the TCP handshaking and then allowed HTTP data to be sent over the socket. The HTTP server would then process this data, access the filesystem if needed and respond on the socket. 
+... TALK ABOUT WHAT TYPE OF FILES ARE BEEN SERVED, VUE, PLAIN HTML ETC...
 
 
 \subsubsection{API server}
-A subset of the webserver is the API server itself. To make the design simpler, an API was created so that the interface to set and get the firewall rules was independant of the web content.
+A subset of the webserver is the API server itself. To make the design simpler, an API was created so that the interface to set and get the firewall rules was independant of the web content. The way the software distinguishes between requests to load a webpage and the API server itself is by inspecting both the route/URL (pcUrlData) and the method type (GET, POST, PUT).
 
-For setting the firewall rules, a POST request to the \textit{'/api/firewall'} endpoint could be made. The body of the request would contain the rule in the following format
+For setting the firewall rules, a POST request to the \textit{'/api/firewall'} endpoint can be made. The body of the request would contain the rule in the following format
 
 \[
 payload=Index | Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
 \]
 
-Where $|$ is the concatination operator and all fields are in hexadecimal. As an example, to insert a rule at index 0, and with a wildcard operator for all items with a destination IP of 10.20.1.120, source IP of 10.0.0.159, source and destination port of 80 and a protocol of TCP, the following body would need to be sent to the API: \textit{'payload=003F0A1401780A00009F0050005006'}.
-
-This would then be decoded in the webserver itself and applied to the packet filter. 
-
+Where $|$ is the concatination operator and all fields are in hexadecimal. As an example, to insert a rule at index 0, and with a wildcard operator for all items with a destination IP of 10.20.1.120, source IP of 10.0.0.159, source and destination port of 80 and a protocol of TCP, the following body would need to be sent to the API: \codebg{payload=003F0A1401780A00009F0050005006}. The API server then takes the necessary action and applies the rule to the packet filter by calling the methods in the packet filter driver (section \ref{sec:packet_filter_driver}).
 
 
 
 \subsection{Command line interface}
 
-
-\subsection{Improvements}
-
-\begin{itemize}
-    \item Bidirectional filtering - currently only doing incomming filtering
-\end{itemize}
+To aid with debugging the FreeRTOS-Plus-CLI framework was used. This would easily allow certain actions to be executed on demand without the need to reflash or reset the device each time. Such examples include configuring the PHY, ethernet MAC, sending ICMP packets and filesystem related commands. In additon, the firewall rules can be set from the CLI in the event that the firewall blocks HTTP connections. 

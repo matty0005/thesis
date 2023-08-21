@@ -113,8 +113,8 @@
 % ********* Table of contents style **********
 \settocdepth{subsection}
 
-\setsecnumdepth{subsection}
-\maxsecnumdepth{subsection}
+\setsecnumdepth{subsubsection}
+\maxsecnumdepth{subsubsection}
 \settocdepth{subsection}
 \maxtocdepth{subsection}
 
