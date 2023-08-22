@@ -20,6 +20,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity wb_ethernet is
 port (
     clk_i  : in  std_logic;
+    clk_50 : in std_logic;
     rstn_i  : in  std_logic;
     --
     -- Whishbone Interface
@@ -105,6 +106,7 @@ architecture Behavioral of wb_ethernet is
         
             -- Interface
             clk_i  : in  std_logic;
+            clk_wb_i : in std_logic;
             rst_i  : in  std_logic := '0';
             eth_i_rxd : in std_logic_vector(1 downto 0);
             eth_i_crs_dv : in std_logic;
@@ -241,7 +243,8 @@ begin
         wb_o_stall  => wb_rx_o_stall,
         wb_i_stb    => wb_stb_i,
         
-        clk_i  => clk_i,
+        clk_i  => clk_50,
+        clk_wb_i => clk_i,
         rst_i  => rstn_i,
         eth_i_rxd => eth_io_rxd,
         eth_i_crs_dv => eth_io_crs_dv,

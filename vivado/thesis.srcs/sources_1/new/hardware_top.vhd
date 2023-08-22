@@ -44,7 +44,7 @@ use neorv32.neorv32_package.all;
 entity hardware_top is
   generic (
     -- adapt these for your setup --
-    CLOCK_FREQUENCY   : natural := 50000000; -- clock frequency of clk_i in Hz
+    CLOCK_FREQUENCY   : natural := 75000000; -- clock frequency of clk_i in Hz
     MEM_INT_IMEM_SIZE : natural := 256*1024;   -- size of processor-internal instruction memory in bytes
     MEM_INT_DMEM_SIZE : natural := 128*1024;     -- size of processor-internal data memory in bytes
     CUSTOM_ID : std_ulogic_vector(31 downto 0) := x"00000000" -- custom user-defined ID
@@ -129,6 +129,7 @@ end component;
 component wb_ethernet 
 port (
     clk_i  : in  std_logic;
+    clk_50  : in  std_logic;
     rstn_i  : in  std_logic;
     --
     -- Whishbone Interface
@@ -170,6 +171,7 @@ component clk_master is
   Port ( 
     clk_100 : out std_logic;
     clk_50 : out std_logic;
+    clk_75 : out std_logic;
     clk_50p : out std_logic; -- 270deg = 15ns
     clk_p50 : out std_logic; -- 90 deg = 5ns
     resetn : in std_logic;
@@ -215,6 +217,7 @@ signal spi_csn :  std_ulogic_vector(07 downto 0);
 
 -- Clock master signals
 signal clk_100 : std_logic := '0';
+signal clk_75 : std_logic := '0';
 signal clk_50 : std_logic := '0';
 signal clk_p50 : std_logic := '0';
 signal clk_50p : std_logic := '0';
@@ -275,7 +278,8 @@ exti_lines(3 downto 0) <= t_btnl & t_btnc & t_btnr & std_ulogic_vector(eth_exti_
 
 ethernet_mac : wb_ethernet
     port map (
-        clk_i  => clk_50,
+        clk_i  => clk_75,
+        clk_50 => clk_50,
         rstn_i  => rstn_i,
         --
         -- Whishbone Interface
@@ -338,6 +342,7 @@ ethernet_mac : wb_ethernet
    clk_control : clk_master
     port map (
         clk_100 => clk_100,
+        clk_75 => clk_75,
         clk_50 => clk_50,
         clk_50p => clk_50p,
         clk_p50 => clk_p50,
@@ -444,7 +449,7 @@ ethernet_mac : wb_ethernet
   )
   port map (
     -- Global control --
-    clk_i       => clk_50,       -- global clock, rising edge
+    clk_i       => clk_75,       -- global clock, rising edge
     rstn_i      => rstn_i,      -- global reset, low-active, async
     -- GPIO (available if IO_GPIO_EN = true) --
     gpio_o      => gpio_o,  -- parallel output

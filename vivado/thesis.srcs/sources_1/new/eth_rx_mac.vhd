@@ -50,6 +50,7 @@ entity eth_rx_mac is
     
         -- Interface
         clk_i  : in  std_logic;
+        clk_wb_i  : in  std_logic;
         rst_i  : in  std_logic := '0';
 
         eth_i_rxd : in std_logic_vector(1 downto 0);
@@ -169,12 +170,12 @@ end process;
 --end process;
 
 
-WB_MAIN_RX : process(clk_i)
+WB_MAIN_RX : process(clk_wb_i)
 variable virtAddr : integer := 0;
 begin
     if rst_i = '0' then
         wb_o_ack <= '0';
-    elsif rising_edge(clk_i) then
+    elsif rising_edge(clk_wb_i) then
         -- Only handle data when strobe
         if wb_i_stb = '1' and wb_i_addr(31 downto 16) = x"1338" then 
             wb_o_ack <= '1';
