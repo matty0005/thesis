@@ -188,7 +188,7 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 			}
 			else
 			{
-				uxCount = uxSpace;
+				uxCount = uxSpace > 1200u ? 1200u : uxSpace;
 			}
 
 			if( uxCount > 0u )
@@ -200,6 +200,7 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 				ff_fread( pxClient->pxParent->pcFileBuffer, 1, uxCount, pxClient->pxFileHandle );
 				pxClient->uxBytesLeft -= uxCount;
 
+				FreeRTOS_printf( ( "prvSendFile: buff %s\n", pxClient->pxParent->pcFileBuffer));
 
 				xRc = FreeRTOS_send( pxClient->xSocket, pxClient->pxParent->pcFileBuffer, uxCount, 0 );
 				FreeRTOS_FD_SET( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
@@ -213,7 +214,8 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 				}
 			}
 			
-		} while( pxClient->uxBytesLeft > 0u );
+			vTaskDelay(5);
+		} while( uxCount > 0u ); // uxCount > 0u pxClient->uxBytesLeft
 	}
 
 	if( pxClient->uxBytesLeft == 0u )

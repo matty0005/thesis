@@ -235,7 +235,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
             // Create tasks here as TCP/IP stack has been created
             // xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
             // xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
-            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 4, &xServerWorkTaskHandle );
+            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY, &xServerWorkTaskHandle );
 
             xTasksAlreadyCreated = pdTRUE;
         }
