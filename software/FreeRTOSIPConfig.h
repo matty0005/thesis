@@ -76,8 +76,8 @@ used as defaults. */
 // #define ipconfigSOCK_DEFAULT_RECEIVE_BLOCK_TIME	( 5000 )
 // #define	ipconfigSOCK_DEFAULT_SEND_BLOCK_TIME	( 5000 )
 
-#define ipconfigSOCK_DEFAULT_RECEIVE_BLOCK_TIME	( 1000 )
-#define	ipconfigSOCK_DEFAULT_SEND_BLOCK_TIME	( 1000 )
+#define ipconfigSOCK_DEFAULT_RECEIVE_BLOCK_TIME	( 100 )
+#define	ipconfigSOCK_DEFAULT_SEND_BLOCK_TIME	( 100 )
 
 
 /* Include support for LLMNR: Link-local Multicast Name Resolution
