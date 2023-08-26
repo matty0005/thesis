@@ -204,19 +204,16 @@ BaseType_t xRc;
 
 	// if( xRc != 0 )
 	// {
-		for( xIndex = 0; xIndex < pxServer->xServerCount; xIndex++ )
-		{
-		struct freertos_sockaddr xAddress;
-		Socket_t xNexSocket;
-		socklen_t xSocketLength;
-	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: before\n") );
+		for( xIndex = 0; xIndex < pxServer->xServerCount; xIndex++ ) {
+			struct freertos_sockaddr xAddress;
+			Socket_t xNexSocket;
+			socklen_t xSocketLength;
 
 			if( pxServer->xServers[ xIndex ].xSocket == FREERTOS_NO_SOCKET )
 			{
 				continue;
 			}
 
-	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: after\n") );
 			xSocketLength = sizeof( xAddress );
 			xNexSocket = FreeRTOS_accept( pxServer->xServers[ xIndex ].xSocket, &xAddress, &xSocketLength);
 			FreeRTOS_printf( ( "FreeRTOS_TCPServerWork Accept: %d\n", xNexSocket ) );
