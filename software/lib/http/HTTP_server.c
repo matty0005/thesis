@@ -188,7 +188,8 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 			}
 			else
 			{
-				uxCount = uxSpace > 1200u ? 1200u : uxSpace;
+				uxCount = uxSpace;
+				// uxCount = uxSpace > 1200u ? 1200u : uxSpace;
 			}
 
 			if( uxCount > 0u )

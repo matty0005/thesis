@@ -58,7 +58,7 @@ void tsk_ethernet(void *pvParameters) {
 void main_project( void ) {
 
 
-    // cli_init();
+    cli_init();
     // xTaskCreate(tsk_ethernet, "ETHERNETDAEMON", ETH_STACK_SIZE, NULL, ETH_TASK_PRIORITY, NULL);
 
 }
