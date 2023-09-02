@@ -126,8 +126,6 @@ BaseType_t xNetworkInterfaceInitialise( void )
 BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescriptor, BaseType_t xReleaseAfterSend) 
 {
 
-    /* Call the standard trace macro to log the send event. */
-    iptraceNETWORK_INTERFACE_TRANSMIT();
 
     BaseType_t xReturn = pdFAIL;
 
@@ -135,10 +133,16 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescripto
     // pxDescriptor->xDataLength is the length of the buffer. (size_t)
     if (eth_send(pxDescriptor->pucEthernetBuffer, pxDescriptor->xDataLength) == ETH_ERR_OK) 
         xReturn = pdPASS;
+
+    /* Call the standard trace macro to log the send event. */
+    iptraceNETWORK_INTERFACE_TRANSMIT();
     
+    // FreeRTOS_printf( ( "NETWORK_OUTPUT: sent out packet.\n" ) );
 
     if (xReleaseAfterSend != pdFALSE)
         vReleaseNetworkBufferAndDescriptor(pxDescriptor);
+
+    // FreeRTOS_printf( ( "NETWORK_OUTPUT: RELEASED BUFFER. release: %d\n", xReleaseAfterSend ) );
     
 
     return xReturn;

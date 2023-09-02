@@ -67,7 +67,7 @@ TCPServer_t *FreeRTOS_CreateTCPServer( const struct xSERVER_CONFIG *pxConfigs, B
 		if (pxServer != NULL) {
 
 			struct freertos_sockaddr xAddress;
-			BaseType_t xNoTimeout = 5000;
+			BaseType_t xNoTimeout = 0;
 			BaseType_t xIndex;
 
 			memset( pxServer, '\0', xSize );
@@ -197,36 +197,33 @@ BaseType_t xIndex;
 BaseType_t xRc;
 
 	/* Let the server do one working cycle */
-	// xRc = FreeRTOS_select( pxServer->xSocketSet, xBlockingTime );
-	// FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: xRc %d\n", xRc ) );
+	xRc = FreeRTOS_select( pxServer->xSocketSet, xBlockingTime );
+	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: xRc %d\n", xRc ) );
 
 
 
-	// if( xRc != 0 )
-	// {
-		for( xIndex = 0; xIndex < pxServer->xServerCount; xIndex++ )
-		{
-		struct freertos_sockaddr xAddress;
-		Socket_t xNexSocket;
-		socklen_t xSocketLength;
-	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: before\n") );
+	if( xRc != 0 )
+	{
+		for( xIndex = 0; xIndex < pxServer->xServerCount; xIndex++ ) {
+			struct freertos_sockaddr xAddress;
+			Socket_t xNexSocket;
+			socklen_t xSocketLength;
 
 			if( pxServer->xServers[ xIndex ].xSocket == FREERTOS_NO_SOCKET )
 			{
 				continue;
 			}
 
-	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: after\n") );
 			xSocketLength = sizeof( xAddress );
 			xNexSocket = FreeRTOS_accept( pxServer->xServers[ xIndex ].xSocket, &xAddress, &xSocketLength);
-			FreeRTOS_printf( ( "FreeRTOS_TCPServerWork Accept: %d\n", xNexSocket ) );
+			// FreeRTOS_printf( ( "FreeRTOS_TCPServerWork Accept: %d\n", xNexSocket ) );
 
 			if( ( xNexSocket != FREERTOS_NO_SOCKET ) && ( xNexSocket != FREERTOS_INVALID_SOCKET ) )
 			{
 				prvReceiveNewClient( pxServer, xIndex, xNexSocket );
 			}
 		}
-	// }
+	}
 
 	ppxClient = &pxServer->pxClients;
 

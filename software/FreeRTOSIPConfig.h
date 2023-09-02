@@ -73,8 +73,12 @@ stack repeating the checksum calculations. */
 performed, for example FreeRTOS_send() and FreeRTOS_recv().  The timeouts can be
 set per socket, using setsockopt().  If not set, the times below will be
 used as defaults. */
-#define ipconfigSOCK_DEFAULT_RECEIVE_BLOCK_TIME	( 5000 )
-#define	ipconfigSOCK_DEFAULT_SEND_BLOCK_TIME	( 5000 )
+// #define ipconfigSOCK_DEFAULT_RECEIVE_BLOCK_TIME	( 5000 )
+// #define	ipconfigSOCK_DEFAULT_SEND_BLOCK_TIME	( 5000 )
+
+#define ipconfigSOCK_DEFAULT_RECEIVE_BLOCK_TIME	( 0 )
+#define	ipconfigSOCK_DEFAULT_SEND_BLOCK_TIME	( 0 )
+
 
 /* Include support for LLMNR: Link-local Multicast Name Resolution
 (non-Microsoft) */
@@ -103,14 +107,14 @@ configMAX_PRIORITIES is a standard FreeRTOS configuration parameter defined in
 FreeRTOSConfig.h, not FreeRTOSIPConfig.h. Consideration needs to be given as to
 the priority assigned to the task executing the IP stack relative to the
 priority assigned to tasks that use the IP stack. */
-#define ipconfigIP_TASK_PRIORITY			( configMAX_PRIORITIES - 5 )
+#define ipconfigIP_TASK_PRIORITY			( configMAX_PRIORITIES - 2 )
 
 /* The size, in words (not bytes), of the stack allocated to the FreeRTOS+TCP
 task.  This setting is less important when the FreeRTOS Win32 simulator is used
 as the Win32 simulator only stores a fixed amount of information on the task
 stack.  FreeRTOS includes optional stack overflow detection, see:
 http://www.freertos.org/Stacks-and-stack-overflow-checking.html */
-#define ipconfigIP_TASK_STACK_SIZE_WORDS	( configMINIMAL_STACK_SIZE * 12 )
+#define ipconfigIP_TASK_STACK_SIZE_WORDS	( configMINIMAL_STACK_SIZE * 14 )
 
 /* ipconfigRAND32() is called by the IP stack to generate random numbers for
 things such as a DHCP transaction number or initial sequence number.  Random
@@ -198,7 +202,7 @@ not set to 1 then only FreeRTOS_indet_addr_quick() is available. */
 are available to the IP stack.  The total number of network buffers is limited
 to ensure the total amount of RAM that can be consumed by the IP stack is capped
 to a pre-determinable value. */
-#define ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS		50
+#define ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS		75
 
 /* A FreeRTOS queue is used to send events from application tasks to the IP
 stack.  ipconfigEVENT_QUEUE_LENGTH sets the maximum number of events that can
@@ -290,7 +294,7 @@ maximum size.  Define the size of Rx buffer for TCP sockets. */
 #define ipconfigTCP_RX_BUFFER_LENGTH			( 3 * 1460 )
 
 /* Define the size of Tx buffer for TCP sockets. */
-#define ipconfigTCP_TX_BUFFER_LENGTH			( 1 * 1460 )
+#define ipconfigTCP_TX_BUFFER_LENGTH			( 3 * 1460 )
 
 /* When using call-back handlers, the driver may check if the handler points to
 real program memory (RAM or flash) or just has a random non-zero value. */
@@ -305,8 +309,6 @@ disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigTCP_KEEP_ALIVE				( 1 )
 #define ipconfigTCP_KEEP_ALIVE_INTERVAL		( 20 ) /* in seconds */
 
-#define ipconfigUSE_HTTP					1
-
 #define ipconfigUSE_IPv6 0
 #define ipconfigIPv4_BACKWARD_COMPATIBLE 1
 
@@ -319,5 +321,6 @@ disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigHTTP_RX_WINSIZE				( 1 )
 #define ipconfigSUPPORT_SIGNALS				1
 
+#define ipconfigZERO_COPY_TX_DRIVER 0
 
 #endif /* FREERTOS_IP_CONFIG_H */

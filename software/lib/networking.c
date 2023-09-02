@@ -201,11 +201,10 @@ static void tsk_HTTP_server(void *pvParameters) {
 
     for( ;; )
     {
-        neorv32_uart0_printf("TCP run http\n\n");
+        // neorv32_uart0_printf("TCP run http\n\n");
 
         /* Run the HTTP and/or FTP servers, as configured above. */
         FreeRTOS_TCPServerWork( pxTCPServer, xInitialBlockTime );       
-
         vTaskDelay( pdMS_TO_TICKS( 1 ) ); 
     }
 }
@@ -235,7 +234,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
             // Create tasks here as TCP/IP stack has been created
             // xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
             // xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
-            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 4, &xServerWorkTaskHandle );
+            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY, &xServerWorkTaskHandle );
 
             xTasksAlreadyCreated = pdTRUE;
         }
