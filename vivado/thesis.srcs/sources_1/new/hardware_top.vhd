@@ -55,6 +55,7 @@ entity hardware_top is
     rstn_i      : in  std_ulogic; -- global reset, low-active, async
     -- GPIO --
     gpio_io      : inout std_ulogic_vector(7 downto 0); -- parallel output
+    gpio_out       : out std_ulogic_vector(7 downto 0);
     -- UART0 --
     uart0_txd_o : out std_ulogic; -- UART0 send data
     uart0_rxd_i : in  std_ulogic;  -- UART0 receive data
@@ -494,6 +495,8 @@ ethernet_mac : wb_ethernet
   gpio_i <= x"000000000000" & "00000" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
   
   sd_o_rst <= gpio_o(11);
+  
+  gpio_out <= gpio_o(23 downto 16);
   
   
   sd_o_sck  <= spi_clk_o; -- clock
