@@ -46,7 +46,7 @@ extern void vLoggingPrintf( const char *pcFormatString, ... );
 /* Set to 1 to print out debug messages.  If ipconfigHAS_DEBUG_PRINTF is set to
 1 then FreeRTOS_debug_printf should be defined to the function used to print
 out the debugging messages. */
-#define ipconfigHAS_DEBUG_PRINTF	1
+#define ipconfigHAS_DEBUG_PRINTF	0
 #if( ipconfigHAS_DEBUG_PRINTF == 1 )
 	#define FreeRTOS_debug_printf(X)	neorv32_uart0_printf X
 #endif
@@ -107,7 +107,7 @@ configMAX_PRIORITIES is a standard FreeRTOS configuration parameter defined in
 FreeRTOSConfig.h, not FreeRTOSIPConfig.h. Consideration needs to be given as to
 the priority assigned to the task executing the IP stack relative to the
 priority assigned to tasks that use the IP stack. */
-#define ipconfigIP_TASK_PRIORITY			( configMAX_PRIORITIES - 2 )
+#define ipconfigIP_TASK_PRIORITY			( configMAX_PRIORITIES - 4 )
 
 /* The size, in words (not bytes), of the stack allocated to the FreeRTOS+TCP
 task.  This setting is less important when the FreeRTOS Win32 simulator is used
@@ -256,7 +256,6 @@ FreeRTOS_SendPingRequest() API function is available. */
 /* If ipconfigSUPPORT_SELECT_FUNCTION is set to 1 then the FreeRTOS_select()
 (and associated) API function is available. */
 #define ipconfigSUPPORT_SELECT_FUNCTION				1
-#define ipconfigSUPPORT_SIGNALS  1
 
 /* If ipconfigFILTER_OUT_NON_ETHERNET_II_FRAMES is set to 1 then Ethernet frames
 that are not in Ethernet II format will be dropped.  This option is included for
@@ -287,7 +286,7 @@ This has to do with the contents of the IP-packets: all 32-bit fields are
 TCP socket will use up to 2 x 6 descriptors, meaning that it can have 2 x 6
 outstanding packets (for Rx and Tx).  When using up to 10 TP sockets
 simultaneously, one could define TCP_WIN_SEG_COUNT as 120. */
-#define ipconfigTCP_WIN_SEG_COUNT		240
+#define ipconfigTCP_WIN_SEG_COUNT		120
 
 /* Each TCP socket has a circular buffers for Rx and Tx, which have a fixed
 maximum size.  Define the size of Rx buffer for TCP sockets. */
@@ -318,7 +317,7 @@ disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigHTTP_TX_BUFSIZE				( 1 * ipconfigTCP_MSS )
 #define ipconfigHTTP_TX_WINSIZE				( 1 )
 #define ipconfigHTTP_RX_BUFSIZE				( 1 * ipconfigTCP_MSS )
-#define ipconfigHTTP_RX_WINSIZE				( 1 )
+#define ipconfigHTTP_RX_WINSIZE				( 1	 )
 #define ipconfigSUPPORT_SIGNALS				1
 
 #define ipconfigZERO_COPY_TX_DRIVER 0

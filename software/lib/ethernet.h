@@ -16,6 +16,8 @@
 #include <stddef.h>
 #include <neorv32.h>
 
+#include "common.h"
+
 // Errors
 #define ETH_ERR_OK 0
 #define ETH_ERR_TOO_BIG 1

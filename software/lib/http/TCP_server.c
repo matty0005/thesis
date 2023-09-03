@@ -182,7 +182,6 @@ const char *pcType = "Unknown";
 	{
 	struct freertos_sockaddr xRemoteAddress;
 		FreeRTOS_GetRemoteAddress( pxClient->xSocket, &xRemoteAddress );
-		// FreeRTOS_printf( ( "TPC-server: new %s client %xip\n", pcType, (unsigned)FreeRTOS_ntohl( xRemoteAddress.sin_address ) ) );
 	}
 
 	/* Remove compiler warnings in case FreeRTOS_printf() is not used. */

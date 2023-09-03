@@ -91,7 +91,7 @@ BaseType_t xNetworkInterfaceInitialise( void )
                      "EMACInt",                           /* Text name for the task. */
                      256 * 2,                                 /* Stack size in words, not bytes. */
                      ( void * ) 1,                        /* Parameter passed into the task. */
-                     tskIDLE_PRIORITY + 2,                    /* Priority at which the task is created. */
+                     configMAX_PRIORITIES - 2,                    /* Priority at which the task is created. */
                      &xEMACTaskHandle );                  /* Used to pass out the created task's handle. */
 
     }
@@ -201,10 +201,6 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
 
     for( ;; ) 
     {
-        /* Wait for the Ethernet MAC interrupt to indicate that another packet
-        has been received.  ulTaskNotifyTake() is used in place of the
-        standard queue receive function as the interrupt handler cannot directly
-        write to a queue. */
         ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
 
         /* Obtain the size of the packet and put it into the "length" member of

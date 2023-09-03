@@ -119,7 +119,7 @@ struct xTCP_SERVER
 
 
 	char pcContentsType[40];	/* Space for the msg: "text/javascript" */
-	char pcExtraContents[256];	/* Space for the msg: "Content-Length: 346500" */
+	char pcExtraContents[350];	/* Space for the msg: "Content-Length: 346500" */
 
 	BaseType_t xServerCount;
 	TCPClient_t *pxClients;

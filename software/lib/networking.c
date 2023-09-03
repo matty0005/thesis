@@ -170,10 +170,60 @@ static void tsk_udp_send( void *pvParameters ) {
 
 
 
+static void tsk_udp_ping( void *pvParameters ) {
+
+    Socket_t xSocket;
+    struct freertos_sockaddr xAddress;
+    uint8_t ucBuffer[1024];
+    size_t xReceivedBytes;
+    struct freertos_sockaddr xClientAddress;
+    socklen_t xClientAddressLength = sizeof(xClientAddress);
+
+    // Create the UDP socket.
+    xSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
+    if (xSocket == FREERTOS_INVALID_SOCKET) {
+        // Handle error - failed to create socket.
+        vTaskDelete(NULL);
+    }
+
+    // Bind to port.
+    xAddress.sin_port = FreeRTOS_htons(9999);
+    if (FreeRTOS_bind(xSocket, &xAddress, sizeof(xAddress)) != 0) {
+        // Handle error - failed to bind socket.
+        FreeRTOS_closesocket(xSocket);
+        vTaskDelete(NULL);
+    }
+
+    while (1) {
+        xReceivedBytes = FreeRTOS_recvfrom(xSocket, ucBuffer, 1024, 0, &xClientAddress, &xClientAddressLength);
+        neorv32_gpio_pin_clr(GPIO_PIN_3);
+        
+        if ((int)xReceivedBytes > 0) {
+
+            
+            // neorv32_uart0_printf("Received packet, %d\n\n ",xReceivedBytes);
+            
+            // Reply with "ok".
+            const char *response = "ok";
+            // FreeRTOS_printf( ( "Time 1: %d\n", xTaskGetTickCount()));
+
+            FreeRTOS_sendto(xSocket, response, strlen(response), FREERTOS_MSG_DONTWAIT, &xClientAddress, xClientAddressLength);
+            neorv32_gpio_pin_set(GPIO_PIN_5);
+            neorv32_gpio_pin_set(GPIO_PIN_6);
+        }
+
+        vTaskDelay( pdMS_TO_TICKS( 1 ) ); 
+    }
+
+    // Clean up (though we'll never reach here in this example).
+    FreeRTOS_closesocket(xSocket);
+    vTaskDelete(NULL);
+}
+
 
 static void tsk_HTTP_server(void *pvParameters) {
 	TCPServer_t *pxTCPServer = NULL;
-	const TickType_t xInitialBlockTime = pdMS_TO_TICKS( 5000UL );
+	const TickType_t xInitialBlockTime = pdMS_TO_TICKS( 500UL );
 	const TickType_t xSDCardInsertDelay = pdMS_TO_TICKS( 1000UL );
 
 	static const struct xSERVER_CONFIG xServerConfiguration[] =
@@ -234,7 +284,8 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
             // Create tasks here as TCP/IP stack has been created
             // xTaskCreate(tsk_udp_receive, "UDP RX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
             // xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
-            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY, &xServerWorkTaskHandle );
+            xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
+            // xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
 
             xTasksAlreadyCreated = pdTRUE;
         }

@@ -33,6 +33,8 @@
 #include "ff_stdio.h"
 #include "ff_sddisk.h"
 
+#include "common.h"
+
 #include "File-related-CLI-commands.h"
 
 

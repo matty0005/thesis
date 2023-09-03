@@ -278,6 +278,17 @@ char pcSlash[ 2 ];
 		/* The browser provided a starting '/' already. */
 		pcSlash[ 0 ] = '\0';
 	}
+
+	// Check if url is /api/firewall
+	if (strcmp(pxClient->pcUrlData, "/api/firewall") == 0) {
+		BaseType_t httpErrorCode = WEB_REPLY_OK;
+		http_api_firewall_get(pxClient, &httpErrorCode);
+		xRc = prvSendReply( pxClient, httpErrorCode);
+		prvFileClose( pxClient );
+		
+		return xRc;
+	}
+
 	snprintf( pxClient->pcCurrentFilename, sizeof( pxClient->pcCurrentFilename ), "%s%s%s",
 		pxClient->pcRootDir,
 		pcSlash,

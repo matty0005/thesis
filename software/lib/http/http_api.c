@@ -12,6 +12,46 @@
 #include "http_api.h"
 
 
+BaseType_t http_api_firewall_get(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
+        
+        // Get the firewall rules from the packet classifier.
+        snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
+                "%s", "text/plain" );
+
+        int8_t *rules = pvPortMalloc(PACKET_FILTER_RULE_FILE_SIZE * sizeof(uint8_t));
+        // uint8_t rules[PACKET_FILTER_RULE_FILE_SIZE];
+
+        uint32_t size = 0;
+        int err = pc_get_rules(rules, PACKET_FILTER_RULE_FILE_SIZE, &size);
+
+        if (err) {
+                FreeRTOS_printf( ( "http_api_firewall_get:  %d\n", err) );
+                snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+                        "Content-Length: %d\r\n\r\n%s", 19, "Could not read file" );
+
+                *httpErrorCode = WEB_INTERNAL_SERVER_ERROR;
+                vPortFree(rules);
+
+                return pdTRUE;
+        }
+
+        
+        
+        // craft a response
+        snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+                "Content-Length: %d\r\n\r\n", size);
+
+        // copy the rules into the response
+        memcpy(pxClient->pxParent->pcExtraContents + strlen(pxClient->pxParent->pcExtraContents), rules, size);
+
+        vPortFree(rules);
+        
+
+        *httpErrorCode = WEB_REPLY_OK;
+
+        return pdTRUE;
+}
+
 /**
  * @brief Add a firewall rule to the packet classifier.
  * 

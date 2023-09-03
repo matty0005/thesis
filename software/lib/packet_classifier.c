@@ -78,3 +78,30 @@ void pc_save_rule(uint8_t address, uint8_t wildcard, uint8_t *destIP, uint8_t *s
 
     neorv32_spi_cs_dis();
 }
+
+
+/**
+ * @brief Get the rules from the packet classifier
+ * 
+ * @param buffer: make sure it is sufficiently large >= 240. 
+ * @param bufferSize: size of buffer
+ * @param size: size of data read.
+ * @return int: 0 if no error, 1 if error
+ */
+int pc_get_rules(uint8_t *buffer, uint32_t bufferSize, uint32_t *size) {
+
+
+    FF_FILE *filehandle = ff_fopen( "/firewall/filter.rules", "rb" );
+
+    if (filehandle != NULL) {
+
+        *size = ff_fread(buffer, 1, bufferSize, filehandle);
+
+        ff_fclose(filehandle);
+    
+    } else {
+        return 1;
+    }
+
+    return 0;
+}

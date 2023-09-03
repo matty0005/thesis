@@ -21,8 +21,7 @@
         <checkbox class="mx-2 mt-1" title="Wildcard" v-model="wildcardProto"/>
     </div>
     <div class="my-auto mx-4">
-        <button type="button" @click="saveRule" class="rounded bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">Save</button>
-        <button type="button" @click="loadInitialState" class="rounded bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">Load</button>
+        <button type="button" @click="saveRule" class="rounded bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20 mx-2">Save</button>
     </div>
   </div>
 </template>
@@ -50,7 +49,9 @@ export default {
         wildcardProto: false,
     }
   },
-  
+  mounted() {
+    this.loadInitialState();
+  },
   methods: {
     loadInitialState() {
         // location | wildcard | destIP[4] | sourceIP[4] | destPort[2] | sourcePort[2] | protocol

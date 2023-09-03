@@ -30,6 +30,14 @@ static BaseType_t cli_cmd_sd_read(char *pcWriteBuffer, size_t xWriteBufferLen, c
 static BaseType_t cli_cmd_sd_write(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_fat_read(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_packet_classifier_init(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static BaseType_t cli_get_rules(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+
+CLI_Command_Definition_t xGetRules = {	
+	"pcrules",							
+	"pcrules:\r\n    Return the packet classifier rules\r\n\r\n",
+	cli_get_rules,
+	0	
+};
 
 CLI_Command_Definition_t xPCInit = {	
 	"pcinit",							
@@ -940,6 +948,48 @@ static BaseType_t cli_packet_classifier_init(char *pcWriteBuffer, size_t xWriteB
 }
 
 
+/**
+ * @brief CLI command to read block from sd card
+ * 
+ * @param pcWriteBuffer 
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
+static BaseType_t cli_get_rules(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString) {
+    
+    // FF_FILE *filehandle = ff_fopen( "/firewall/filter.rules", "rb" );
+
+    // if (filehandle != NULL) {
+
+        uint8_t buff[300];
+        uint32_t xCount;
+        pc_get_rules(buff, 300, &xCount);
+
+        // sprintf(pcWriteBuffer, "Read %d bytes from file:\r\n\r\n", xCount);
+
+        // uint32_t xCount = ff_fread(buff, 1, sizeof( buff ), filehandle);
+        // ff_fclose(filehandle);
+
+        sprintf(pcWriteBuffer, "Read %d bytes from file:\r\n\r\n", xCount);
+
+        for (int i = 0; i < xCount; i++) 
+            sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "%c", buff[i]);
+        
+        sprintf(pcWriteBuffer + strlen(pcWriteBuffer), "\r\nEnd of file\r\n");
+
+    
+    // } else {
+    //     // https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/stdio_API/errno.html
+    //     sprintf(pcWriteBuffer, "Failed to open file: %d\r\n", stdioGET_ERRNO());
+    // }
+   
+    return pdFALSE;
+
+}
+
+
+
 
 
 void tsk_cli_daemon(void *pvParameters) {
@@ -964,6 +1014,7 @@ void tsk_cli_daemon(void *pvParameters) {
     FreeRTOS_CLIRegisterCommand(&xSDWrite);
     FreeRTOS_CLIRegisterCommand(&xFATRead);
     FreeRTOS_CLIRegisterCommand(&xPCInit);
+    FreeRTOS_CLIRegisterCommand(&xGetRules);
     
     
     

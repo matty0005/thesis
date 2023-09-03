@@ -108,7 +108,7 @@
 #define configMAX_TASK_NAME_LEN			( 16 )
 #define configUSE_TRACE_FACILITY		1
 #define configUSE_16_BIT_TICKS			0
-#define configIDLE_SHOULD_YIELD			0
+#define configIDLE_SHOULD_YIELD			1
 #define configUSE_MUTEXES				1
 #define configQUEUE_REGISTRY_SIZE		8
 #define configCHECK_FOR_STACK_OVERFLOW	2
@@ -130,7 +130,7 @@
 /* Software timer definitions. */
 #define configUSE_TIMERS				0
 #define configTIMER_TASK_PRIORITY		( configMAX_PRIORITIES - 1 )
-#define configTIMER_QUEUE_LENGTH		4
+#define configTIMER_QUEUE_LENGTH		2
 #define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE )
 
 /* Task priorities.  Allow these to be overridden. */

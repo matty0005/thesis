@@ -17,6 +17,16 @@
 #include "queue.h"
 #include "semphr.h"
 
+#define GPIO_PIN_0 16
+#define GPIO_PIN_1 17
+#define GPIO_PIN_2 18
+#define GPIO_PIN_3 19
+#define GPIO_PIN_4 20
+#define GPIO_PIN_5 21
+#define GPIO_PIN_6 22
+#define GPIO_PIN_7 23
+
+
 extern TaskHandle_t xEMACTaskHandle;
 
 /**

@@ -2,11 +2,11 @@
   <div class="config">
     <h1>This is a config page</h1>
 
-    <button type="button" @click="enableFirewall" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Enable</button>
-    <button type="button" @click="getStats" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Refresh Stats</button>
-    <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Restart</button>
-    <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Reset Phy</button>
-    <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Save</button>
+    <!-- <button type="button" @click="enableFirewall" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Enable</button> -->
+    <!-- <button type="button" @click="getStats" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Refresh Stats</button> -->
+    <!-- <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Restart</button> -->
+    <!-- <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Reset Phy</button> -->
+        <button type="button" @click="loadRules" class="rounded bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20 mx-2">Load Rules</button>
 
     <firewall-rule v-for="(rule, index) in rules" :key="index" :index="index" :initialRule="rule" />
 
@@ -26,6 +26,21 @@ export default {
         },
         async enableFirewall() {
             const response = await fetch('/api/enable');
+        },
+        async loadRules() {
+            try {
+                const response = await fetch('/api/firewall');
+
+                if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const rawData = await response.text();  // Get raw text data
+                this.rules = rawData.split('\n').filter(rule => rule.trim());
+
+            } catch (error) {
+                console.error('Fetch error:', error.message);
+            }
         }
     },
     data: () => {
