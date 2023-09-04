@@ -358,7 +358,7 @@ ethernet_mac : wb_ethernet
         display => ssd,
         value => pc_valid_counter
     );
-    anode <= "11111110";
+    anode <= "11111110" when sw(1) = '0' else "11111111";
     
     pmod_o(2) <= crs_dv_allow;
     pmod_o(5) <= pc_valid;
