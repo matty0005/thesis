@@ -35,6 +35,8 @@
 
 #include "common.h"
 
+#include "iperf_task.h"
+
 #include "File-related-CLI-commands.h"
 
 

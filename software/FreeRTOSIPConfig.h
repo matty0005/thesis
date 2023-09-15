@@ -224,6 +224,8 @@ on a socket that has not yet been bound will result in the send operation being
 aborted. */
 #define ipconfigALLOW_SOCKET_SEND_WITHOUT_BIND 1
 
+// #define ipconfigMAX_IP_TASK_SLEEP_TIME 100
+
 /* Defines the Time To Live (TTL) values used in outgoing UDP packets. */
 #define ipconfigUDP_TIME_TO_LIVE		128
 #define ipconfigTCP_TIME_TO_LIVE		128 /* also defined in FreeRTOSIPConfigDefaults.h */
@@ -321,5 +323,27 @@ disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigSUPPORT_SIGNALS				1
 
 #define ipconfigZERO_COPY_TX_DRIVER 0
+
+
+
+
+/**
+ * @brief IPerf settings
+ * 
+ */
+#define USE_IPERF						        1
+#define ipconfigIPERF_DOES_ECHO_UDP		        0
+
+#define ipconfigIPERF_VERSION					3
+#define ipconfigIPERF_STACK_SIZE_IPERF_TASK		680
+
+#define ipconfigIPERF_TX_BUFSIZE				( 8 * ipconfigTCP_MSS )
+#define ipconfigIPERF_TX_WINSIZE				( 6 )
+#define ipconfigIPERF_RX_BUFSIZE				( 8 * ipconfigTCP_MSS )
+#define ipconfigIPERF_RX_WINSIZE				( 6 )
+
+/* The iperf module declares a character buffer to store its send data. */
+#define ipconfigIPERF_RECV_BUFFER_SIZE			( 2 * ipconfigTCP_MSS )
+
 
 #endif /* FREERTOS_IP_CONFIG_H */

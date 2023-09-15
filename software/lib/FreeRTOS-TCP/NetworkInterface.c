@@ -126,6 +126,7 @@ BaseType_t xNetworkInterfaceInitialise( void )
 BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescriptor, BaseType_t xReleaseAfterSend) 
 {
 
+    FreeRTOS_printf( ( "xNetworkInterfaceOutput 1: Tick %d\n", xTaskGetTickCount()) );
 
     BaseType_t xReturn = pdFAIL;
 
@@ -138,11 +139,13 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescripto
     iptraceNETWORK_INTERFACE_TRANSMIT();
     
     // FreeRTOS_printf( ( "NETWORK_OUTPUT: sent out packet.\n" ) );
+    // FreeRTOS_printf( ( "xNetworkInterfaceOutput 1: Tick %d\n", xTaskGetTickCount()) );
 
     if (xReleaseAfterSend != pdFALSE)
         vReleaseNetworkBufferAndDescriptor(pxDescriptor);
 
     // FreeRTOS_printf( ( "NETWORK_OUTPUT: RELEASED BUFFER. release: %d\n", xReleaseAfterSend ) );
+    FreeRTOS_printf( ( "xNetworkInterfaceOutput 2: Tick %d\n", xTaskGetTickCount()) );
     
 
     return xReturn;
@@ -211,10 +214,15 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
         {
             /* Obtain a network buffer descriptor.  This call will block
             indefinitely if a network buffer is not available. */
+            FreeRTOS_printf( ( "==prvEMACDeferredInterruptHandlerTask 1 : Tick %d\n", xTaskGetTickCount()) );
+
+            
             pxBufferDescriptor = pxGetNetworkBufferWithDescriptor( xBytesReceived, 0 );
 
             if( pxBufferDescriptor != NULL ) 
             {
+            FreeRTOS_printf( ( "==prvEMACDeferredInterruptHandlerTask 2 : Tick %d\n", xTaskGetTickCount()) );
+
                 /* Set the actual length of the packet. */
                 pxBufferDescriptor->xDataLength = xBytesReceived;
 
@@ -227,6 +235,9 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
 
                 taskEXIT_CRITICAL();
 
+
+            FreeRTOS_printf( ( "=====eConsiderFrameForProcessing 2 : %d\n", eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer)) );
+
                 if (eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer) == eProcessBuffer) 
                 {
 
@@ -237,8 +248,9 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
 
                     
 
+            FreeRTOS_printf( ( "==prvEMACDeferredInterruptHandlerTask 3 : Tick %d\n", xTaskGetTickCount()) );
                     /* Pass the received packet to the TCP/IP stack. */
-                    if( xSendEventStructToIPTask( &xRxEvent, 0 ) == pdFALSE ) 
+                    if( xSendEventStructToIPTask( &xRxEvent, 100 ) == pdFALSE ) 
                     {
                         /* The buffer could not be sent to the IP task so the buffer must be released. */
                         vReleaseNetworkBufferAndDescriptor( pxBufferDescriptor );

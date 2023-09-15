@@ -203,8 +203,14 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 
 				FreeRTOS_printf( ( "prvSendFile: buff %s\n", pxClient->pxParent->pcFileBuffer));
 
+			    FreeRTOS_printf( ( "prvSendFile 1: Tick %d\n", xTaskGetTickCount()) );
+
 				xRc = FreeRTOS_send( pxClient->xSocket, pxClient->pxParent->pcFileBuffer, uxCount, 0 );
+			    FreeRTOS_printf( ( "prvSendFile 2: Tick %d\n", xTaskGetTickCount()) );
+
+
 				FreeRTOS_FD_SET( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
+			    FreeRTOS_printf( ( "prvSendFile 3: Tick %d\n", xTaskGetTickCount()) );
 
 				FreeRTOS_printf( ( "prvSendFile: Data left= %d, xRc = %d, uxCount = %d\n",
 					pxClient->uxBytesLeft, xRc, uxCount) );

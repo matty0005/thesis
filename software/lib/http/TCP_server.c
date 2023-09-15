@@ -196,8 +196,11 @@ BaseType_t xIndex;
 BaseType_t xRc;
 
 	/* Let the server do one working cycle */
+    FreeRTOS_printf( ( "FreeRTOS_TCPServerWork 1: Tick %d\n", xTaskGetTickCount()) );
+
 	xRc = FreeRTOS_select( pxServer->xSocketSet, xBlockingTime );
 	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: xRc %d\n", xRc ) );
+    FreeRTOS_printf( ( "FreeRTOS_TCPServerWork 2: Tick %d\n", xTaskGetTickCount()) );
 
 
 
@@ -246,6 +249,9 @@ BaseType_t xRc;
 			ppxClient = &( pxThis->pxNextClient );
 		}
 	}
+
+    FreeRTOS_printf( ( "FreeRTOS_TCPServerWork 3: Tick %d\n", xTaskGetTickCount()) );
+
 }
 
 /*-----------------------------------------------------------*/
