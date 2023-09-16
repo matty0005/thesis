@@ -6,7 +6,7 @@
     <!-- <button type="button" @click="getStats" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Refresh Stats</button> -->
     <!-- <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Restart</button> -->
     <!-- <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Reset Phy</button> -->
-        <button type="button" @click="loadRules" class="rounded bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20 mx-2">Load Rules</button>
+        <button type="button" @click="loadRules" class="rounded bg-riscv-blue-l dark:bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-riscv-blue-d mx-2">Load Rules</button>
 
     <firewall-rule v-for="(rule, index) in rules" :key="index" :index="index" :initialRule="rule" />
 
