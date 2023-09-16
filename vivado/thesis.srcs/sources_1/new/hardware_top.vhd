@@ -44,10 +44,10 @@ use neorv32.neorv32_package.all;
 entity hardware_top is
   generic (
     -- adapt these for your setup --
-    CLOCK_FREQUENCY   : natural := 75000000; -- clock frequency of clk_i in Hz
+    CLOCK_FREQUENCY   : natural := 80000000; -- clock frequency of clk_i in Hz
     MEM_INT_IMEM_SIZE : natural := 256*1024;   -- size of processor-internal instruction memory in bytes
-    MEM_INT_DMEM_SIZE : natural := 128*1024;     -- size of processor-internal data memory in bytes
-    CUSTOM_ID : std_ulogic_vector(31 downto 0) := x"00000000" -- custom user-defined ID
+    MEM_INT_DMEM_SIZE : natural := 168*1024;     -- size of processor-internal data memory in bytes
+    CUSTOM_ID : std_ulogic_vector(31 downto 0) := x"1337beef" -- custom user-defined ID
   );
   port (
     -- Global control --
@@ -258,9 +258,6 @@ signal pf_allow : std_logic := '0';
 signal pf_ignore_count : std_logic := '0';
 
 signal rst : std_logic;
-
-
-
 
 begin
 

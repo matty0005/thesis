@@ -56,11 +56,11 @@
 //  Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
 //   Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
 //----------------------------------------------------------------------------
-// _clk_100__100.00000______0.000______50.0______126.133_____94.994
-// __clk_50__50.00000______0.000______50.0______145.943_____94.994
-// _clk_50p__50.00000____270.000______50.0______145.943_____94.994
-// _clk_p50__50.00000_____45.000______50.0______145.943_____94.994
-// __clk_75__75.00000______0.000______50.0______133.854_____94.994
+// _clk_100__100.00000______0.000______50.0______144.719____114.212
+// __clk_50__50.00000______0.000______50.0______167.017____114.212
+// _clk_50p__50.00000____270.000______50.0______167.017____114.212
+// _clk_p50__50.00000_____45.000______50.0______167.017____114.212
+// __clk_75__80.00000______0.000______50.0______151.652____114.212
 //
 //----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
@@ -132,26 +132,26 @@ wire clk_in2_clk_master;
     .COMPENSATION         ("ZHOLD"),
     .STARTUP_WAIT         ("FALSE"),
     .DIVCLK_DIVIDE        (1),
-    .CLKFBOUT_MULT_F      (10.500),
+    .CLKFBOUT_MULT_F      (8.000),
     .CLKFBOUT_PHASE       (0.000),
     .CLKFBOUT_USE_FINE_PS ("FALSE"),
-    .CLKOUT0_DIVIDE_F     (10.500),
+    .CLKOUT0_DIVIDE_F     (8.000),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT0_USE_FINE_PS  ("FALSE"),
-    .CLKOUT1_DIVIDE       (21),
+    .CLKOUT1_DIVIDE       (16),
     .CLKOUT1_PHASE        (0.000),
     .CLKOUT1_DUTY_CYCLE   (0.500),
     .CLKOUT1_USE_FINE_PS  ("FALSE"),
-    .CLKOUT2_DIVIDE       (21),
+    .CLKOUT2_DIVIDE       (16),
     .CLKOUT2_PHASE        (270.000),
     .CLKOUT2_DUTY_CYCLE   (0.500),
     .CLKOUT2_USE_FINE_PS  ("FALSE"),
-    .CLKOUT3_DIVIDE       (21),
+    .CLKOUT3_DIVIDE       (16),
     .CLKOUT3_PHASE        (45.000),
     .CLKOUT3_DUTY_CYCLE   (0.500),
     .CLKOUT3_USE_FINE_PS  ("FALSE"),
-    .CLKOUT4_DIVIDE       (14),
+    .CLKOUT4_DIVIDE       (10),
     .CLKOUT4_PHASE        (0.000),
     .CLKOUT4_DUTY_CYCLE   (0.500),
     .CLKOUT4_USE_FINE_PS  ("FALSE"),

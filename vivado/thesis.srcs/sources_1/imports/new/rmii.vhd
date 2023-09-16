@@ -40,7 +40,7 @@ end rmii;
 
 architecture Behavioral of rmii is
 
-    constant FIFO_DEPTH : integer := 1600; -- Can then use 11 bits
+    constant FIFO_DEPTH : integer := 3600; -- Can then use 11 bits
     type fifo_mem is array (FIFO_DEPTH downto 0) of STD_LOGIC_VECTOR (7 downto 0);
     signal fifo : fifo_mem;
     signal read_ptr, write_ptr : integer := 0;
@@ -51,10 +51,7 @@ architecture Behavioral of rmii is
     signal txen : std_logic := '0';
     signal txd : std_logic_vector(1 downto 0) := "00";
     
-    
---    signal write_ptr_next : integer := 0;
---    signal fifo_full_next : boolean := false;
-        
+
 begin
     
     process(clk_i_write, rmii_i_rst)
@@ -68,10 +65,10 @@ begin
             end if;
 
             -- Increment write pointer
-            if write_ptr = FIFO_DEPTH then
-                write_ptr <= 0;
-            elsif rmii_i_tx_ready = '1' and not fifo_full then
-                write_ptr <= write_ptr + 1;
+--            if write_ptr = FIFO_DEPTH then
+--                write_ptr <= 0;
+            if rmii_i_tx_ready = '1' and not fifo_full then
+                write_ptr <= (write_ptr + 1) mod FIFO_DEPTH;
             end if;
 
         end if;
@@ -84,7 +81,7 @@ begin
             fifo_full <= false;
         elsif rising_edge(clk_i_write) then
             -- Update FIFO full status
-            if (write_ptr + 1) = FIFO_DEPTH then
+            if write_ptr = FIFO_DEPTH - 1 then
                 fifo_full <= read_ptr = 0;
             else
                 fifo_full <= (write_ptr + 1) = read_ptr;
@@ -108,12 +105,6 @@ begin
             -- Read from FIFO
             -- Update FIFO empty status
             fifo_empty <= write_ptr = read_ptr;
---            if write_ptr = read_ptr + 1 and bit_idx = 6 then 
---                fifo_empty <= true;
---            else 
---                fifo_empty <= write_ptr = read_ptr;
---            end if;
-            
             
             if write_ptr /= read_ptr then
                 txen <= '1';
