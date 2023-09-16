@@ -255,7 +255,7 @@ static void tsk_HTTP_server(void *pvParameters) {
 
         /* Run the HTTP and/or FTP servers, as configured above. */
         FreeRTOS_TCPServerWork( pxTCPServer, xInitialBlockTime );       
-        vTaskDelay( pdMS_TO_TICKS( 1 ) ); 
+        // vTaskDelay( pdMS_TO_TICKS( 1 ) ); 
     }
 }
 
@@ -287,7 +287,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 
 
 
-            // xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
+            xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
             xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
 
             // vIPerfInstall();

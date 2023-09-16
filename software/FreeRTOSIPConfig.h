@@ -107,7 +107,7 @@ configMAX_PRIORITIES is a standard FreeRTOS configuration parameter defined in
 FreeRTOSConfig.h, not FreeRTOSIPConfig.h. Consideration needs to be given as to
 the priority assigned to the task executing the IP stack relative to the
 priority assigned to tasks that use the IP stack. */
-#define ipconfigIP_TASK_PRIORITY			( configMAX_PRIORITIES - 4 )
+#define ipconfigIP_TASK_PRIORITY			( configMAX_PRIORITIES - 1 )
 
 /* The size, in words (not bytes), of the stack allocated to the FreeRTOS+TCP
 task.  This setting is less important when the FreeRTOS Win32 simulator is used
@@ -335,7 +335,7 @@ disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigIPERF_DOES_ECHO_UDP		        0
 
 #define ipconfigIPERF_VERSION					3
-#define ipconfigIPERF_STACK_SIZE_IPERF_TASK		680
+#define ipconfigIPERF_STACK_SIZE_IPERF_TASK		1080
 
 #define ipconfigIPERF_TX_BUFSIZE				( 8 * ipconfigTCP_MSS )
 #define ipconfigIPERF_TX_WINSIZE				( 6 )
@@ -345,6 +345,7 @@ disconnecting stage will timeout after a period of non-activity. */
 /* The iperf module declares a character buffer to store its send data. */
 #define ipconfigIPERF_RECV_BUFFER_SIZE			( 2 * ipconfigTCP_MSS )
 
+// #define ipconfigIPERF_HAS_UDP 0
 // #define ipconfigIPERF_PRIORITY_IPERF_TASK       2
 
 

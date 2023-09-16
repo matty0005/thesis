@@ -91,7 +91,7 @@ BaseType_t xNetworkInterfaceInitialise( void )
                      "EMACInt",                           /* Text name for the task. */
                      256 * 2,                                 /* Stack size in words, not bytes. */
                      ( void * ) 1,                        /* Parameter passed into the task. */
-                     configMAX_PRIORITIES - 2,                    /* Priority at which the task is created. */
+                     configMAX_PRIORITIES - 3,                    /* Priority at which the task is created. */
                      &xEMACTaskHandle );                  /* Used to pass out the created task's handle. */
 
     }

@@ -359,7 +359,6 @@ BaseType_t xResult = 0;
 	return xResult;
 }
 
-#if( ipconfigIPERF_VERSION == 3 )
 static void handleRecvPacket( TcpClient_t *pxClient, char *pcReadBuffer, BaseType_t xRecvResult )
 {
 BaseType_t xRemaining = xRecvResult;
@@ -587,7 +586,6 @@ FreeRTOS_printf( ( "Control string: %s\n", pcReadBuffer ) );
 		break;
 	}
 }
-#endif /* ipconfigIPERF_VERSION == 3 */
 
 static void vIPerfTCPWork( TcpClient_t *pxClient )
 {
@@ -636,6 +634,7 @@ BaseType_t xRecvResult;
 		{
 			break;
 		}
+		
 		pxClient->ulRecvCount += xRecvResult;
 
 		#if( ipconfigIPERF_VERSION == 3 )
@@ -829,6 +828,7 @@ void vIPerfTask( void *pvParameter )
 		(void)xUDPServerSocket;
 	}
 	#endif /* ipconfigIPERF_HAS_UDP */
+	
 
 	FreeRTOS_printf( ( "Use for example:\n" ) );
 	FreeRTOS_printf( ( "iperf3 -c %lxip --port %u --bytes 100M [ -R ]\n",
@@ -851,6 +851,7 @@ void vIPerfTask( void *pvParameter )
 			pxEnd = ( const MiniListItem_t* ) listGET_END_MARKER( &xTCPClientList );
 
 			vIPerfServerWork( xTCPServerSocket );
+			
 
 			/* Check all TCP clients: */
 			for( pxIterator  = ( const ListItem_t * ) listGET_NEXT( pxEnd );

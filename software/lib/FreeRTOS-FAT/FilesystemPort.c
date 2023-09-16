@@ -99,7 +99,7 @@ static int32_t prvReadSD(uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t u
             lReturnCode = 0L;
         } else {
             /* Some error occurred. */
-            FF_PRINTF( "prvFFRead: %u: %d\n", ( unsigned ) ulSectorNumber, ( int ) lResult );
+            // FF_PRINTF( "prvFFRead: %u: %d\n", ( unsigned ) ulSectorNumber, ( int ) lResult );
         }
     }
     else

@@ -211,7 +211,7 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 				}
 			}
 			
-			vTaskDelay(5);
+			// vTaskDelay(5);
 		} while( uxCount > 0u ); // uxCount > 0u pxClient->uxBytesLeft
 	}
 

@@ -110,9 +110,11 @@ void freertos_risc_v_application_interrupt_handler(void) {
     BaseType_t pxHigherPriorityTaskWoken;
     // neorv32_uart0_printf("\n<NEORV32-IRQ> ETH </NEORV32-IRQ>\n",irq_channel);
 
-    if( xEMACTaskHandle != NULL )
+    if( xEMACTaskHandle != NULL ) {
       vTaskNotifyGiveFromISR(xEMACTaskHandle, &pxHigherPriorityTaskWoken);
-    
+      // portYIELD_FROM_ISR( pxHigherPriorityTaskWoken );
+    }
+
   } else {
     neorv32_uart0_printf("\n<NEORV32-IRQ> Channel = 0x%x </NEORV32-IRQ>\n",irq_channel);
   }
