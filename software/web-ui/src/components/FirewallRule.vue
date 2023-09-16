@@ -1,28 +1,35 @@
 <template>
-  <div class="flex flex-row">
+  <div class="flex flex-row"  v-click-outside="outsideClick">
         <div class="">
-        <textfield class="mx-2" title="Destination IP" v-model="destIP"/>
-        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="wildcardDIP"/>
+        <textfield class="mx-2" title="Destination IP" v-model="payload.destIP"/>
+        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="payload.wildcardDIP"/>
     </div>
     <div class="">
-        <textfield class="mx-2" title="Source IP" v-model="sourceIP"/>
-        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="wildcardSIP"/>
+        <textfield class="mx-2" title="Source IP" v-model="payload.sourceIP"/>
+        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="payload.wildcardSIP"/>
     </div>
     <div class="">
-        <textfield class="mx-2" title="Destination Port" v-model="destPort"/>
-        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="wildcardDPort"/>
+        <textfield class="mx-2" title="Destination Port" v-model="payload.destPort"/>
+        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="payload.wildcardDPort"/>
     </div>
     <div class="">
-        <textfield class="mx-2" title="Source Port" v-model="sourcePort"/>
-        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="wildcardSPort"/>
+        <textfield class="mx-2" title="Source Port" v-model="payload.sourcePort"/>
+        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="payload.wildcardSPort"/>
     </div>
-    <div class="">
-        <textfield class="mx-2" title="Protocol" v-model="proto"/>
-        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="wildcardProto"/>
+    <div class=" ">
+        <textfield class="mx-2" title="Protocol" v-model="payload.proto"/>
+        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="payload.wildcardProto"/>
     </div>
-    <div class="my-auto mx-4">
-        <button type="button" @click="saveRule" class="rounded bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20 mx-2">Save</button>
+    <div class="my-auto mx-4 h-full mt-8">
+        <div  class=" text-red-600 my-8 cursor-pointer flex items-center justify-center  bg-red-100 hover:bg-red-200 rounded-full w-8 h-8" @click="remove">
+            <svg class="h-6 w-6" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        </div>
     </div>
+    <!-- <div class="my-auto mx-4">
+        <button type="button" @click="saveRule" class="rounded bg-riscv-blue-l px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-riscv-blue-d mx-2">Save</button>
+    </div> -->
   </div>
 </template>
 
@@ -33,41 +40,55 @@ export default {
   components: { Textfield, Checkbox },
   props: {
     index : Number,
-    initialRule: String
+    initialRule: String,
+    modelValue: String
   },
   data: () => {
     return {
-        destIP: "",
-        sourceIP: "",
-        destPort: "",
-        sourcePort: "",
-        proto: "",
-        wildcardDIP: false,
-        wildcardSIP: false,
-        wildcardDPort: false,
-        wildcardSPort: false,
-        wildcardProto: false,
+        payload: {
+            destIP: "",
+            sourceIP: "",
+            destPort: "",
+            sourcePort: "",
+            proto: "",
+            wildcardDIP: false,
+            wildcardSIP: false,
+            wildcardDPort: false,
+            wildcardSPort: false,
+            wildcardProto: false,
+        }
     }
   },
   mounted() {
     this.loadInitialState();
   },
+  watch: {
+        modelValue: function(a,b) {
+            this.loadInitialState();
+        },
+    },
   methods: {
+    remove() {
+        this.$emit('remove')
+    },
+    outsideClick() {
+        this.saveRule();
+    },
     loadInitialState() {
         // location | wildcard | destIP[4] | sourceIP[4] | destPort[2] | sourcePort[2] | protocol
         // 00       | 06       | 0A140178  | 0A00009F   | 0000       | 0000        | 06
 
-        this.destIP = this.cvtRawToIP(this.initialRule.slice(4, 12));
-        this.sourceIP = this.cvtRawToIP(this.initialRule.slice(12, 20));
-        this.destPort = this.cvtRawToPort(this.initialRule.slice(20, 24));
-        this.sourcePort = this.cvtRawToPort(this.initialRule.slice(24, 28));
-        this.proto = this.cvtRawToByte(this.initialRule.slice(28, 30));
+        this.payload.destIP = this.cvtRawToIP(this.modelValue.slice(4, 12));
+        this.payload.sourceIP = this.cvtRawToIP(this.modelValue.slice(12, 20));
+        this.payload.destPort = this.cvtRawToPort(this.modelValue.slice(20, 24));
+        this.payload.sourcePort = this.cvtRawToPort(this.modelValue.slice(24, 28));
+        this.payload.proto = this.cvtRawToByte(this.modelValue.slice(28, 30));
 
-        this.wildcardDIP = (parseInt(this.initialRule.slice(2, 4), 16) & 2**4) != 0;
-        this.wildcardSIP = (parseInt(this.initialRule.slice(2, 4), 16) & 2**3) != 0;
-        this.wildcardDPort = (parseInt(this.initialRule.slice(2, 4), 16) & 2**2) != 0;
-        this.wildcardSPort = (parseInt(this.initialRule.slice(2, 4), 16) & 2**1) != 0;
-        this.wildcardProto = (parseInt(this.initialRule.slice(2, 4), 16) & 2**0) != 0;
+        this.payload.wildcardDIP = (parseInt(this.modelValue.slice(2, 4), 16) & 2**4) != 0;
+        this.payload.wildcardSIP = (parseInt(this.modelValue.slice(2, 4), 16) & 2**3) != 0;
+        this.payload.wildcardDPort = (parseInt(this.modelValue.slice(2, 4), 16) & 2**2) != 0;
+        this.payload.wildcardSPort = (parseInt(this.modelValue.slice(2, 4), 16) & 2**1) != 0;
+        this.payload.wildcardProto = (parseInt(this.modelValue.slice(2, 4), 16) & 2**0) != 0;
 
     },
     cvtRawToIP(input) {
@@ -126,6 +147,27 @@ export default {
     saveRule() {
 
         var wild = 0;
+        wild |= this.payload.wildcardDIP ? 2**4 : 0;
+        wild |= this.payload.wildcardSIP ? 2**3 : 0;
+        wild |= this.payload.wildcardDPort ? 2**2 : 0;
+        wild |= this.payload.wildcardSPort ? 2**1 : 0;
+        wild |= this.payload.wildcardProto ? 2**0 : 0;
+
+        var dip = this.cvtIPtoRaw(this.payload.destIP)
+        var sip = this.cvtIPtoRaw(this.payload.sourceIP)
+        var dport = this.cvtPortToRaw(this.payload.destPort)
+        var sport = this.cvtPortToRaw(this.payload.sourcePort)
+        var proto = this.cvtByteToRaw(this.payload.proto)
+
+        // location | wildcard | destIP[4] | sourceIP[4] | destPort[2] | sourcePort[2] | protocol
+        this.$emit('update:modelValue', `${this.index.toString().padStart(2, '0')}${this.cvtByteToRaw(wild)}${dip}${sip}${dport}${sport}${proto}`);
+
+    },
+
+
+    saveRuleOld() {
+
+        var wild = 0;
         wild |= this.wildcardDIP ? 2**4 : 0;
         wild |= this.wildcardSIP ? 2**3 : 0;
         wild |= this.wildcardDPort ? 2**2 : 0;
@@ -154,9 +196,7 @@ export default {
             console.log("Response: ", response);
         }).catch((error) => {
             console.log("Error: ", error);
-        });
-   
-
+        })
     }
   }
 
