@@ -160,6 +160,8 @@ BaseType_t xRc;
 }
 /*-----------------------------------------------------------*/
 
+
+
 static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 {
 	size_t uxSpace;
@@ -189,7 +191,7 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 			else
 			{
 				uxCount = uxSpace;
-				// uxCount = uxSpace > 1200u ? 1200u : uxSpace;
+				// uxCount = uxSpace > 200u ? 200u : uxSpace;
 			}
 
 			if( uxCount > 0u )
@@ -201,20 +203,8 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 				ff_fread( pxClient->pxParent->pcFileBuffer, 1, uxCount, pxClient->pxFileHandle );
 				pxClient->uxBytesLeft -= uxCount;
 
-				FreeRTOS_printf( ( "prvSendFile: buff %s\n", pxClient->pxParent->pcFileBuffer));
-
-			    FreeRTOS_printf( ( "prvSendFile 1: Tick %d\n", xTaskGetTickCount()) );
-
 				xRc = FreeRTOS_send( pxClient->xSocket, pxClient->pxParent->pcFileBuffer, uxCount, 0 );
-			    FreeRTOS_printf( ( "prvSendFile 2: Tick %d\n", xTaskGetTickCount()) );
-
-
-				FreeRTOS_FD_SET( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
-			    FreeRTOS_printf( ( "prvSendFile 3: Tick %d\n", xTaskGetTickCount()) );
-
-				FreeRTOS_printf( ( "prvSendFile: Data left= %d, xRc = %d, uxCount = %d\n",
-					pxClient->uxBytesLeft, xRc, uxCount) );
-
+	
 				if( xRc < 0 )
 				{
 					break;
@@ -243,35 +233,10 @@ static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 
 static BaseType_t prvOpenURL( HTTPClient_t *pxClient )
 {
-BaseType_t xRc;
-char pcSlash[ 2 ];
+	BaseType_t xRc;
+	char pcSlash[ 2 ];
 
 	pxClient->bits.ulFlags = 0;
-
-	#if( ipconfigHTTP_HAS_HANDLE_REQUEST_HOOK != 0 )
-	{
-		if( strchr( pxClient->pcUrlData, ipconfigHTTP_REQUEST_CHARACTER ) != NULL )
-		{
-		size_t xResult;
-
-			xResult = uxApplicationHTTPHandleRequestHook( pxClient->pcUrlData, pxClient->pcCurrentFilename, sizeof( pxClient->pcCurrentFilename ) );
-			if( xResult > 0 )
-			{
-				strcpy( pxClient->pxParent->pcContentsType, "text/html" );
-				snprintf( pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
-					"Content-Length: %d\r\n", ( int ) xResult );
-				xRc = prvSendReply( pxClient, WEB_REPLY_OK );	/* "Requested file action OK" */
-				if( xRc > 0 )
-				{
-					xRc = FreeRTOS_send( pxClient->xSocket, pxClient->pcCurrentFilename, xResult, 0 );
-				}
-				/* Although against the coding standard of FreeRTOS, a return is
-				done here  to simplify this conditional code. */
-				return xRc;
-			}
-		}
-	}
-	#endif /* ipconfigHTTP_HAS_HANDLE_REQUEST_HOOK */
 
 	if( pxClient->pcUrlData[ 0 ] != '/' )
 	{
@@ -444,7 +409,6 @@ HTTPClient_t *pxClient = ( HTTPClient_t * ) pxTCPClient;
 	else if( xRc < 0 )
 	{
 		/* The connection will be closed and the client will be deleted. */
-		FreeRTOS_printf( ( "xHTTPClientWork: rc = %d\n", xRc ) );
 	}
 	return xRc;
 }

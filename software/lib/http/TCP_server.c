@@ -84,31 +84,31 @@ TCPServer_t *FreeRTOS_CreateTCPServer( const struct xSERVER_CONFIG *pxConfigs, B
 					FreeRTOS_printf( ( "TCP socket on port %d.\n", ( int )xPortNumber ) );
 
 					if ( xSocket != FREERTOS_INVALID_SOCKET ) {
-						xAddress.sin_addr = FreeRTOS_GetIPAddress(); // Single NIC, currently not used
+						// xAddress.sin_addr = FreeRTOS_GetIPAddress(); // Single NIC, currently not used
 						xAddress.sin_port = FreeRTOS_htons( xPortNumber );
 
 						// Set timeouts for sockets. 
 						FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_RCVTIMEO, ( void * ) &xNoTimeout, sizeof( BaseType_t ) );
 						FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_SNDTIMEO, ( void * ) &xNoTimeout, sizeof( BaseType_t ) );
 
+
+						WinProperties_t xWinProps;
+
+						memset( &xWinProps, '\0', sizeof( xWinProps ) );
+						/* The parent socket itself won't get connected.  The properties below
+						will be inherited by each new child socket. */
+						xWinProps.lTxBufSize = ipconfigHTTP_TX_BUFSIZE;
+						xWinProps.lTxWinSize = ipconfigHTTP_TX_WINSIZE;
+						xWinProps.lRxBufSize = ipconfigHTTP_RX_BUFSIZE;
+						xWinProps.lRxWinSize = ipconfigHTTP_RX_WINSIZE;
+
+						/* Set the window and buffer sizes. */
+						FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_WIN_PROPERTIES, ( void * ) &xWinProps,	sizeof( xWinProps ) );
+                        
+
+						
 						FreeRTOS_bind( xSocket, &xAddress, sizeof( xAddress ) );
 						FreeRTOS_listen( xSocket, pxConfigs[ xIndex ].xBackLog );
-
-					
-                        if (pxConfigs[ xIndex ].eType == eSERVER_HTTP) {
-                            WinProperties_t xWinProps;
-
-                            memset( &xWinProps, '\0', sizeof( xWinProps ) );
-                            /* The parent socket itself won't get connected.  The properties below
-                            will be inherited by each new child socket. */
-                            xWinProps.lTxBufSize = ipconfigHTTP_TX_BUFSIZE;
-                            xWinProps.lTxWinSize = ipconfigHTTP_TX_WINSIZE;
-                            xWinProps.lRxBufSize = ipconfigHTTP_RX_BUFSIZE;
-                            xWinProps.lRxWinSize = ipconfigHTTP_RX_WINSIZE;
-
-                            /* Set the window and buffer sizes. */
-                            FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_WIN_PROPERTIES, ( void * ) &xWinProps,	sizeof( xWinProps ) );
-                        }
 						
 
 						FreeRTOS_FD_SET( xSocket, xSocketSet, eSELECT_READ|eSELECT_EXCEPT );
@@ -196,13 +196,8 @@ BaseType_t xIndex;
 BaseType_t xRc;
 
 	/* Let the server do one working cycle */
-    FreeRTOS_printf( ( "FreeRTOS_TCPServerWork 1: Tick %d\n", xTaskGetTickCount()) );
 
 	xRc = FreeRTOS_select( pxServer->xSocketSet, xBlockingTime );
-	FreeRTOS_printf( ( "FreeRTOS_TCPServerWork: xRc %d\n", xRc ) );
-    FreeRTOS_printf( ( "FreeRTOS_TCPServerWork 2: Tick %d\n", xTaskGetTickCount()) );
-
-
 
 	if( xRc != 0 )
 	{
@@ -249,8 +244,6 @@ BaseType_t xRc;
 			ppxClient = &( pxThis->pxNextClient );
 		}
 	}
-
-    FreeRTOS_printf( ( "FreeRTOS_TCPServerWork 3: Tick %d\n", xTaskGetTickCount()) );
 
 }
 

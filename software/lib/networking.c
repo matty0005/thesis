@@ -223,7 +223,7 @@ static void tsk_udp_ping( void *pvParameters ) {
 
 static void tsk_HTTP_server(void *pvParameters) {
 	TCPServer_t *pxTCPServer = NULL;
-	const TickType_t xInitialBlockTime = pdMS_TO_TICKS( 100UL );
+	const TickType_t xInitialBlockTime = pdMS_TO_TICKS( 1000UL );
 	const TickType_t xSDCardInsertDelay = pdMS_TO_TICKS( 1000UL );
 
 	static const struct xSERVER_CONFIG xServerConfiguration[] =
@@ -286,11 +286,11 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
             // xTaskCreate(tsk_udp_send, "UDP TX", UDP_STACK_SIZE, NULL, UDP_PRIORITY, NULL);
 
 
-            
-            // xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
-            // xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
 
-            vIPerfInstall();
+            // xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
+            xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
+
+            // vIPerfInstall();
 
             xTasksAlreadyCreated = pdTRUE;
         }

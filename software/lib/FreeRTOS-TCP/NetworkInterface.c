@@ -123,12 +123,20 @@ BaseType_t xNetworkInterfaceInitialise( void )
  * @param xReleaseAfterSend 
  * @return BaseType_t 
  */
+
+void printBufferInHex(const uint8_t *buffer, size_t length)
+{
+    for(size_t i = 0; i < length; i++)
+    {
+        FreeRTOS_printf(("%c", buffer[i]));
+    }
+    FreeRTOS_printf(("\n"));
+}
 BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescriptor, BaseType_t xReleaseAfterSend) 
 {
 
-    FreeRTOS_printf( ( "xNetworkInterfaceOutput 1: Tick %d\n", xTaskGetTickCount()) );
-
     BaseType_t xReturn = pdFAIL;
+    // printBufferInHex(pxDescriptor->pucEthernetBuffer, pxDescriptor->xDataLength);
 
     // pxDescriptor->pucEthernetBuffer is just a pointer to the start of the buffer. (uint8_t *)
     // pxDescriptor->xDataLength is the length of the buffer. (size_t)
@@ -138,14 +146,8 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxDescripto
     /* Call the standard trace macro to log the send event. */
     iptraceNETWORK_INTERFACE_TRANSMIT();
     
-    // FreeRTOS_printf( ( "NETWORK_OUTPUT: sent out packet.\n" ) );
-    // FreeRTOS_printf( ( "xNetworkInterfaceOutput 1: Tick %d\n", xTaskGetTickCount()) );
-
     if (xReleaseAfterSend != pdFALSE)
         vReleaseNetworkBufferAndDescriptor(pxDescriptor);
-
-    // FreeRTOS_printf( ( "NETWORK_OUTPUT: RELEASED BUFFER. release: %d\n", xReleaseAfterSend ) );
-    FreeRTOS_printf( ( "xNetworkInterfaceOutput 2: Tick %d\n", xTaskGetTickCount()) );
     
 
     return xReturn;
@@ -214,15 +216,11 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
         {
             /* Obtain a network buffer descriptor.  This call will block
             indefinitely if a network buffer is not available. */
-            FreeRTOS_printf( ( "==prvEMACDeferredInterruptHandlerTask 1 : Tick %d\n", xTaskGetTickCount()) );
-
             
             pxBufferDescriptor = pxGetNetworkBufferWithDescriptor( xBytesReceived, 0 );
 
             if( pxBufferDescriptor != NULL ) 
             {
-            FreeRTOS_printf( ( "==prvEMACDeferredInterruptHandlerTask 2 : Tick %d\n", xTaskGetTickCount()) );
-
                 /* Set the actual length of the packet. */
                 pxBufferDescriptor->xDataLength = xBytesReceived;
 
@@ -235,9 +233,6 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
 
                 taskEXIT_CRITICAL();
 
-
-            FreeRTOS_printf( ( "=====eConsiderFrameForProcessing 2 : %d\n", eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer)) );
-
                 if (eConsiderFrameForProcessing(pxBufferDescriptor->pucEthernetBuffer) == eProcessBuffer) 
                 {
 
@@ -246,9 +241,6 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
 
                     xRxEvent.pvData = (void *) pxBufferDescriptor;
 
-                    
-
-            FreeRTOS_printf( ( "==prvEMACDeferredInterruptHandlerTask 3 : Tick %d\n", xTaskGetTickCount()) );
                     /* Pass the received packet to the TCP/IP stack. */
                     if( xSendEventStructToIPTask( &xRxEvent, 100 ) == pdFALSE ) 
                     {

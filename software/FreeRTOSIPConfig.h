@@ -316,10 +316,10 @@ disconnecting stage will timeout after a period of non-activity. */
 #define portINLINE __inline
 
 
-#define ipconfigHTTP_TX_BUFSIZE				( 1 * ipconfigTCP_MSS )
-#define ipconfigHTTP_TX_WINSIZE				( 1 )
-#define ipconfigHTTP_RX_BUFSIZE				( 1 * ipconfigTCP_MSS )
-#define ipconfigHTTP_RX_WINSIZE				( 1	 )
+#define ipconfigHTTP_TX_BUFSIZE				( 8 * ipconfigTCP_MSS )
+#define ipconfigHTTP_TX_WINSIZE				( 6 )
+#define ipconfigHTTP_RX_BUFSIZE				( 8 * ipconfigTCP_MSS )
+#define ipconfigHTTP_RX_WINSIZE				( 6	 )
 #define ipconfigSUPPORT_SIGNALS				1
 
 #define ipconfigZERO_COPY_TX_DRIVER 0
@@ -344,6 +344,8 @@ disconnecting stage will timeout after a period of non-activity. */
 
 /* The iperf module declares a character buffer to store its send data. */
 #define ipconfigIPERF_RECV_BUFFER_SIZE			( 2 * ipconfigTCP_MSS )
+
+// #define ipconfigIPERF_PRIORITY_IPERF_TASK       2
 
 
 #endif /* FREERTOS_IP_CONFIG_H */

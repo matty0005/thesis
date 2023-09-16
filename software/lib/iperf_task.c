@@ -502,6 +502,8 @@ FreeRTOS_printf( ( "Control string: %s\n", pcReadBuffer ) );
 				pxClient->ulSkipCount = 0;
 				pxClient->eTCP_Status = ( eTCP_Server_Status_t ) ( ( ( int ) pxClient->eTCP_Status ) + 1 );
 			}
+			FreeRTOS_printf( ( "End control:\n" ) );
+
 		}
 		break;
 	case eTCP_3_WaitOneTwo:
