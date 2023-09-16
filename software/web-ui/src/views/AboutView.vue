@@ -1,5 +1,5 @@
 <template>
-  <div class="">
+  <div class="text-gray-600">
     <div class="flex flex-col">
       <div class="mx-4 rounded-xl px-2 text-3xl font-bold text-gray-600 ">RISCy Firewall</div>
       <div class="mx-4 my-2 rounded-xl px-2  text-gray-600 break-normal w-[68rem]">This project is part of the undergraduate thesis project for the Bachelor of Engineering (Honours) degree at the University of Queensland.</div>
@@ -9,14 +9,14 @@
 
    <div class="flex flex-row w-[68rem] my-4 mx-4 px-2">
       <div class="flex-wrap w-1/2">
-        <div class="my-4 mr-2">
+        <div class="my-4 mr-2 text-gray-600">
           The packet filter is a stateless filter that is capable of filtering packets based on the five common fields. These fields are the: source IP address, destination IP address, source port, destination port and protocol. The diagram on the right shows how this is done in hardware. 
         </div>
-        <div class="my-4 mr-2">
+        <div class="my-4 mr-2 text-gray-600">
           First the packet is sent into a shift register 2 bits wide (coming straight from the RMII interface) at 50MHz. This then allows the packet to be processed in 32bit chunks. A FSM keeps track of which byte is currently being processed. It then controls the hardware to perform the filtering. A comparator is used to compare the current 32bits with part of the rule which is stored in BRAM. The result of this comparison is then ANDed with the current status of the rule and is stored in a register. It needs to be ANDed with the current status (the result of previous comparisons for the rule) to ensure that the whole rule is matched. After all fields have been compared, all bits in the register are ORed together as any bit being 1 means that a rule has been fully matched.  
         </div>
 
-        <div class="my-4 mr-2">
+        <div class="my-4 mr-2 text-gray-600">
           To include this packet filter in the design, the input from the RMII interface is sent into both the packet filter and a shift register of size 224 long by 2bits wide. This then allows the packet filter to take 224 clock cycles to process the headers (which is the minimum needed for the header plus some buffer). The packet filter then just controls a simple multiplexer to forward or drop the incomming packet. This adds a total delay of 4.48 microseconds.
         </div>
       </div>
