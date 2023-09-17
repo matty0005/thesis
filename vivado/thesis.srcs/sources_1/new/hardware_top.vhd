@@ -168,6 +168,19 @@ port (
 );
 end component;
 
+component pf_stats is
+    Port ( valid : in STD_LOGIC_VECTOR (63 downto 0);
+           blocked : in STD_LOGIC_VECTOR (63 downto 0);
+           total : in STD_LOGIC_VECTOR (63 downto 0);
+           rst:  in std_logic;
+           counter_reset: out std_logic;
+           spi_mosi : in STD_LOGIC;
+           spi_miso : out STD_LOGIC;
+           spi_clk : in STD_LOGIC;
+           spi_csn : in STD_LOGIC
+    );
+end component;
+
 component clk_master is
   Port ( 
     clk_100 : out std_logic;
@@ -247,8 +260,9 @@ signal spi_csn_o : std_ulogic_vector(07 downto 0);
 
 signal pc_valid : std_logic;
 signal pc_forward : std_logic;
-signal pc_valid_counter: std_logic_vector(3 downto 0) := "0000";
-signal pc_invalid_counter: std_logic_vector(3 downto 0) := "0000";
+signal pc_valid_counter: std_logic_vector(63 downto 0) := (others => '0');
+signal pc_invalid_counter: std_logic_vector(63 downto 0) := (others => '0');
+signal pc_total_counter: std_logic_vector(63 downto 0) := (others => '0');
 
 constant FILTER_DELAY_TICKS : integer := 224;
 signal rxd_reg : std_logic_vector((FILTER_DELAY_TICKS * 2) - 1 downto 0) := (others => '0');
@@ -257,6 +271,8 @@ signal crs_dv_allow : std_logic := '0';
 signal pf_allow : std_logic := '0';
 signal pf_ignore_count : std_logic := '0';
 
+signal counter_reset : std_logic := '0';
+signal spi_dat_i_pc : std_logic;
 signal rst : std_logic;
 
 begin
@@ -349,11 +365,24 @@ ethernet_mac : wb_ethernet
         clk_in => clk_i
     );
     
+    pf_stats_spi : pf_stats
+    port map (
+        valid => pc_valid_counter,
+        blocked => pc_invalid_counter,
+        total => pc_total_counter,
+        rst => rst,
+        counter_reset => counter_reset,
+        spi_clk => spi_clk_o,
+        spi_mosi => spi_dat_o,
+        spi_miso => spi_dat_i_pc,
+        spi_csn => spi_csn_o(2)
+    );
+    
     
     pc_ssd: sevensegdisplay
     port map (
         display => ssd,
-        value => pc_valid_counter
+        value => pc_valid_counter(3 downto 0)
     );
     anode <= "11111110" when sw(1) = '0' else "11111111";
     
@@ -372,15 +401,23 @@ ethernet_mac : wb_ethernet
 --        if rstn_i = '0' then
 --            pc_valid_counter <= "0000";
         if rising_edge(clk_50) then
+            if counter_reset = '1' then
+                pc_valid_counter <= x"0000000000000000";
+                pc_invalid_counter <= x"0000000000000000";
+                pc_total_counter <= x"0000000000000000";
+            end if;
+            
             if pc_valid = '1' then
                 
                 if pc_forward = '1' then
                     pf_allow <= '1';
                     if pf_ignore_count = '0'  then
                         pc_valid_counter <= pc_valid_counter + 1;
+                        pc_total_counter <= pc_total_counter + 1;
                     end if;
                 elsif sw(0) = '1' then
                     pf_allow <= '1';
+                    pc_total_counter <= pc_total_counter + 1;
                 else
                     pf_allow <= '0';
                     pc_invalid_counter <= pc_invalid_counter + 1;
@@ -489,7 +526,7 @@ ethernet_mac : wb_ethernet
   eth_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
   eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
-  gpio_i <= x"000000000000" & "00000" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
+  gpio_i <= x"000000000000" & std_ulogic_vector(sw(3 downto 0))& "0" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
   
   sd_o_rst <= gpio_o(11);
   
@@ -498,8 +535,9 @@ ethernet_mac : wb_ethernet
   
   sd_o_sck  <= spi_clk_o; -- clock
   sd_o_cmd <= spi_dat_o; -- MOSI
-  spi_dat_i <= sd_i_miso;
+  spi_dat_i <= sd_i_miso when spi_csn_o(0) = '0' else spi_dat_i_pc;
   sd_o_csn <= spi_csn_o(0);   
+  
 
 
 end architecture;
