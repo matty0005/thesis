@@ -11,7 +11,10 @@
         "utility": "c",
         "stdlib.h": "c",
         "http_commands.h": "c",
-        "packet_classifier.h": "c"
+        "packet_classifier.h": "c",
+        "file-related-cli-commands.h": "c",
+        "common.h": "c",
+        "iperf_task.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }

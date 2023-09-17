@@ -20,6 +20,13 @@
 #define PACKET_FILTER_RULE_FILE_SIZE 300
 
 #define PC_SPI_CHANNEL 1
+#define PC_CTRL_SPI_CHANNEL 2
+
+#define PC_CTRL_VALID 0x55
+#define PC_CTRL_INVALID 0x66
+#define PC_CTRL_RST 0x42
+#define PC_CTRL_NULL 0x00
+
 
 /**
  * @brief Initialise the packet classifier.
@@ -49,5 +56,52 @@ void pc_save_rule(uint8_t address, uint8_t wildcard, uint8_t *destIP, uint8_t *s
  * @return int: 0 if no error, 1 if error
  */
 int pc_get_rules(uint8_t *buffer, uint32_t bufferSize, uint32_t *size);
+
+/**
+ * @brief Save all rules to the packet classifier
+ * 
+ * @param pcRawData String raw data from file or API.
+ * @param size The number of rules - default should be 8
+ * @return int 0 if no error, 1 if error
+ */
+int pc_save_rules_all(uint8_t *pcRawData, uint8_t size);
+
+
+/**
+ * @brief Get the valid packet count
+ * 
+ * @return uint64_t the count 
+ */
+uint64_t pc_get_valid_packet_count();
+
+/**
+ * @brief Get the blocked packet count
+ * 
+ * @return uint64_t the count
+ */
+uint64_t pc_get_blocked_packet_count();
+
+/**
+ * @brief Get the total packet count
+ * 
+ * @return uint64_t the count
+ */
+uint64_t pc_get_total_packet_count();
+
+
+
+/**
+ * @brief Get the status of the packet classifier
+ * 
+ * @return uint8_t 
+ */
+uint8_t pc_get_status();
+
+/**
+ * @brief Reset the packet classifier counts
+ * 
+ */
+void pc_reset_counts();
+
 
 #endif

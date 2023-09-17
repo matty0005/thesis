@@ -28,8 +28,15 @@
 #include "packet_classifier.h"
 #include "common.h"
 
+#include "cli.h"
+#include "networking.h"
+
 BaseType_t http_api_firewall_get(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
 BaseType_t http_api_firewall_add(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
+BaseType_t http_api_firewall_add_all(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
+BaseType_t http_api_stats(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
+BaseType_t http_api_control_udp(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
+BaseType_t http_api_control_cli(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
 BaseType_t http_api_not_found(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
 
 

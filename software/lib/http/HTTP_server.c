@@ -260,6 +260,16 @@ static BaseType_t prvOpenURL( HTTPClient_t *pxClient )
 		return xRc;
 	}
 
+	if (strcmp(pxClient->pcUrlData, "/api/stats") == 0) {
+		BaseType_t httpErrorCode = WEB_REPLY_OK;
+		http_api_stats(pxClient, &httpErrorCode);
+		xRc = prvSendReply( pxClient, httpErrorCode);
+		prvFileClose( pxClient );
+		
+		return xRc;
+	}
+
+
 	snprintf( pxClient->pcCurrentFilename, sizeof( pxClient->pcCurrentFilename ), "%s%s%s",
 		pxClient->pcRootDir,
 		pcSlash,
@@ -297,6 +307,12 @@ static BaseType_t prvPostRequest(HTTPClient_t *pxClient) {
 	// Branch here - routes
 	if (strcmp(pxClient->pcUrlData, "/api/firewall") == 0)
 		http_api_firewall_add(pxClient, &httpErrorCode);
+	else if (strcmp(pxClient->pcUrlData, "/api/firewall/all") == 0)
+		http_api_firewall_add_all(pxClient, &httpErrorCode);
+	else if (strcmp(pxClient->pcUrlData, "/api/udp_ping/toggle") == 0)
+		http_api_control_udp(pxClient, &httpErrorCode);
+	else if (strcmp(pxClient->pcUrlData, "/api/cli/toggle") == 0)
+		http_api_control_cli(pxClient, &httpErrorCode);
 	else 
 		http_api_not_found(pxClient, &httpErrorCode);
 	

@@ -18,6 +18,9 @@
 #define mainTCP_SERVER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define	mainTCP_SERVER_STACK_SIZE		( configMINIMAL_STACK_SIZE * 16 )
 
+TaskHandle_t xUDPPingTaskHandle = NULL;
+
+
 /* Constants */
 static uint8_t ucMACAddress[ 6 ] = { 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe };
 static const uint8_t ucIPAddress[ 4 ] = { 10, 20, 1, 120 };
@@ -170,6 +173,7 @@ static void tsk_udp_send( void *pvParameters ) {
 
 
 
+
 static void tsk_udp_ping( void *pvParameters ) {
 
     Socket_t xSocket;
@@ -255,7 +259,7 @@ static void tsk_HTTP_server(void *pvParameters) {
 
         /* Run the HTTP and/or FTP servers, as configured above. */
         FreeRTOS_TCPServerWork( pxTCPServer, xInitialBlockTime );       
-        // vTaskDelay( pdMS_TO_TICKS( 1 ) ); 
+        vTaskDelay( pdMS_TO_TICKS( 3 ) ); 
     }
 }
 
@@ -287,7 +291,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 
 
 
-            xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
+            create_udp_task();
             xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
 
             // vIPerfInstall();
@@ -297,4 +301,9 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
     } else {
         neorv32_uart0_printf("Interface down!\n\n");
     }
+}
+
+
+void create_udp_task() {
+    xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xUDPPingTaskHandle );
 }

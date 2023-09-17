@@ -11,6 +11,8 @@
 
 #include "cli.h"
 
+TaskHandle_t xCliTaskHandle = NULL;
+
 static BaseType_t cli_cmd_usage(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_demo(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 static BaseType_t cli_cmd_eth_phy(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
@@ -1106,5 +1108,5 @@ void tsk_cli_daemon(void *pvParameters) {
 
 void cli_init() {
 
-    xTaskCreate(tsk_cli_daemon, "CLIDAEMON", CLI_STACK_SIZE, NULL, CLI_TASK_PRIORITY, NULL);
+    xTaskCreate(tsk_cli_daemon, "CLIDAEMON", CLI_STACK_SIZE, NULL, CLI_TASK_PRIORITY, &xCliTaskHandle);
 }

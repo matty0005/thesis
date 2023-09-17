@@ -34,6 +34,8 @@
 #define CLI_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
 #define CLI_STACK_SIZE (configMINIMAL_STACK_SIZE * 5)
 
+extern TaskHandle_t xCliTaskHandle;
+
 void cli_init();
 
 #endif

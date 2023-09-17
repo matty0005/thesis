@@ -39,7 +39,9 @@
 
 #include "File-related-CLI-commands.h"
 
+extern TaskHandle_t xUDPPingTaskHandle;
 
+void create_udp_task();
 
 void start_networking();
 void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent );

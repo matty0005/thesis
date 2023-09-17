@@ -94,7 +94,7 @@ export default {
             return
           }
 
-          if (typeof data[0] != Number) {
+          if (typeof data[0] != String) {
             data[0] = 0
             data[1] = 0
             data[2] = 0
@@ -106,7 +106,7 @@ export default {
           this.blockedTotal = data[1]
           this.status.udp_ping = data[2]
           this.status.cli = data[3]
-          this.status.packet_filter = data[4]
+          this.status.packet_filter = data[4].toString() == '1' ? '0':'1' // Invert since 1 is off.
 
 
 

@@ -12,44 +12,157 @@
 #include "http_api.h"
 
 
+BaseType_t http_api_firewall_add_all(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
+
+    // Count number of \n's
+    
+
+    pc_save_rules_all(pxClient->pcRestData, 8);
+
+    // craft a response
+    snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
+            "%s", "text/plain" );
+
+    snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+            "Content-Length: %d\r\n\r\n%s", 19, "Sucessfully created" );
+
+    *httpErrorCode = WEB_CREATED;
+
+    return pdTRUE;
+
+}
+
+/**
+ * @brief GET Request for the stats API. Format is CSV, with the following fields:
+ * packetsTotal, blockedTotal, udp_status, cli_status, firewall_status
+ * 
+ * @param pxClient 
+ * @param httpErrorCode 
+ * @return BaseType_t 
+ */
+BaseType_t http_api_stats(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
+
+    uint64_t total = pc_get_total_packet_count();
+    uint64_t blocked = pc_get_blocked_packet_count();
+    
+
+    char buff[100] = {0};
+    snprintf(buff, sizeof(buff), "%llu,%llu,%d,%d,%d", total, blocked, xUDPPingTaskHandle != NULL, xCliTaskHandle != NULL, pc_get_status());
+
+
+    // craft a response
+    snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
+            "%s", "text/plain" );
+
+    snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+            "Content-Length: %d\r\n\r\n%s", strlen(buff), buff);
+
+    *httpErrorCode = WEB_CREATED;
+
+    return pdTRUE;
+
+}
+
+BaseType_t http_api_control_udp(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
+
+    if (xUDPPingTaskHandle != NULL) {
+
+        vTaskDelete(xUDPPingTaskHandle);
+        xUDPPingTaskHandle = NULL;
+    } else 
+        create_udp_task();
+
+    // craft a response
+    snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
+            "%s", "text/plain" );
+
+    snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+            "Content-Length: %d\r\n\r\n%s", 2, "OK" );
+
+    *httpErrorCode = WEB_CREATED;
+
+    return pdTRUE;
+}
+
+BaseType_t http_api_control_cli(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
+
+    if (xCliTaskHandle != NULL) {
+        vTaskDelete(xCliTaskHandle);
+        xCliTaskHandle = NULL;
+    } else 
+        cli_init();
+
+    // craft a response
+    snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
+            "%s", "text/plain" );
+
+    snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+            "Content-Length: %d\r\n\r\n%s", 2, "OK" );
+
+    *httpErrorCode = WEB_CREATED;
+
+    return pdTRUE;
+
+}
+
+BaseType_t http_api_reset_counts(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
+
+    pc_reset_counts();
+
+    // craft a response
+    snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
+            "%s", "text/plain" );
+
+    snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+            "Content-Length: %d\r\n\r\n%s", 2, "OK" );
+
+    *httpErrorCode = WEB_CREATED;
+
+    return pdTRUE;
+
+}
+
+
+
+
 BaseType_t http_api_firewall_get(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
         
-        // Get the firewall rules from the packet classifier.
-        snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
-                "%s", "text/plain" );
+    // Get the firewall rules from the packet classifier.
+    snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
+            "%s", "text/plain" );
 
-        int8_t *rules = pvPortMalloc(PACKET_FILTER_RULE_FILE_SIZE * sizeof(uint8_t));
-        // uint8_t rules[PACKET_FILTER_RULE_FILE_SIZE];
+    int8_t *rules = pvPortMalloc(PACKET_FILTER_RULE_FILE_SIZE * sizeof(uint8_t));
+    // uint8_t rules[PACKET_FILTER_RULE_FILE_SIZE];
 
-        uint32_t size = 0;
-        int err = pc_get_rules(rules, PACKET_FILTER_RULE_FILE_SIZE, &size);
+    uint32_t size = 0;
+    int err = pc_get_rules(rules, PACKET_FILTER_RULE_FILE_SIZE, &size);
 
-        if (err) {
-                FreeRTOS_printf( ( "http_api_firewall_get:  %d\n", err) );
-                snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
-                        "Content-Length: %d\r\n\r\n%s", 19, "Could not read file" );
-
-                *httpErrorCode = WEB_INTERNAL_SERVER_ERROR;
-                vPortFree(rules);
-
-                return pdTRUE;
-        }
-
-        
-        
-        // craft a response
+    if (err) {
+        FreeRTOS_printf( ( "http_api_firewall_get:  %d\n", err) );
         snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
-                "Content-Length: %d\r\n\r\n", size);
+                "Content-Length: %d\r\n\r\n%s", 19, "Could not read file" );
 
-        // copy the rules into the response
-        memcpy(pxClient->pxParent->pcExtraContents + strlen(pxClient->pxParent->pcExtraContents), rules, size);
-
+        *httpErrorCode = WEB_INTERNAL_SERVER_ERROR;
         vPortFree(rules);
-        
-
-        *httpErrorCode = WEB_REPLY_OK;
 
         return pdTRUE;
+    }
+
+    
+    
+    // craft a response
+    snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+            "Content-Length: %d\r\n\r\n", size);
+
+    // copy the rules into the response
+    memcpy(pxClient->pxParent->pcExtraContents + strlen(pxClient->pxParent->pcExtraContents), rules, size);
+
+    vPortFree(rules);
+    
+
+    *httpErrorCode = WEB_REPLY_OK;
+
+    return pdTRUE;
 }
 
 /**
@@ -103,7 +216,7 @@ BaseType_t http_api_not_found(HTTPClient_t *pxClient, BaseType_t *httpErrorCode)
             "%s", "text/plain" );
 
     snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
-            "Content-Length: %d\r\n\r\n%s", 21, "Applied firewall rule" );
+            "Content-Length: %d\r\n\r\n%s", 9, "Not found" );
 
     
 }
