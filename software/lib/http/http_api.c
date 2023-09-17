@@ -57,7 +57,7 @@ BaseType_t http_api_stats(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
     snprintf(pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
             "Content-Length: %d\r\n\r\n%s", strlen(buff), buff);
 
-    *httpErrorCode = WEB_CREATED;
+    *httpErrorCode = WEB_REPLY_OK;
 
     return pdTRUE;
 

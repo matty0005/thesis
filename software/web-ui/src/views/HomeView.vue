@@ -82,7 +82,7 @@ export default {
 
       try {
           const response = await fetch('/api/stats');
-
+          
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
@@ -93,15 +93,7 @@ export default {
           if (data.length < 5) {
             return
           }
-
-          if (typeof data[0] != String) {
-            data[0] = 0
-            data[1] = 0
-            data[2] = 0
-            data[3] = 0
-            data[4] = 0
-          }
-
+          
           this.packetTotal = data[0]
           this.blockedTotal = data[1]
           this.status.udp_ping = data[2]
