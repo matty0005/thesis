@@ -26,6 +26,7 @@
 #define PC_CTRL_INVALID 0x66
 #define PC_CTRL_RST 0x42
 #define PC_CTRL_NULL 0x00
+#define PC_CTRL_TOTAL 0x77
 
 
 /**

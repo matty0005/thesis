@@ -188,20 +188,14 @@ uint64_t pc_get_valid_packet_count() {
     neorv32_spi_cs_dis();
     neorv32_spi_cs_en(PC_CTRL_SPI_CHANNEL);
 
-// PC_CTRL_VALID
     neorv32_spi_trans(PC_CTRL_VALID);
     neorv32_spi_cs_dis();
     neorv32_spi_cs_en(PC_CTRL_SPI_CHANNEL);
     uint64_t count = 0;
-        FreeRTOS_printf(("--- valid ---\n"));
 
-    for (uint8_t i = 0; i < 8; i++) {
-        uint8_t c = neorv32_spi_trans(PC_CTRL_NULL);
-        
-        FreeRTOS_printf(("spi: %x\n", c));
-
-        count |= (swap_bits(c) << (i * 8));
-    }
+    for (uint8_t i = 0; i < 8; i++) 
+        count |= (swap_bits(neorv32_spi_trans(PC_CTRL_NULL)) << (i * 8));
+    
     
     neorv32_spi_cs_dis();
 
@@ -217,31 +211,17 @@ uint64_t pc_get_blocked_packet_count() {
     neorv32_spi_cs_dis();
     neorv32_spi_cs_en(PC_CTRL_SPI_CHANNEL);
 
-
     neorv32_spi_trans(PC_CTRL_INVALID);
-        FreeRTOS_printf(("--- blocked ---\n"));
-
 
     neorv32_spi_cs_dis();
     neorv32_spi_cs_en(PC_CTRL_SPI_CHANNEL);
     uint64_t count = 0;
 
-    for (uint8_t i = 0; i < 8; i++) {
-        uint8_t c = neorv32_spi_trans(PC_CTRL_NULL);
-
-        // C is in LSB form, change order of bits
-
-
-        
-        FreeRTOS_printf(("spi: %x\n", c));
-
-        count |= (swap_bits(c) << (i * 8));
-    }
-
-
-    // data is in LSB form
-
+    for (uint8_t i = 0; i < 8; i++)
+        count |= (swap_bits(neorv32_spi_trans(PC_CTRL_NULL)) << (i * 8));
     
+
+
     neorv32_spi_cs_dis();
 
     return count;
@@ -254,7 +234,21 @@ uint64_t pc_get_blocked_packet_count() {
  */
 uint64_t pc_get_total_packet_count() {
 
-    return pc_get_valid_packet_count() + pc_get_blocked_packet_count();
+    neorv32_spi_cs_dis();
+    neorv32_spi_cs_en(PC_CTRL_SPI_CHANNEL);
+
+    neorv32_spi_trans(PC_CTRL_TOTAL);
+    neorv32_spi_cs_dis();
+    neorv32_spi_cs_en(PC_CTRL_SPI_CHANNEL);
+    uint64_t count = 0;
+
+    for (uint8_t i = 0; i < 8; i++) 
+        count |= (swap_bits(neorv32_spi_trans(PC_CTRL_NULL)) << (i * 8));
+    
+    
+    neorv32_spi_cs_dis();
+
+    return count;
 }
 
 
