@@ -15,9 +15,12 @@
 BaseType_t http_api_firewall_add_all(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
 
     // Count number of \n's
-    
+    char *pcRawData = strstr(pxClient->pcRestData, "\r\n\r\n");
 
-    pc_save_rules_all(pxClient->pcRestData, 8);
+    // Remove the \r\n\r\n from the string.
+    pcRawData += 4;
+
+    pc_save_rules_all(pcRawData, 8);
 
     // craft a response
     snprintf(pxClient->pxParent->pcContentsType, sizeof( pxClient->pxParent->pcContentsType ),
@@ -196,8 +199,6 @@ BaseType_t http_api_firewall_add(HTTPClient_t *pxClient, BaseType_t *httpErrorCo
 
     // Save the rule to the packet classifier.
     pc_save_rule(location, wildcard, destIP, sourceIP, destPort, sourcePort, protocol);
-
-    FreeRTOS_printf( ( "http_api_firewall_add:  %d\n", destIP[0]) );
 
 
     // craft a response

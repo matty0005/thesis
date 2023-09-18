@@ -104,10 +104,11 @@ int pc_get_rules(uint8_t *buffer, uint32_t bufferSize, uint32_t *size) {
     }
 
     // Save all rules so that we know these are the most up to date ones.
-    // pc_save_rules_all(buffer, *size);
+    pc_save_rules_all(buffer, *size);
 
     return 0;
 }
+
 
 
 /**
@@ -122,6 +123,17 @@ int pc_save_rules_all(uint8_t *pcRawData, uint8_t size) {
     uint8_t location, wildcard, protocol;
     uint8_t destIP[4], sourceIP[4];
     uint16_t destPort, sourcePort;
+
+    // First write the rules to the /firewall/filter.rules file
+    FF_FILE *filehandle = ff_fopen( "/firewall/filter.rules", "wb" );
+    if (filehandle != NULL) {
+
+        ff_fwrite(pcRawData, 1, strlen(pcRawData), filehandle);
+
+        ff_fclose(filehandle);
+    
+    }
+
 
     for (uint8_t i = 0; i < size; i++) {
 
@@ -158,18 +170,7 @@ int pc_save_rules_all(uint8_t *pcRawData, uint8_t size) {
 } 
 
 
-/* Standard includes. */
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 
-/* FreeRTOS includes. */
-#include "FreeRTOS.h"
-#include "task.h"
-
-/* FreeRTOS+TCP includes. */
-#include "FreeRTOS_IP.h"
-#include "FreeRTOS_Sockets.h"
 
 static uint8_t swap_bits(uint8_t bits) {
     uint8_t result = 0;
