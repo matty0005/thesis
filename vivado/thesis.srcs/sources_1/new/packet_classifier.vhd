@@ -295,7 +295,8 @@ begin
                         
         if spiCounter = 119 then
             -- Save the contents in the vector to the memory
-            RULES_MEMORY(to_integer(unsigned(spi_mosi_data(119 downto 112)))) := spi_mosi_data(110 downto 0) & spi_mosi;
+            -- Needs to be 118 since the result wont be ready in time. 
+            RULES_MEMORY(to_integer(unsigned(spi_mosi_data(118 downto 111)))) := spi_mosi_data(110 downto 0) & spi_mosi;
             spiCounter := 0;
         else 
             spiCounter := spiCounter + 1;
