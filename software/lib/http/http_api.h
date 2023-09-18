@@ -38,6 +38,7 @@ BaseType_t http_api_stats(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
 BaseType_t http_api_control_udp(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
 BaseType_t http_api_control_cli(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
 BaseType_t http_api_not_found(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
+BaseType_t http_api_reset_counts(HTTPClient_t *pxClient, BaseType_t *httpErrorCode);
 
 
 #endif

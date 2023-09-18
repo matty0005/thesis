@@ -311,6 +311,8 @@ static BaseType_t prvPostRequest(HTTPClient_t *pxClient) {
 		http_api_firewall_add_all(pxClient, &httpErrorCode);
 	else if (strcmp(pxClient->pcUrlData, "/api/udp_ping/toggle") == 0)
 		http_api_control_udp(pxClient, &httpErrorCode);
+	else if (strcmp(pxClient->pcUrlData, "/api/stats/reset") == 0)
+		http_api_reset_counts(pxClient, &httpErrorCode);
 	else if (strcmp(pxClient->pcUrlData, "/api/cli/toggle") == 0)
 		http_api_control_cli(pxClient, &httpErrorCode);
 	else 

@@ -44,10 +44,12 @@ BaseType_t http_api_stats(HTTPClient_t *pxClient, BaseType_t *httpErrorCode) {
 
     uint64_t total = pc_get_total_packet_count();
     uint64_t blocked = pc_get_blocked_packet_count();
+
+    uint64_t uptime = xTaskGetTickCount(); // May need to change if tick rate is changed. 
     
 
     char buff[100] = {0};
-    snprintf(buff, sizeof(buff), "%llu,%llu,%d,%d,%d", total, blocked, xUDPPingTaskHandle != NULL, xCliTaskHandle != NULL, pc_get_status());
+    snprintf(buff, sizeof(buff), "%llu,%llu,%llu,%d,%d,%d", total, blocked, uptime, xUDPPingTaskHandle != NULL, xCliTaskHandle != NULL, pc_get_status());
 
 
     // craft a response
