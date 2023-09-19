@@ -17,8 +17,8 @@
         <checkbox class="mx-2 mt-1" title="Wildcard" v-model="payload.wildcardSPort"/>
     </div>
     <div class=" ">
-        <textfield class="mx-2" title="Protocol" v-model="payload.proto"/>
-        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="payload.wildcardProto"/>
+        <dropdown class="mx-2" title="Protocol" :options="protocols" v-model="payload.proto"/>
+        <checkbox class="mx-2 mt-1" title="Wildcard" />
     </div>
     <div class="my-auto mx-4 h-full mt-8">
         <div  class=" text-red-600 my-8 cursor-pointer flex items-center justify-center  bg-red-100 hover:bg-red-200 rounded-full w-8 h-8" @click="remove">
@@ -35,9 +35,10 @@
 
 <script>
 import Checkbox from './Checkbox.vue'
+import Dropdown from './Dropdown.vue'
 import Textfield from './Textfield.vue'
 export default {
-  components: { Textfield, Checkbox },
+  components: { Textfield, Checkbox, Dropdown },
   props: {
     index : Number,
     initialRule: String,
@@ -56,7 +57,23 @@ export default {
             wildcardDPort: false,
             wildcardSPort: false,
             wildcardProto: false,
-        }
+        },
+        protocols: [
+            {title: "TCP", value:  6},
+            {title: "UDP", value: 17},
+            {title: "ICMP", value: 1},
+            {title: "ICMPv6", value: 58},
+            {title: "IPv6", value: 41},
+            {title: "AH", value: 51},
+            {title: "ESP", value: 50},
+
+            {title: "TLSP", value: 56},
+            {title: "EIGRP", value: 88},
+            {title: "IGP", value: 9},
+            {title: "IGMP", value: 2},
+            {title: "OSPF", value: 89},
+
+        ]
     }
   },
   mounted() {

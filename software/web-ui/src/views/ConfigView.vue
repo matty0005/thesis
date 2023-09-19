@@ -5,7 +5,7 @@
     <!-- <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Restart</button> -->
     <!-- <button type="button" class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-gray-300 shadow-sm hover:bg-white/20 m-2">Reset Phy</button> -->
     <div class="flex flex-row">
-        <button type="button" @click="loadRules" class="rounded-lg bg-gray-200 dark:bg-white/10 px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm hover:bg-riscv-blue-d mx-2">Load Rules</button>
+        <button type="button" @click="loadRules" class="rounded-lg bg-gray-200 dark:bg-white/10 px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm hover:text-white hover:bg-riscv-blue-l mx-2">Load Rules</button>
         <!-- <button type="button" @click="filterRules" class="rounded-lg bg-riscv-blue-l dark:bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-riscv-blue-d mx-2">Load Rules</button> -->
         <div class="flex-grow"></div>
         <button type="button" @click="saveRules" class="rounded-lg bg-riscv-blue-l dark:bg-white/10 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-riscv-blue-d mx-2">Save Rules</button>
