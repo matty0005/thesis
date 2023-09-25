@@ -60,7 +60,38 @@ There are 5 PMOD connectors on the development board. Initally, one of these wou
 
 \section{Ultilisation}
 
-Could be a big section where i take a look at the design against the number of rules - show power usage and gate consumption.
+The design can be broken down into several parts including the NeoRV32 processor itself, Ethernet and packet filtering hardware.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/FPGAUtilisationResources.png}
+    \caption[Summary of the resource utilisation on XC7A100T FPGA]{Summary of the resource utilisation on XC7A100T FPGA.}
+    \label{fig:eye_diagram}
+\end{figure}
+
+The total number of resoruces on the FPGA are as follows: 63,400 LUTs, 126,800 flip flops, 135 BRAM tiles, 240 DSPs and 6 MMCMs.
+
+LUT6 and LUT5 primatives were used the most in the design and by far the FDRE flip flop was the most used flip flop type. 2436 MUXF7s were also used. RAMD64E was also used in the design. The report from vivado can be found in appendix \ref{app:res_usage}.
+
+\subsection{NeoRV32 processor}
+
+The NeoRV32 SoC was configured to use the SPI, UART, GPIO, external interupts (XIRQ), true random number generator and importantly the wishbone B4 classic interface. The DSP48 blocks were used by the SoC to handle the multiply operations as this would free up LUTs and compute the result faster. 
+
+The IMEM and DMEM sizes were chosen to consume as much of the remaining BRAM blocks left as possible. IMEM, the program storage was configured to 256KB while the DMEM, effectively the RAM, was configured to take the remaining amount left and set to 168KB in size. 
+
+After synthesis of the design at 50Mhz, it was deemed that there was some headroom in the critical path delays. Hence the design was updated to 80MHz. This however does not affect the resource utilisation except for taking up some extra clock buffers. A single MMCM was still used to add the additional 80MHz output. 
+
+The NeoRV32 itself took 28455 slice LUTs, 2507 Slice registers, 130 Block RAM tiles and 4 DSPs. 
+
+
+\subsection{Ethernet hardware}
+Comparatively, the Ethernet hardware took 11738 Slice LUTs and 12505 Slice registers, most of which is consumed by the transmit logic. This is largely due to the required buffers when storing (to construct) and sending out the frame. 
+
+\subsection{Packet filter}
+The packet classifier took a total of 571 Slice LUTs and 1145 Slice registers. This is lower than expected and indicates that the design could easily be increased to consolidate more rules. However, the fanout of the design will need to be considered due to the nature of the implementation. 
+
+
+
 
 
 \section{Timing constraints}
@@ -90,3 +121,49 @@ A thermal camera was used to record the temperatures periodically. At an ambient
     \caption[Thermal image of FPGA board and WIZ5500 after two hours]{Thermal image of FPGA board and WIZ5500 after two hours.}
     \label{fig:thermal_2hr}
 \end{figure}
+
+
+\section{Power analysis}
+
+As the voltage would remain constant between devices (all powered over USB), only the current was measured. These results however should be taken with caution as they do not account for regulator inefficiencies and do not give a true current reading of the device, rather just an indication. 
+
+
+The device for testing the current was the Nordic Semiconductor Power Profiler Kit 2 which can record at up to 100kSa/s. For the tests in this report, only a sampling rate of 10kSa/s was used as it produces less noisy results. 
+
+As a baseline, the Nexys A7 board draws 200mA with no design applied and is due to all the additional components on the board. With the design loaded up but without the processor flashed, the board took 284.4mA. After flashing the board, the idle current reached an average of 301.84mA.
+
+A series of tests were then done and the currents were measured. By pinging the device every 50ms, the average current consumption was 300.72mA. Interestingly, the current consumption was cyclic similar to what is shown in figure \ref{fig:ppk_udp_ping}. A UDP ping test was conducted (shown in figure \ref{fig:ppk_udp_ping}) and had an average current draw of 301.13mA. In both the ICMP and UDP pings, the current consumption was of similar style where the varience of the current was about 10mA. 
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Images/PPK_udp.png}
+    \caption[Current consumption of FPGA board with UDP pings]{Current consumption of FPGA board with UDP pings.}
+    \label{fig:ppk_udp_ping}
+\end{figure}
+
+
+
+If the packets are now blocked by the filter, more about the design in terms of power consumption can be learned. After adding a rule in the packet filter, very little could be observed in the current consumption over the unblocked case. The same cyclic pattern in figure \ref{fig:ppk_udp_ping} could be seen. An average of 300.92mA was been consumed by the device and is within the margin of error of the device. Figure \ref{fig:ppk_icmp_ping} shows the that the period for the current waveform is about 83ms, which is much larger than the 50ms between pings to the device. After filming the status LED on the PHY output at 240 frames per second, the period of the LED was 20 frames equivalent to $\approx 84ms$ which aligns with the current measurements. 
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Images/PPK_ping_zoom.png}
+    \caption[Zoomed in current consumption for ICMP pings]{Zoomed in current consumption for ICMP pings.}
+    \label{fig:ppk_icmp_ping}
+\end{figure}
+
+
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Images/PPK_http_annotated.png}
+    \caption[Current consumption of FPGA board with HTTP requests]{Current consumption of FPGA board with HTTP requests.}
+    \label{fig:ppk_http_annotated}
+\end{figure}
+
+
