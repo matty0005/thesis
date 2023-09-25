@@ -5,7 +5,7 @@
         <div class="flex-grow"></div>
         <!-- <button type="button" @click="resetStats" class="rounded-lg px-4 py-2 text-sm font-semibold hover:text-gray-400 text-gray-600 mx-2">Reset</button>
         <button type="button" @click="getStats" class="rounded-lg bg-gray-200 dark:bg-white/10 px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm hover:bg-riscv-blue-d mx-2">Refresh</button> -->
-        <button type="button" @click="resetStats" class="rounded-lg bg-gray-200 dark:bg-white/10 px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm hover:bg-riscv-blue-d mx-2">Reset</button>
+        <button type="button" @click="resetStats" class="rounded-lg bg-gray-200 dark:bg-white/10 px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm hover:bg-riscv-blue-l hover:text-white mx-2">Reset</button>
         <button type="button" @click="getStats" class="rounded-lg bg-riscv-blue-l px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-riscv-blue-d mx-2">Refresh</button>
         <!-- <button type="button" @click="filterRules" class="rounded-lg bg-riscv-blue-l dark:bg-white/10 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-riscv-blue-d mx-2">Load Rules</button> -->
     </div>
