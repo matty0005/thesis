@@ -18,7 +18,7 @@
     </div>
     <div class=" ">
         <dropdown class="mx-2" title="Protocol" :options="protocols" v-model="payload.proto"/>
-        <checkbox class="mx-2 mt-1" title="Wildcard" />
+        <checkbox class="mx-2 mt-1" title="Wildcard" v-model="payload.wildcardProto"/>
     </div>
     <div class="my-auto mx-4 h-full mt-8">
         <div  class=" text-red-600 my-8 cursor-pointer flex items-center justify-center  bg-red-100 hover:bg-red-200 rounded-full w-8 h-8" @click="remove">
