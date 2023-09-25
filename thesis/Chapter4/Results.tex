@@ -94,12 +94,14 @@ The packet classifier took a total of 571 Slice LUTs and 1145 Slice registers. T
 
 
 
-\section{Timing constraints}
-\label{sec:timing_constraints}
+\section{Timing Summary}
+\label{sec:timing_summary}
+After running the post synthesis timing summary in Vivado, a worst negative slack of -2.634ns was reported for the setup timing with a total of 82 endpoints failing the constraints. For the hold summary, a worst hold slack of -0.021ns was found. 
 
 
 
 
+\section{Comparison to preexisting solutions}
 
 Testing with WIZ5500 Pico, avg udp rtt was 1.88ms from 1000 tests with a payload of 7 bytes.
 Testing with WIZ5500 Pico, avg udp rtt was 2.07ms from 1000 tests with a payload of 256 bytes.
@@ -107,10 +109,9 @@ Testing with WIZ5500 Pico, avg udp rtt was 2.07ms from 1000 tests with a payload
 Testing with FPGA board, avg udp rtt was 1.45ms from 1000 tests with a payload of 7 bytes.
 Testing with FPGA board, avg udp rtt was 1.72ms from 1000 tests with a payload of 256 bytes.
 
-observations, the WIZ5500 chip was getting excessively hot..
 
-Maybe do a power and thermal camera comparison.
 
+\subsection{Thermal analysis}
 
 A thermal camera was used to record the temperatures periodically. At an ambient room temperature of $24.8\degree C$ throughout the test, after 5mins the WIZ5500 ethernet chip heated to $58.0\degree C$ and RP2040 was at $46.6\degree C$. While the FPGA was at $38.0 \degree C$. This is a bit of an unfair comparison as the physical size of the FPGA is much larger than the WIZ5500. After two hours of constant UDP ping requests to both devices, figure \ref{fig:thermal_2hr} shows the FPGA board and WIZ5500 board's temperature gradient. The FPGA plateaued to a maximum of $40.4 \degree C$ while the WIZ5500 was $1.c \degree C$ cooler at, $56.8 \degree C$. This could be due to accuracy of the measurements, in addition to not getting aiming the thermal camera in the hottest part. The RP2040 chip however was measured to be $53.2 \degree C$. Some additional thermal images can be found in the appendix.
 
