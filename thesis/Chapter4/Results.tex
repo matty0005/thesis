@@ -118,6 +118,41 @@ my solution is less suseptible to power glitch attacks since this is done at the
 More secure and harder to bypass.
 faster
 
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+    \begin{axis}[
+        ybar,
+        symbolic x coords={WIZ5500 Pico, F767ZI 80Mhz, F767ZI, FPGA board},
+        xtick=data,
+        ylabel={Average UDP RTT (ms)},
+        legend style={at={(0.5,-0.2)},anchor=north},
+        enlarge x limits=0.15,
+        ymin=0,
+        ymax=2.5,
+        width=0.8\textwidth,
+        height=0.4\textwidth,
+        bar width=0.5cm
+    ]
+    \addplot coordinates {
+        (WIZ5500 Pico,1.88)
+        (F767ZI 80Mhz,1.41)
+        (F767ZI,1.30)
+        (FPGA board,1.45)
+    };
+    \addplot coordinates {
+        (WIZ5500 Pico,2.07)
+        (F767ZI 80Mhz,1.51)
+        (F767ZI,1.39)
+        (FPGA board,1.72)
+    };
+    \legend{7 bytes,256 bytes}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Average UDP RTT for different devices and payload sizes.}
+    \end{figure}
+    
+
 Testing with WIZ5500 Pico, avg udp rtt was 1.88ms from 1000 tests with a payload of 7 bytes.
 Testing with WIZ5500 Pico, avg udp rtt was 2.07ms from 1000 tests with a payload of 256 bytes.
 
@@ -131,6 +166,33 @@ Testing with LwIP Nucleo-F767ZI, avg udp rtt was 1.39ms from 1000 tests with a p
 Testing with FPGA board, avg udp rtt was 1.45ms from 1000 tests with a payload of 7 bytes.
 Testing with FPGA board, avg udp rtt was 1.72ms from 1000 tests with a payload of 256 bytes.
 
+
+\subsection{Firewall performance}
+
+The hardware packet filter in this design has previously be found to induce a 4.48us delay and does not change the throughput of the device. 
+
+A software based implementation of the firewall was created on the Nucleo-F767ZI board. Also with 8 rules. After measuring with an with an oscilloscope for the time it takes to compute whether or not to forward the packet, the timings depended on first how many rules there are, where a valid rule is matched (start or end of the sequence), if there is like terms between invalid rules and so on. 
+
+As a best case, the time was found to be 3.14us (figure \ref{fig:sw_pf_best_case}) while an average-to-bad case was 10.76us (figure \ref{fig:sw_pf_bad_case}).
+
+
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth} % Adjust the width to your needs
+        \includegraphics[width=\textwidth]{Images/sw_pf_best_case.png}
+        \caption{Best case scenario}
+        \label{fig:sw_pf_best_case}
+    \end{subfigure}
+    \hfill % this will add a small space between the two images
+    \begin{subfigure}[b]{0.45\textwidth} % Adjust the width to your needs
+        \includegraphics[width=\textwidth]{Images/sw_pf_bad_case.png}
+        \caption{Average case}
+        \label{fig:sw_pf_bad_case}
+    \end{subfigure}
+    \caption{Software packet classifier timings}
+    \label{fig:sw_pf_timings}
+\end{figure}
 
 
 \subsection{Thermal analysis}
