@@ -14,4 +14,32 @@ Conclude your thesis.
 
 \begin{itemize}
     \item Bidirectional filtering - currently only doing incomming filtering
+    \item Redesign of the transmit logic to consume less resources while not losing on speed/performance - can reduce number of buffers. 
+    \item Add a second interface - would need a new pcb and would need onboard switch if webserver was also wanted.
+    \item Utilise the DDR2 RAM onboard the Nexys a7 board for RAM to free up BRAM. 
+    \item Use another FPGA board with only the essential peripherals (eg dont need USB, Audio, temperature sensor etc on Nexys board)
 \end{itemize}
+
+
+\subsection{Recommendations}
+
+Add dedicated hardware packet filtering to SoC based computers - safer - faster, efficient and lightweight
+
+Reduce number of transmit buffers needed - consolidate them.
+
+Use an FPGA with more BRAM as this would help with filter sizes, buffers and also ram needed for the RTOS and webservers.
+
+Consider Hybrid SoC FPGA such as the Xilinx Zynq lineup.
+
+Hardware ethernet and packet filter reduces latency, but is bottlenecked by CPU.
+
+Use a different bus which the processor can handle - wishbone is overkill ~2.5Gbit for 100Mbit connection.
+
+If power efficiency is desired, consider something like the MilkV duo. 128mA at 94mbit/s
+
+The NeoRV32 is a solid softcore processor, but it's size grows exponentially when you use the wishbone interface. It's feature set is growing and while good, is not a great idea in production devices. 
+
+
+While Freertos plus TCP provides a good library, it's documentation and community support is lackluster in comparison to LwIP. But is relatively easy to use. 
+
+Using Vue.js to write the website in is a good idea as it reduces the network traffic between the device as routing is handled on the client side. So for lightweight applications, it is ideal. No need to have a special webserver for it as the site is static. However a separate API is needed, but easy to implement. 
