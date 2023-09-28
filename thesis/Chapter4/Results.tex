@@ -98,13 +98,35 @@ The packet classifier took a total of 571 Slice LUTs and 1145 Slice registers. T
 \label{sec:timing_summary}
 After running the post synthesis timing summary in Vivado, a worst negative slack of -2.634ns was reported for the setup timing with a total of 82 endpoints failing the constraints. For the hold summary, a worst hold slack of -0.021ns was found. 
 
+The critical path is from the wishbone interface to the BRAM block inside the ethernet hardware - seen in figure \ref{fig:crit_path}. The level is 3 and stems from the NeoRV32 processor's wishbone bus. This cannot be easily updated and so is the leading limitation in the speed of the design. Even though this, in practice, doesn't seem to cause any issues, a caution for reliabilty is raised. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{Images/critical_path_delay_schematic.png}
+    \caption[Critical path in SoC design]{Critical path in SoC design.}
+    \label{fig:crit_path}
+\end{figure}
+
+
 
 
 
 \section{Comparison to preexisting solutions}
 
+
+my solution is less suseptible to power glitch attacks since this is done at the hardware layer and not in software where instructions can be skipped. 
+More secure and harder to bypass.
+faster
+
 Testing with WIZ5500 Pico, avg udp rtt was 1.88ms from 1000 tests with a payload of 7 bytes.
 Testing with WIZ5500 Pico, avg udp rtt was 2.07ms from 1000 tests with a payload of 256 bytes.
+
+Testing with LwIP Nucleo-F767ZI at 80Mhz, avg udp rtt was 1.41ms from 1000 tests with a payload of 7 bytes.
+Testing with LwIP Nucleo-F767ZI at 80Mhz, avg udp rtt was 1.51ms from 1000 tests with a payload of 256 bytes.
+
+Testing with LwIP Nucleo-F767ZI, avg udp rtt was 1.30ms from 1000 tests with a payload of 7 bytes.
+Testing with LwIP Nucleo-F767ZI, avg udp rtt was 1.39ms from 1000 tests with a payload of 256 bytes.
+
 
 Testing with FPGA board, avg udp rtt was 1.45ms from 1000 tests with a payload of 7 bytes.
 Testing with FPGA board, avg udp rtt was 1.72ms from 1000 tests with a payload of 256 bytes.

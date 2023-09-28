@@ -2,6 +2,21 @@
 set_property -dict { PACKAGE_PIN E3    IOSTANDARD LVCMOS33 } [get_ports { clk_i }]; #IO_L12P_T1_MRCC_35 Sch=clk100mhz
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {clk_i}];
 
+
+# Assuming the component instance name in your top-level design is clk_master_inst
+
+create_generated_clock -name clk_100 -source [get_ports clk_in] [get_ports clk_100]
+create_generated_clock -name clk_50  -source [get_ports clk_in] [get_ports clk_50]
+create_generated_clock -name clk_75  -source [get_ports clk_in] [get_ports clk_75]
+
+# For phase-shifted clocks, you may need to use the -edges and -degree options:
+create_generated_clock -name clk_50p -source [get_ports clk_in] -edges {15} [get_ports clk_50p]
+create_generated_clock -name clk_p50 -source [get_ports clk_in] -edges {5}  [get_ports clk_p50]
+
+set_clock_groups -asynchronous -group [get_clocks clk_100] -group [get_clocks clk_75]
+
+
+
 # Allow TRNG
 #set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets <myHier/myNet>]
 set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets neorv32_top_inst/neorv32_trng_inst_true.neorv32_trng_inst/neoTRNG_inst/neoTRNG_cell_inst[0].neoTRNG_cell_inst_i/enable_sreg_l_reg[0]_0]
