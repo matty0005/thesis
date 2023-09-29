@@ -9,9 +9,7 @@ Conclude your thesis.
 
 % ***************************************************
 
-
-
-\section{Improvements}
+\section{Limitations and improvements}
 
 \begin{itemize}
     \item Bidirectional filtering - currently only doing incomming filtering
@@ -21,6 +19,7 @@ Conclude your thesis.
     \item Utilise the DDR2 RAM onboard the Nexys a7 board for RAM to free up BRAM. 
     \item Use another FPGA board with only the essential peripherals (eg dont need USB, Audio, temperature sensor etc on Nexys board)
     \item Support certificates for HTTPS. 
+    \item Support faster media interfaces, eg RGMII for 1Gbit/s or XGMII for 10Gbit/s as an example
 \end{itemize}
 
 
@@ -53,10 +52,12 @@ Using Vue.js to write the website in is a good idea as it reduces the network tr
 
 Ethernet standards have been in place since xxxx and the IP, TCP, UDP and other layer 4 protocols have been in service for decades and have not changed. Typically if new features do need to be added in these areas, they are added ontop of and not modify the packet structure itself. Such event was in XXXX with the introduction of IPv6.
 
-While malicious bad actors come up with new and innovative ways to breach a system, the core of this packet filter is solid and fundamentally should not need to change in future. Instead other additons to the architecture of a system should be added to better protect a host. 
+While malicious bad actors come up with new and innovative ways to breach a system, the core of this packet filter is solid and fundamentally should not need to change in future. Instead other additions to the architecture of a system should be added to better protect a host. 
 
 Using the neorv32 while is feature-rich, as it's in its developement process and new features are continually getting added and existing features moved around, it doesn't make for the best choice for ease of updating, but it does get regularly updated so if there was a security vulnerability, odds are that it will get patched.
 
 Perhaps a larger issue with sustainability is the lifecyle of a Vue.js webapp. When updates are needed, potentially new versions of the toolchain may be needed thus contributing to longer development times. 
 
-Choice of riscv makes this project easy to commertialise since there is no licences needed for the risc-v cores are royalty free and the specific varient, neorv32 is open sourced under the BSD-3-Clause license. \footnote[1]{See: https://github.com/stnolting/neorv32/blob/main/LICENSE}
+Choice of riscv makes this project easy to commercialise since there is no licences needed for the risc-v cores are royalty free and the specific variant, neorv32 is open sourced under the BSD-3-Clause license. \footnote[1]{See: https://github.com/stnolting/neorv32/blob/main/LICENSE}
+
+This design was deployed on a Xilinx Artix 7 FPGA board with the LAN8720A PHY. As the LAN8720A chip uses the standardised RMII interface, there should be no issues porting the project to another FPGA or FPGA board so long as there is sufficient LUTs and BRAM available on the FPGA and uses an RMII phy. The hardware could be updated to RGMII or XGMII without too many issues with the main difference being in the input and output FIFO being able to support the different clock rates and bit widths. 
