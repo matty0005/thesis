@@ -10,18 +10,21 @@ Conclude your thesis.
 % ***************************************************
 
 
-\subsection{Improvements}
+
+\section{Improvements}
 
 \begin{itemize}
     \item Bidirectional filtering - currently only doing incomming filtering
+    \item Support IPv6
     \item Redesign of the transmit logic to consume less resources while not losing on speed/performance - can reduce number of buffers. 
     \item Add a second interface - would need a new pcb and would need onboard switch if webserver was also wanted.
     \item Utilise the DDR2 RAM onboard the Nexys a7 board for RAM to free up BRAM. 
     \item Use another FPGA board with only the essential peripherals (eg dont need USB, Audio, temperature sensor etc on Nexys board)
+    \item Support certificates for HTTPS. 
 \end{itemize}
 
 
-\subsection{Recommendations}
+\section{Recommendations}
 
 Add dedicated hardware packet filtering to SoC based computers - safer - faster, efficient and lightweight
 
@@ -41,5 +44,19 @@ The NeoRV32 is a solid softcore processor, but it's size grows exponentially whe
 
 
 While Freertos plus TCP provides a good library, it's documentation and community support is lackluster in comparison to LwIP. But is relatively easy to use. 
-
+ 
 Using Vue.js to write the website in is a good idea as it reduces the network traffic between the device as routing is handled on the client side. So for lightweight applications, it is ideal. No need to have a special webserver for it as the site is static. However a separate API is needed, but easy to implement. 
+
+
+
+\section{Sustainability}
+
+Ethernet standards have been in place since xxxx and the IP, TCP, UDP and other layer 4 protocols have been in service for decades and have not changed. Typically if new features do need to be added in these areas, they are added ontop of and not modify the packet structure itself. Such event was in XXXX with the introduction of IPv6.
+
+While malicious bad actors come up with new and innovative ways to breach a system, the core of this packet filter is solid and fundamentally should not need to change in future. Instead other additons to the architecture of a system should be added to better protect a host. 
+
+Using the neorv32 while is feature-rich, as it's in its developement process and new features are continually getting added and existing features moved around, it doesn't make for the best choice for ease of updating, but it does get regularly updated so if there was a security vulnerability, odds are that it will get patched.
+
+Perhaps a larger issue with sustainability is the lifecyle of a Vue.js webapp. When updates are needed, potentially new versions of the toolchain may be needed thus contributing to longer development times. 
+
+Choice of riscv makes this project easy to commertialise since there is no licences needed for the risc-v cores are royalty free and the specific varient, neorv32 is open sourced under the BSD-3-Clause license. \footnote[1]{See: https://github.com/stnolting/neorv32/blob/main/LICENSE}
