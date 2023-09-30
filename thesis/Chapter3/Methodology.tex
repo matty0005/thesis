@@ -381,11 +381,31 @@ Two main options for the network stack were available, LwIP and FreeRTOS-Plus-TC
 
 Like with the filesystem library, the stack needed to be ported to the NEORV32 processor and importantly the custom Etherent hardware. In addition to the transmit, receive and initalisation methods, functions to return random numbers were needed. These are for the TCP sequence numbers and are required to truely random for security. As such, the hardware based true random number generator in the NEORV32 core was used. 
 
+The network stack was configured to use DHCP to automatically aquire an IP address from a DHCP server on a network so that when it's transported between networks it can dynamically get a new IP address and can be accessed without needing to reconfigure the device. The device can then be given a static IP through the DHCP server by creating a static mapping. This will then prevent the DHCP server from assigning the desired IP address to another device accidentally. 
+
+\subsection{Web application}
+With the resource constraints of the RISC-V microcontroller in mind and other design requirements, Vue.js was chosen as the framework of choice for developing the web application in. Vue.js is a framework for developing componentised single page applications. Although technically single page, the javascript it compiles handles routing between web pages on the client side in javascript. This means that once the initial page has loaded, no additional server requests need to be made to change page. To make the website appear dynamic, an API can be used to fetch data and statistics from the device itself. These HTTP API requests are much smaller than the requests needed to load the webpage initally. This results in very low network traffic between the client and server, perfect for embedded systems. 
+
+For styling, Tailwindcss was used to help style the webpages to give the webapp a contempory feel. 
+
+The webapp consisted of 3 main pages, the index or home page, about page and config page. The home page, figure \ref{fig:webapp_home} showed statistics such as total and blocked packet count, and statuses for a few tasks on the microcontroller. These tasks, through an API call, can be toggled on and off to save resources. An uptime reading is also present. These values are updatable by clicking the 'refresh' button.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images/homepage_small.png}
+    \caption[Screenshot of homepage on webapp]{Screenshot of homepage on webapp.}
+    \label{fig:webapp_home}
+\end{figure}
+
+The configuration page, (figure \ref{fig:web_app_config} shown in appendix \ref{app:additional_webpages}) is where the user configures the firewall rules. The rules first need to be loaded which is requested through an API request. This API request reads the rules from the microsd card, sets the rules (for consistency) and then returns them in the response packet. When the user saves a set of rules, an API request is made which first applies the rules and then saves the rules to the microsd card so that the changes are persistant. 
+
+An about page (figure \ref{fig:web_app_about} shown in appendix \ref{app:additional_webpages}) was also created for demonstration purposes and contained an image.
+
+In addition, as this is all client side and compiles to html, css and javascript, no special webserver is required for things such as server side rendering.
+
 
 \subsection{Webserver}
-A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. FreeRTOS give an example of how to setup a TCP and HTTP server that uses the FAT filesystem to get the content such as the html, css and javascript files. 
-
-... TALK ABOUT WHAT TYPE OF FILES ARE BEEN SERVED, VUE, PLAIN HTML ETC...
+A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. FreeRTOS give an example of how to setup a TCP and HTTP server that uses the FAT filesystem to get the content such as the html, css and javascript files. All the TCP webserver has to do is determine the route requested by the client, based on this it knows whether to read a file from the micro SD card and send it over multiple TCP packets or if it needs to respond with raw data like in the case of the API. Regardless of the type of request, a response is formed in the standard HTTP 1.1 format given in RFC2616 \cite{rfc2616}.
 
 
 \subsubsection{API server}

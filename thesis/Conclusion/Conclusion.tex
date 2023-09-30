@@ -20,6 +20,7 @@ Conclude your thesis.
     \item Use another FPGA board with only the essential peripherals (eg dont need USB, Audio, temperature sensor etc on Nexys board)
     \item Support certificates for HTTPS. 
     \item Support faster media interfaces, eg RGMII for 1Gbit/s or XGMII for 10Gbit/s as an example
+    \item Make efficiency considerations in the ethernet hardware and RISC-V core. 
 \end{itemize}
 
 
@@ -46,6 +47,8 @@ While Freertos plus TCP provides a good library, it's documentation and communit
  
 Using Vue.js to write the website in is a good idea as it reduces the network traffic between the device as routing is handled on the client side. So for lightweight applications, it is ideal. No need to have a special webserver for it as the site is static. However a separate API is needed, but easy to implement. 
 
+
+Configure the DHCP server so that it statically assigns the IP address to the firewall for easy configuration. 
 
 
 \section{Sustainability}

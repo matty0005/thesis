@@ -88,3 +88,66 @@ Write your appendix here. Following two are examples.
         \bottomrule
     \end{tabular}
 \end{table}
+
+
+\section{Additional webpages built into the webserver.}
+\label{app:additional_webpages}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{Images/webapp_about.png}
+    \caption{Screenshot of the about page in the webapp.}
+    \label{fig:web_app_about}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{Images/webapp_config.png}
+    \caption{Screenshot of the config page in the webapp.}
+    \label{fig:web_app_config}
+\end{figure}
+
+
+
+
+
+\section{Current measurments from boards}
+\label{app:current_measurements}
+
+Table \ref{tab:power_consumption} shows the current measurments. Notably Diff1 is the difference between the Idle and No ETH fields while Diff2 is the difference between the Idle and Clean states.
+
+\begin{table}[ht]
+    \centering
+    \caption{Device power consumption data (all values in mA)}
+    \label{tab:power_consumption}
+    \begin{tabular}{lccccccc}
+    \toprule
+    Device    & Idle  & Busy  & Average  & No ETH  & Clean  & Diff1  & Diff2 \\
+    \midrule
+    FPGA      & 301.4     & 300.13    & 300.765      & 264         & 202.13           & 37.4     & 99.27       \\
+    MilkV     & 76.27     & 76.53     & 76.4         & 69.23       & 69.23            & 7.04     & 7.04       \\
+    F767ZI    & 209.25    & 206.9     & 208.075      & 153.46      & 121.31           & 55.79    & 87.94       \\
+    WIZ5500   & 155.88    & 158.67    & 157.275      & 97.9        & 80.35            & 57.98    & 75.53       \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+
+\section{Thermal measurements for boards}
+
+\begin{table}[ht]
+    \centering
+    \caption{Device measurements over time using FLIR One thermal camera}
+    \label{tab:measurements}
+    \begin{tabular}{lcccccc}
+    \toprule
+    Device & 5min & 10min & 30min & 1h & 2h \\
+    \midrule
+    FPGA & 38 & 38.2 & 38.9 & 39.1 & 40.4 \\
+    MilkV & 36.7 & 39.8 & 35.5 & 39.1 & 38.1 \\
+    F767ZI (STM) & 35.9 & 38.9 & 35.8 & 37.5 & 36.8 \\
+    F767ZI (PHY) & 38 & 38.8 & 35.2 & 37.2 & 36.2 \\
+    WIZ5500 (RP2040) & 46.6 & 53.1 & 54.6 & 54.5 & 53.2 \\
+    WIZ5500 (PHY) & 58 & 59 & 58.4 & 58.5 & 56.8 \\
+    \bottomrule
+\end{tabular}
+\end{table}

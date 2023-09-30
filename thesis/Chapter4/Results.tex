@@ -198,15 +198,108 @@ Importantly these delays unlike the FPGA one, do impact throughput as the proces
 
 \subsection{Thermal analysis}
 
-A thermal camera was used to record the temperatures periodically. At an ambient room temperature of $24.8\degree C$ throughout the test, after 5mins the WIZ5500 ethernet chip heated to $58.0\degree C$ and RP2040 was at $46.6\degree C$. While the FPGA was at $38.0 \degree C$. This is a bit of an unfair comparison as the physical size of the FPGA is much larger than the WIZ5500. After two hours of constant UDP ping requests to both devices, figure \ref{fig:thermal_2hr} shows the FPGA board and WIZ5500 board's temperature gradient. The FPGA plateaued to a maximum of $40.4 \degree C$ while the WIZ5500 was $1.c \degree C$ cooler at, $56.8 \degree C$. This could be due to accuracy of the measurements, in addition to not getting aiming the thermal camera in the hottest part. The RP2040 chip however was measured to be $53.2 \degree C$. Some additional thermal images can be found in the appendix.
+A thermal camera was used to record the temperatures periodically. At an ambient room temperature of $24.8\degree C$ throughout the test, after 5mins the WIZ5500 ethernet chip heated to $58.0\degree C$ and RP2040 was at $46.6\degree C$. While the FPGA was at $38.0 \degree C$. This is a bit of an unfair comparison as the physical size of the FPGA is much larger than the WIZ5500. After two hours of constant UDP ping requests to both devices, figure \ref{fig:thermal_2hr_fpga_pico} shows the FPGA board and WIZ5500 board's temperature gradient. The FPGA plateaued to a maximum of $40.4 \degree C$ while the WIZ5500 was $1.c \degree C$ cooler at, $56.8 \degree C$. This could be due to accuracy of the measurements, in addition to not getting aiming the thermal camera in the hottest part. The RP2040 chip however was measured to be $53.2 \degree C$. Some additional thermal images can be found in the appendix. 
+
 
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.5\textwidth]{Images/flir_2hs.jpg}
-    \caption[Thermal image of FPGA board and WIZ5500 after two hours]{Thermal image of FPGA board and WIZ5500 after two hours.}
+    \begin{subfigure}[b]{0.45\textwidth} % Adjust the width to your needs
+        \includegraphics[width=\textwidth]{Images/flir_2hs.jpg}
+        \caption{FPGA board (top) and WIZ5500 Pico (bottom)}
+        \label{fig:thermal_2hr_fpga_pico}
+    \end{subfigure}
+    \hfill % this will add a small space between the two images
+    \begin{subfigure}[b]{0.45\textwidth} % Adjust the width to your needs
+        \includegraphics[width=\textwidth]{Images/flir_nucleo_milkv.jpg}
+        \caption{Nucleo board (left) and MilkV Duo (right)}
+        \label{fig:thermal_2hr_nucleo_milkv}
+    \end{subfigure}
+    \caption{Thermal images of boards under test after two hours}
     \label{fig:thermal_2hr}
 \end{figure}
+
+A STM32 Nucleo-F767ZI board and a MilkV Duo board was also tested (figure \ref{fig:thermal_2hr_nucleo_milkv}). After two hours, the STM32F767 reached a temperature of $36.8\degree C$ while the LAN8742 reached $36.2\degree C$. The MilkV Duo which consists of the Ethernet PHY internally reached $38.1\degree C$ after two hours.
+
+These temperatures though cannot be considered as accurate, but rather used as an indication to see the hotspots in the boards and determine if one board gets excessively hot over the other. With this in mind, The WIZ5500 seems to reach the hottest out of the boards tested. The FPGA itself was consistently the lowest temperature across the board with the MilkV coming in a close second (considering it only has one source of heat).
+
+
+\subsection{Power consumed between boards}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            bar width=0.25cm,
+            width=0.8\textwidth,
+            height=0.5\textwidth,
+            enlarge x limits=0.15, % Adjusted value to make the bars closer
+            ylabel={Current (mA)},
+            symbolic x coords={FPGA, MilkV, F767ZI, WIZ5500},
+            xtick=data,
+            legend style={
+                at={(0.5,-0.15)},
+                anchor=north,
+                legend columns=-1,
+                legend cell align=left,
+                legend image post style={scale=1}, % Adjust this value for spacing
+                column sep=0.3cm % Adjust the space between each legend entry
+            },
+            legend cell align=left,
+            ymin=0,
+        ]
+        \addplot coordinates {
+            (FPGA, 301.4)
+            (MilkV, 76.27)
+            (F767ZI, 209.25)
+            (WIZ5500, 155.88)
+        };
+        \addlegendentry{Idle}
+        
+        \addplot coordinates {
+            (FPGA, 300.13)
+            (MilkV, 76.53)
+            (F767ZI, 206.9)
+            (WIZ5500, 158.67)
+        };
+        \addlegendentry{Busy}
+    
+        \addplot coordinates {
+            (FPGA, 264)
+            (MilkV, 69.23)
+            (F767ZI, 153.46)
+            (WIZ5500, 97.9)
+        };
+        \addlegendentry{No ETH}
+
+        % New data for "Complete Idle"
+        \addplot coordinates {
+            (FPGA, 202.13)
+            (MilkV, 69.23)
+            (F767ZI, 121.31)
+            (WIZ5500, 80.35)
+        };
+        \addlegendentry{Clean state}
+
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Comparison of Idle, Busy, and No eth currents for devices}
+    \label{fig:power_comparison}
+    \end{figure}
+    
+
+
+In Appendix \ref{app:current_measurements} figure \ref{tab:power_consumption} shows the same data in table form presenting numerical values.
+
+From figure \ref{fig:power_comparison}, the difference between the clean state and the busy states can be learned. The FPGA board had the largest difference at 99.27mA, compared to the 87.94mA difference witnessed in the F767ZI board. What must be taken into consideration is that the measurement for the FPGA board is without the hardware design (both Ethernet MAC, packet filter and RISC-V core) applied. Another reading of 283.75mA was observed when the design and hardware had been loaded (no firmware). What this means is that even though the FPGA board has the highest quiescent current amoungst the devices, it still has the larger design current for the project itself. 
+
+The smaller difference from the no Ethernet attached to the active state on the FPGA in comparison to the differences noticed on the F767ZI and WIZ5500 boards indicates that this is likely due to the MAC hardware in the F767ZI and WIZ5500 enters a sleep state to consume less current. The hardware designed in this thesis did not take this case into consideration. 
+
+
+\subsection{Security analysis}
+Only the FPGA board designed in this thesis has a hardware packet filter. The other devices need to implement a software based packet filter. On the surface this makes the two sound equivalent. However, software based firewalls may be susceptible to power-glitch attacks. Power glitch attacks are a common vulnerability in embedded systems. It consists of switching off and on power very rapidly at a critical point in the code to essentially bypass a certain instruction. While this is highly unlikely and often hard to implement, it is an advantage nonetheless.  
+
 
 
 \section{Power analysis}
