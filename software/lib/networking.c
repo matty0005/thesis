@@ -178,7 +178,7 @@ static void tsk_udp_ping( void *pvParameters ) {
 
     Socket_t xSocket;
     struct freertos_sockaddr xAddress;
-    uint8_t ucBuffer[1024];
+    uint8_t ucBuffer[1524];
     size_t xReceivedBytes;
     struct freertos_sockaddr xClientAddress;
     socklen_t xClientAddressLength = sizeof(xClientAddress);
@@ -199,7 +199,7 @@ static void tsk_udp_ping( void *pvParameters ) {
     }
 
     while (1) {
-        xReceivedBytes = FreeRTOS_recvfrom(xSocket, ucBuffer, 1024, 0, &xClientAddress, &xClientAddressLength);
+        xReceivedBytes = FreeRTOS_recvfrom(xSocket, ucBuffer, 1524, 0, &xClientAddress, &xClientAddressLength);
         neorv32_gpio_pin_clr(GPIO_PIN_3);
         
         if ((int)xReceivedBytes > 0) {

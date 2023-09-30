@@ -34,6 +34,9 @@
 #include "ethernet.h"
 #include "common.h"
 
+const char * pcApplicationHostnameHook( void ) {
+    return "RISCy-Firewall";
+}
 
 BaseType_t xApplicationGetRandomNumber( uint32_t * pulNumber );
 BaseType_t xApplicationDNSQueryHook( const char * pcName );
@@ -223,13 +226,13 @@ static void prvEMACDeferredInterruptHandlerTask( void *pvParameters )
             {
                 /* Set the actual length of the packet. */
                 pxBufferDescriptor->xDataLength = xBytesReceived;
+                
 
                 taskENTER_CRITICAL();
     
                 /* Obtain the packet into the buffer pointed to by the
                 pxBufferDescriptor structure. */
                 eth_recv(pxBufferDescriptor->pucEthernetBuffer, xBytesReceived);
-                pxBufferDescriptor->xDataLength = xBytesReceived;
 
                 taskEXIT_CRITICAL();
 
