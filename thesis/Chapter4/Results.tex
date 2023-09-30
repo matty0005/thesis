@@ -305,17 +305,52 @@ As the packet filter is designed in hardware and is directly reading the bits fr
 
 \section{Power analysis}
 
+\subsection{Theoretical analysis }
+
+Vivado provides a post synthesis power analysis summary for the design. While these are depenant on a lot of variables, they should provide a basis as to what to expect and help with optimisation of power within the design. The design was observed to take a total of 0.487W (figure \ref{fig:post_synth_power_summary}) where 0.383W of that is dynamic and depends on the operations taking place. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images/power_summary.png}
+    \caption[Post synthesis power summary for design]{Post synthesis power summary for design.}
+    \label{fig:post_synth_power_summary}
+\end{figure}
+
+
+Vivado further breaks down the design into the different hierarchical components shown in table \ref{tab:power_consumption}. Notably most of the power consumption in the design is a result of the RISC-V processor in the design. Notably the Ethernet hardware and packet filter consumes under 100mW. 
+
+\begin{table}
+    \centering
+    \caption{Power consumption of components.}
+    \begin{tabular}{|l|c|}
+        \hline
+        \textbf{Name} & \textbf{Total (W)} \\
+        \hline
+        neorv32 & 0.158 \\
+        clk control & 0.097 \\
+        ethernet\_mac & 0.097 \\
+        packet classifier & 0.002 \\
+        \hline
+    \end{tabular}
+    \label{tab:power_consumption}
+\end{table}
+
+
+
+
+\subsection{Measured analysis}
+
 As the voltage would remain constant between devices (all powered over USB), only the current was measured. These results however should be taken with caution as they do not account for regulator inefficiencies and do not give a true current reading of the device, rather just an indication. 
 
 
 The device for testing the current was the Nordic Semiconductor Power Profiler Kit 2 which can record at up to 100kSa/s. For the tests in this report, only a sampling rate of 10kSa/s was used as it produces less noisy results. 
 
-As a baseline, the Nexys A7 board draws 200mA with no design applied and is due to all the additional components on the board. With the design loaded up but without the processor flashed, the board took 284.4mA. After flashing the board, the idle current reached an average of 301.84mA.
+As a baseline, the Nexys A7 board draws 200mA (1W at 5V) with no design applied and is due to all the additional components on the board. With the design loaded up but without the processor flashed, the board took 284.4mA. After flashing the board, the idle current reached an average of 301.84mA. Multiplying this by 5V gives us a power draw of 1.51W. To factor in the quiescent current for the other devices on the FPGA board and if it is assumed that the 200mA reading solely for the other components on the FPGA board, it can be found that the design draws around 0.51W. This is rather close to what the synthesis tool calculated. 
 
 A series of tests were then done and the currents were measured. By pinging the device every 50ms, the average current consumption was 300.72mA. Interestingly, the current consumption was cyclic similar to what is shown in figure \ref{fig:ppk_icmp_ping}. A UDP ping test was conducted and had an average current draw of 301.13mA. In both the ICMP and UDP pings, the current consumption was of similar style where the variance of the current was about 10mA. 
 
 
-If the packets are now blocked by the filter, more about the design in terms of power consumption can be learned. After adding a rule in the packet filter, very little could be observed in the current consumption over the unblocked case. The same cyclic pattern in figure \ref{fig:ppk_udp_ping} could be seen. An average of 300.92mA was been consumed by the device and is within the margin of error of the device. Figure \ref{fig:ppk_icmp_ping} shows the that the period for the current waveform is about 83ms, which is much larger than the 50ms between pings to the device. After filming the status LED on the PHY output at 240 frames per second, the period of the LED was 20 frames equivalent to $\approx 84ms$ which aligns with the current measurements. 
+If the packets are now blocked by the filter, more about the design in terms of power consumption can be learned. After adding a rule in the packet filter, very little could be observed in the current consumption over the unblocked case. The same cyclic pattern in figure \ref{fig:ppk_icmp_ping} could be seen. An average of 300.92mA was been consumed by the device and is within the margin of error of the device. Figure \ref{fig:ppk_icmp_ping} shows the that the period for the current waveform is about 83ms, which is much larger than the 50ms between pings to the device. After filming the status LED on the PHY output at 240 frames per second, the period of the LED was 20 frames equivalent to $\approx 84ms$ which aligns with the current measurements. 
 
 
 \begin{figure}[h]
@@ -338,6 +373,3 @@ The second test is what happens when you click to navigate to the about page. Th
     \label{fig:ppk_http_annotated}
 \end{figure}
 
-
-
-Look at power analysis in vivado.
