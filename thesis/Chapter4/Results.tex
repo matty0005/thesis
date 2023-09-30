@@ -300,6 +300,7 @@ The smaller difference from the no Ethernet attached to the active state on the 
 \subsection{Security analysis}
 Only the FPGA board designed in this thesis has a hardware packet filter. The other devices need to implement a software based packet filter. On the surface this makes the two sound equivalent. However, software based firewalls may be susceptible to power-glitch attacks. Power glitch attacks are a common vulnerability in embedded systems. It consists of switching off and on power very rapidly at a critical point in the code to essentially bypass a certain instruction. While this is highly unlikely and often hard to implement, it is an advantage nonetheless.  
 
+As the packet filter is designed in hardware and is directly reading the bits from the PHY and doesn't consist of instructions as such, the hardware packet classifier in this design should not susceptible to a power glitch attack. Formal testing of this however was not part of the scope of this thesis.
 
 
 \section{Power analysis}
