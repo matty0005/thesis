@@ -225,6 +225,56 @@ static void tsk_udp_ping( void *pvParameters ) {
 }
 
 
+static void tsk_udp_reply( void *pvParameters ) {
+
+    Socket_t xSocket;
+    struct freertos_sockaddr xAddress;
+    uint8_t ucBuffer[1400];
+    size_t xReceivedBytes;
+    struct freertos_sockaddr xClientAddress;
+    socklen_t xClientAddressLength = sizeof(xClientAddress);
+
+    // Create the UDP socket.
+    xSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
+    if (xSocket == FREERTOS_INVALID_SOCKET) {
+        // Handle error - failed to create socket.
+        vTaskDelete(NULL);
+    }
+
+    // Bind to port.
+    xAddress.sin_port = FreeRTOS_htons(1337);
+    if (FreeRTOS_bind(xSocket, &xAddress, sizeof(xAddress)) != 0) {
+        // Handle error - failed to bind socket.
+        FreeRTOS_closesocket(xSocket);
+        vTaskDelete(NULL);
+    }
+
+    while (1) {
+        xReceivedBytes = FreeRTOS_recvfrom(xSocket, ucBuffer, 1400, 0, &xClientAddress, &xClientAddressLength);
+        
+        if ((int)xReceivedBytes > 0) {
+
+            char response[1450];
+            ucBuffer[xReceivedBytes] = '\0'; // null terminate            
+
+            for (int i = 0; i < strlen(ucBuffer); i++) 
+                response[i] = ucBuffer[strlen(ucBuffer) - 1 - i];
+            
+            response[strlen(ucBuffer)] = '\0';
+
+
+            FreeRTOS_sendto(xSocket, response, strlen(response), FREERTOS_MSG_DONTWAIT, &xClientAddress, xClientAddressLength);
+        }
+
+        vTaskDelay( pdMS_TO_TICKS( 1 ) ); 
+    }
+
+    // Clean up (though we'll never reach here in this example).
+    FreeRTOS_closesocket(xSocket);
+    vTaskDelete(NULL);
+}
+
+
 static void tsk_HTTP_server(void *pvParameters) {
 	TCPServer_t *pxTCPServer = NULL;
 	const TickType_t xInitialBlockTime = pdMS_TO_TICKS( 1000UL );
@@ -306,4 +356,5 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 
 void create_udp_task() {
     xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xUDPPingTaskHandle );
+    xTaskCreate(tsk_udp_reply, "UDPReply", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, NULL );
 }
