@@ -264,7 +264,7 @@ signal pc_valid_counter: std_logic_vector(63 downto 0) := (others => '0');
 signal pc_invalid_counter: std_logic_vector(63 downto 0) := (others => '0');
 signal pc_total_counter: std_logic_vector(63 downto 0) := (others => '0');
 
-constant FILTER_DELAY_TICKS : integer := 224;
+constant FILTER_DELAY_TICKS : integer := 200;
 signal rxd_reg : std_logic_vector((FILTER_DELAY_TICKS * 2) - 1 downto 0) := (others => '0');
 signal crs_dv_reg : std_logic_vector(FILTER_DELAY_TICKS - 1 downto 0) := (others => '0');
 signal crs_dv_allow : std_logic := '0';
@@ -390,7 +390,7 @@ ethernet_mac : wb_ethernet
     pmod_o(5) <= pc_valid;
     pmod_o(6) <= pc_forward;
     pmod_o(3) <= pf_allow;
-    
+    pmod_o(4) <= crs_dv_allow xor eth_io_crs_dv;
     pmod_o(1 downto 0) <= rxd_reg((FILTER_DELAY_TICKS * 2) - 1 downto (FILTER_DELAY_TICKS * 2) - 2);
     
     pmod_o(7) <= clk_50;

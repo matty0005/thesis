@@ -23,17 +23,17 @@ Initial tests were also conducted at 100MHz, but due to timing issues, it was re
 To test the speed of the packet classifier, a Agilent MSO6054A MSO was used (4GSa/s). A pin was set to the output of the crs\_dv of the PHY and the crs\_dv after the packet filter. The time between the rising and falling edge of the output will be the delay added by the packet filter. 
 
 
-As the shift register in the hardware has a length of 224 bits, at a clock frequency of 50Mhz, the added latency is $224 \times \frac{1}{50\times 10^6} = 4.48 \times 10^{-6} = 4.48uS$. 
+As the shift register in the hardware has a length of 200 bits, at a clock frequency of 50Mhz, the added latency is $200 \times \frac{1}{50\times 10^6} = 4 \times 10^{-6} = 4uS$. The measured result in figure \ref{fig:pf_added_latency} confirms the theory aligns with the hardware.
 
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.75\textwidth]{Images/scope_4.png}
     \caption[Added latency by packet filter waveform]{Added latency by packet filter waveform.}
-    \label{fig:packet_classifier_architecture}
+    \label{fig:pf_added_latency}
 \end{figure}
 
-There is two pulses in this graph. This is due to when the crs\_dv line gets disasserted at the end of the packet. From this the time taken to receive the packet can be found to be 8.94uS. This is just an observation and is proportional to the packet size.
+There is two pulses in this graph. This is due to when the crs\_dv line gets disasserted at the end of the packet. From this the time taken to receive the packet can be found to be 8.92uS. This is just an observation and is proportional to the packet size.
 
 
 
