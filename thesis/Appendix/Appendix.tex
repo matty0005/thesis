@@ -107,8 +107,23 @@ Write your appendix here. Following two are examples.
 \end{figure}
 
 
-
-
+\section{UDP ping times between boards}
+\label{app:udp_ping_measurements}
+\begin{table}[ht]
+    \centering
+    \caption{Average UDP RTT for different devices and payload sizes.}
+    \begin{tabular}{lcc}
+    \toprule
+    Device & 7 bytes (ms) & 256 bytes (ms) \\
+    \midrule
+    WIZ5500 Pico & 1.88 & 2.07 \\
+    F767ZI & 1.30 & 1.39 \\
+    F767ZI 80Mhz & 1.41 & 1.51 \\
+    MilkV & 1.04 & 1.09 \\
+    FPGA board & 1.45 & 1.72 \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
 
 \section{Current measurments from boards}
 \label{app:current_measurements}

@@ -17,7 +17,7 @@ The design was changed from the 2 ethernet interfaces to a design with just a si
 \section{Performance}
 
 Talk about wishbone bus speed. 
-Initial tests were also conducted at 100MHz, but due to timing issues, it was reverted to 50MHz.
+Initial tests were also conducted at 100MHz, but due to timing issues, it was reverted to 80MHz.
 
 
 To test the speed of the packet classifier, a Agilent MSO6054A MSO was used (4GSa/s). A pin was set to the output of the crs\_dv of the PHY and the crs\_dv after the packet filter. The time between the rising and falling edge of the output will be the delay added by the packet filter. 
@@ -113,24 +113,24 @@ The critical path is from the wishbone interface to the BRAM block inside the et
 
 \section{Comparison to preexisting solutions}
 
+To ensure the effectiveness of the designed hardware, some comparisons to preexisting solutions have been made. Three other devices that featured Ethernet connectivity were compared. These devices were the WIZ5500 Pico \footnote[1]{See: https://www.wiznet.io/product-item/w5500-evb-pico/}, Nucloe-F767ZI \footnote[2]{See: https://www.st.com/en/evaluation-tools/nucleo-f767zi.html} and MilkV-Duo \footnote[3]{See: https://milkv.io/duo}. The WIZ5500 pico board uses a Raspberry Pi RP2040 as the MCU, while it uses the WIZ5500 IC for handling the Ethernet traffic. The WIZ5500 handles layers 1 to 4 onboard and is interfaced over SPI. The Nucleo-F767ZI (referred to as just F767ZI) is powered by the STM32F767 MCU and features an onboard LAN8742A PHY chip onboard. Like the Nexys board, it is also connected over an RMII interface. The STM32 has hardware support for the RMII interface. Finally, the MilkV-Duo is the most recent RISC-V based board which features the CVITEK CV1800B processor. The CV1800B is a 64bit RISC-V processor that operates at a 1Ghz, includes 64MB of RAM and provides the MAC and PHY inside the chip itself.
 
-my solution is less suseptible to power glitch attacks since this is done at the hardware layer and not in software where instructions can be skipped. 
-More secure and harder to bypass.
-faster
+\subsection{Latency tests}
+To see how these boards compare in a standard use case, a small program was made to first receive a UDP packet on port 9999 and then reply with another UDP packet. The round trip time was then averaged over 1,000 transactions and has been presented in figure \ref{fig:avg_udp_rtt}. Two tests were conducted, one with a smaller 7 byte payload and another with a larger 256 byte payload to see the effects on packet length had on the round trip time. 
 
 \begin{figure}[ht]
     \centering
     \begin{tikzpicture}
     \begin{axis}[
         ybar,
-        symbolic x coords={WIZ5500 Pico, F767ZI 80Mhz, F767ZI, FPGA board},
+        symbolic x coords={WIZ5500 Pico, F767ZI, F767ZI 80Mhz, MilkV,  FPGA board},
         xtick=data,
         ylabel={Average UDP RTT (ms)},
         legend style={at={(0.5,-0.2)},anchor=north},
         enlarge x limits=0.15,
         ymin=0,
         ymax=2.5,
-        width=0.8\textwidth,
+        width=0.9\textwidth,
         height=0.4\textwidth,
         bar width=0.5cm
     ]
@@ -139,33 +139,23 @@ faster
         (F767ZI 80Mhz,1.41)
         (F767ZI,1.30)
         (FPGA board,1.45)
+        (MilkV,1.04)
     };
     \addplot coordinates {
         (WIZ5500 Pico,2.07)
         (F767ZI 80Mhz,1.51)
         (F767ZI,1.39)
         (FPGA board,1.72)
+        (MilkV,1.09)
     };
     \legend{7 bytes,256 bytes}
     \end{axis}
     \end{tikzpicture}
     \caption{Average UDP RTT for different devices and payload sizes.}
+    \label{fig:avg_udp_rtt}
     \end{figure}
     
-
-Testing with WIZ5500 Pico, avg udp rtt was 1.88ms from 1000 tests with a payload of 7 bytes.
-Testing with WIZ5500 Pico, avg udp rtt was 2.07ms from 1000 tests with a payload of 256 bytes.
-
-Testing with LwIP Nucleo-F767ZI at 80Mhz, avg udp rtt was 1.41ms from 1000 tests with a payload of 7 bytes.
-Testing with LwIP Nucleo-F767ZI at 80Mhz, avg udp rtt was 1.51ms from 1000 tests with a payload of 256 bytes.
-
-Testing with LwIP Nucleo-F767ZI, avg udp rtt was 1.30ms from 1000 tests with a payload of 7 bytes.
-Testing with LwIP Nucleo-F767ZI, avg udp rtt was 1.39ms from 1000 tests with a payload of 256 bytes.
-
-
-Testing with FPGA board, avg udp rtt was 1.45ms from 1000 tests with a payload of 7 bytes.
-Testing with FPGA board, avg udp rtt was 1.72ms from 1000 tests with a payload of 256 bytes.
-
+A table of the results can be found in appendix \ref{app:udp_ping_measurements}.
 
 \subsection{Firewall performance}
 
