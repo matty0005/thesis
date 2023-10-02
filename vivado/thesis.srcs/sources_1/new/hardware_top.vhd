@@ -264,7 +264,7 @@ signal pc_valid_counter: std_logic_vector(63 downto 0) := (others => '0');
 signal pc_invalid_counter: std_logic_vector(63 downto 0) := (others => '0');
 signal pc_total_counter: std_logic_vector(63 downto 0) := (others => '0');
 
-constant FILTER_DELAY_TICKS : integer := 200;
+constant FILTER_DELAY_TICKS : integer := 324;
 signal rxd_reg : std_logic_vector((FILTER_DELAY_TICKS * 2) - 1 downto 0) := (others => '0');
 signal crs_dv_reg : std_logic_vector(FILTER_DELAY_TICKS - 1 downto 0) := (others => '0');
 signal crs_dv_allow : std_logic := '0';
@@ -274,6 +274,10 @@ signal pf_ignore_count : std_logic := '0';
 signal counter_reset : std_logic := '0';
 signal spi_dat_i_pc : std_logic;
 signal rst : std_logic;
+
+signal clear_allow : std_logic := '0';
+type pfState is (IDLE, HANDLE_COUNT, INCOMING, FINISHED);
+signal pf_state : pfState := IDLE; 
 
 begin
 
@@ -390,43 +394,103 @@ ethernet_mac : wb_ethernet
     pmod_o(5) <= pc_valid;
     pmod_o(6) <= pc_forward;
     pmod_o(3) <= pf_allow;
-    pmod_o(4) <= crs_dv_allow xor eth_io_crs_dv;
+    pmod_o(4) <= eth_io_crs_dv;
     pmod_o(1 downto 0) <= rxd_reg((FILTER_DELAY_TICKS * 2) - 1 downto (FILTER_DELAY_TICKS * 2) - 2);
     
-    pmod_o(7) <= clk_50;
+    pmod_o(7) <= clear_allow;
 
-    
-    pc_coutner: process(clk_50)
-    begin
---        if rstn_i = '0' then
---            pc_valid_counter <= "0000";
-        if rising_edge(clk_50) then
+    rst_valid: process(clk_50)
+    begin 
+--        if falling_edge(crs_dv_allow) and sw(0) = '0' then
+--            clear_allow <= '1';
+--        end if;
+         if rising_edge(clk_50) then 
+         
             if counter_reset = '1' then
                 pc_valid_counter <= x"0000000000000000";
                 pc_invalid_counter <= x"0000000000000000";
                 pc_total_counter <= x"0000000000000000";
             end if;
-            
-            if pc_valid = '1' then
+
+
+            case pf_state is
+                when IDLE => 
                 
-                if pc_forward = '1' then
-                    pf_allow <= '1';
-                    if pf_ignore_count = '0'  then
-                        pc_valid_counter <= pc_valid_counter + 1;
-                        pc_total_counter <= pc_total_counter + 1;
+                    if pc_valid = '1' then
+                        if pc_forward = '1' or sw(0) = '1' then
+                            pf_allow <= '1';
+                            pf_state <= HANDLE_COUNT;
+                            pc_total_counter <= pc_total_counter + 1;
+                        else
+                            pf_allow <= '0';
+                            pc_invalid_counter <= pc_invalid_counter + 1;
+                        end if;
                     end if;
-                elsif sw(0) = '1' then
-                    pf_allow <= '1';
-                    pc_total_counter <= pc_total_counter + 1;
-                else
-                    pf_allow <= '0';
-                    pc_invalid_counter <= pc_invalid_counter + 1;
-                end if;
-            end if;
-        end if;
+                    
+                when HANDLE_COUNT => 
+                    if pf_ignore_count = '0' and sw(0) = '0'  then
+                        pc_valid_counter <= pc_valid_counter + 1;
+                    end if;
+                    
+                    pf_state <= INCOMING;
+                
+                when INCOMING => 
+                    -- At this stage we need to wait until the end to disassert pf_allow
+                    if crs_dv_allow = '1' then
+                        pf_state <= FINISHED;
+                    end if;
+                when FINISHED => 
+                    if crs_dv_allow = '0' then
+                        pf_allow <= '0';
+                        pf_state <= IDLE;
+                    end if;
+            end case;
+         
+         end if;
     end process;
     
     crs_dv_allow <= crs_dv_reg(FILTER_DELAY_TICKS - 1) when pf_allow = '1' else '0';
+
+    
+--    pc_coutner: process(clk_50)
+--    begin
+----        if rstn_i = '0' then
+----            pc_valid_counter <= "0000";
+----        if falling_edge(crs_dv_allow) and sw(0) = '0' then
+----            pf_allow <= '1';
+----        end if;
+        
+--        if rising_edge(clk_50) then
+--            if counter_reset = '1' then
+--                pc_valid_counter <= x"0000000000000000";
+--                pc_invalid_counter <= x"0000000000000000";
+--                pc_total_counter <= x"0000000000000000";
+--            end if;
+            
+--            if pc_valid = '1' then
+           
+--                if pc_forward = '1' then
+--                    pf_allow <= '1';
+--                    if pf_ignore_count = '0'  then
+--                        pc_valid_counter <= pc_valid_counter + 1;
+--                        pc_total_counter <= pc_total_counter + 1;
+--                    end if;
+--                elsif sw(0) = '1' then
+--                    pf_allow <= '1';
+--                    pc_total_counter <= pc_total_counter + 1;
+--                else
+--                    pf_allow <= '0';
+--                    pc_invalid_counter <= pc_invalid_counter + 1;
+--                end if;
+                
+----            elsif clear_allow = '1' then
+----                pf_allow <= '0';
+--            end if;
+            
+            
+--        end if;
+--    end process;
+    
     
     pf_registers: process(clk_p50)
     begin
