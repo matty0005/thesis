@@ -218,15 +218,6 @@ signal wb_dat_o : std_logic_vector(31 downto 0);
 
 signal wb_sel : std_ulogic_vector(3 downto 0);
 
-
-signal wb_eth_o_tx : std_logic_vector(1 downto 0);
-signal wb_eth_i_rx : std_logic_vector(1 downto 0);
-
-signal wb_eth_o_txen : std_logic;
-signal wb_eth_i_rxderr : std_logic;
-signal wb_eth_i_txen : std_logic;
-signal wb_eth_o_refclk : std_logic;
-
 signal spi_csn :  std_ulogic_vector(07 downto 0);
 
 -- Clock master signals
@@ -264,7 +255,7 @@ signal pc_valid_counter: std_logic_vector(63 downto 0) := (others => '0');
 signal pc_invalid_counter: std_logic_vector(63 downto 0) := (others => '0');
 signal pc_total_counter: std_logic_vector(63 downto 0) := (others => '0');
 
-constant FILTER_DELAY_TICKS : integer := 324;
+constant FILTER_DELAY_TICKS : integer := 202;
 signal rxd_reg : std_logic_vector((FILTER_DELAY_TICKS * 2) - 1 downto 0) := (others => '0');
 signal crs_dv_reg : std_logic_vector(FILTER_DELAY_TICKS - 1 downto 0) := (others => '0');
 signal crs_dv_allow : std_logic := '0';
@@ -275,7 +266,6 @@ signal counter_reset : std_logic := '0';
 signal spi_dat_i_pc : std_logic;
 signal rst : std_logic;
 
-signal clear_allow : std_logic := '0';
 type pfState is (IDLE, HANDLE_COUNT, INCOMING, FINISHED);
 signal pf_state : pfState := IDLE; 
 
@@ -318,20 +308,18 @@ ethernet_mac : wb_ethernet
          -- Ethernet --
         eth_o_txd => eth_txd,
         eth_o_txen => eth_txen,
---        eth_io_rxd => eth_io_rxd,
         eth_io_rxd => rxd_reg((FILTER_DELAY_TICKS * 2) - 1 downto (FILTER_DELAY_TICKS * 2) - 2),
         t_eth_io_rxd => test_eth,
         eth_i_rxderr => eth_rxerr,
         eth_i_refclk => clk_p50,
         eth_o_refclk => eth_o_refclk,
-        
         eth_o_rstn => eth_o_rstn,
         eth_io_crs_dv => crs_dv_allow,
         eth_i_intn => eth_i_intn,
         
         eth_io_mdc => open,
         eth_io_mdio => open,
-        
+   
         eth_o_exti => eth_exti_lines
     );
     
@@ -397,13 +385,10 @@ ethernet_mac : wb_ethernet
     pmod_o(4) <= eth_io_crs_dv;
     pmod_o(1 downto 0) <= rxd_reg((FILTER_DELAY_TICKS * 2) - 1 downto (FILTER_DELAY_TICKS * 2) - 2);
     
-    pmod_o(7) <= clear_allow;
+    pmod_o(7) <= clk_50;
 
     rst_valid: process(clk_50)
     begin 
---        if falling_edge(crs_dv_allow) and sw(0) = '0' then
---            clear_allow <= '1';
---        end if;
          if rising_edge(clk_50) then 
          
             if counter_reset = '1' then
@@ -452,46 +437,6 @@ ethernet_mac : wb_ethernet
     crs_dv_allow <= crs_dv_reg(FILTER_DELAY_TICKS - 1) when pf_allow = '1' else '0';
 
     
---    pc_coutner: process(clk_50)
---    begin
-----        if rstn_i = '0' then
-----            pc_valid_counter <= "0000";
-----        if falling_edge(crs_dv_allow) and sw(0) = '0' then
-----            pf_allow <= '1';
-----        end if;
-        
---        if rising_edge(clk_50) then
---            if counter_reset = '1' then
---                pc_valid_counter <= x"0000000000000000";
---                pc_invalid_counter <= x"0000000000000000";
---                pc_total_counter <= x"0000000000000000";
---            end if;
-            
---            if pc_valid = '1' then
-           
---                if pc_forward = '1' then
---                    pf_allow <= '1';
---                    if pf_ignore_count = '0'  then
---                        pc_valid_counter <= pc_valid_counter + 1;
---                        pc_total_counter <= pc_total_counter + 1;
---                    end if;
---                elsif sw(0) = '1' then
---                    pf_allow <= '1';
---                    pc_total_counter <= pc_total_counter + 1;
---                else
---                    pf_allow <= '0';
---                    pc_invalid_counter <= pc_invalid_counter + 1;
---                end if;
-                
-----            elsif clear_allow = '1' then
-----                pf_allow <= '0';
---            end if;
-            
-            
---        end if;
---    end process;
-    
-    
     pf_registers: process(clk_p50)
     begin
         if rising_edge(clk_p50) then
@@ -499,7 +444,6 @@ ethernet_mac : wb_ethernet
             crs_dv_reg <= crs_dv_reg(FILTER_DELAY_TICKS - 2 downto 0) & eth_io_crs_dv;
         end if;
     end process;
-  
   
   
  
@@ -586,22 +530,16 @@ ethernet_mac : wb_ethernet
   end generate;
   
   gpio_io(7) <= std_ulogic(eth_exti_lines(0));
-    
+  gpio_i <= x"000000000000" & std_ulogic_vector(sw(3 downto 0))& "0" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
+  gpio_out <= gpio_o(23 downto 16);
+  
   eth_io_mdc <= gpio_o(8) when gpio_o(40) = '1' else 'Z';
   eth_io_mdio <= gpio_o(9) when gpio_o(41) = '1' else 'Z';
   
-  gpio_i <= x"000000000000" & std_ulogic_vector(sw(3 downto 0))& "0" & sd_i_cd & eth_io_mdio & eth_io_mdc & gpio_io(7 downto 0);
-  
   sd_o_rst <= gpio_o(11);
-  
-  gpio_out <= gpio_o(23 downto 16);
-  
-  
   sd_o_sck  <= spi_clk_o; -- clock
   sd_o_cmd <= spi_dat_o; -- MOSI
   spi_dat_i <= sd_i_miso when spi_csn_o(0) = '0' else spi_dat_i_pc;
   sd_o_csn <= spi_csn_o(0);   
-  
-
 
 end architecture;

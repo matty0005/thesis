@@ -54,9 +54,28 @@ There are 5 PMOD connectors on the development board. Initally, one of these wou
 
 \subsection{Testing setup}
 
-\subsection{Results}
+\subsection{Tests}
 
 
+\begin{table}[h]
+    \centering
+    \begin{tabular}{cccccccc}
+        \toprule
+        Device & Dest. IP & Protocol & Src. Port & Dest. Port & Expected Outcome & Actual Outcome \\
+        \midrule
+        \parbox[c]{2.5cm}{\centering Node1\\10.20.1.10} & [FW IP] & TCP & Any & 1337 & Allow & [Actual] \\
+        \parbox[c]{2.5cm}{\centering Node2\\10.20.1.11} & [FW IP] & ICMP & - & - & Allow & [Actual] \\
+        \parbox[c]{2cm}{\centering Node3\\10.0.0.5} & [FW IP] & UDP & Any & 9999 & Allow & [Actual] \\
+        \parbox[c]{2cm}{\centering Node4\\10.0.0.93} & [FW IP] & TCP & Any & 80 & Allow & [Actual] \\
+        \parbox[c]{2cm}{\centering Node1\\10.20.1.10} & [FW IP] & UDP & Any & 1337 & Allow & [Actual] \\
+        \parbox[c]{2cm}{\centering Node2\\10.20.1.11} & [FW IP] & TCP & Any & 80 & Allow & [Actual] \\
+        \parbox[c]{2cm}{\centering Node3\\10.0.0.5} & [FW IP] & ICMP & - & - & Allow & [Actual] \\
+        \parbox[c]{2cm}{\centering Node4\\10.0.0.93} & [FW IP] & UDP & Any & 9999 & Allow & [Actual] \\
+        \bottomrule
+    \end{tabular}
+    \caption{Firewall Test Cases}
+    \label{tab:firewall_test_cases}
+\end{table}
 
 \section{Ultilisation}
 

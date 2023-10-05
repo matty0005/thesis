@@ -51,7 +51,7 @@ constant ruleSize : integer := 8;
 type ramType is array (ruleSize - 1 downto 0) of std_logic_vector(112 - 1 downto 0);
 shared variable RULES_MEMORY : ramType := (others => (others => '0'));
 
-type classifer_state is (PRE_IDLE, IDLE, PACKET_TYPE, IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO);
+type classifer_state is (PRE_IDLE, IDLE, PACKET_TYPE, IP_DEST, IP_SOURCE, PORT_DEST, PORT_SOURCE, PROTO, DECIDE);
 signal pcState : classifer_state := IDLE;
 
 signal spi_mosi_data : std_logic_vector(119 downto 0); -- 14 bytes = 112 bits for data + 8 bits addr + 8bits wildcard  (1byte)
@@ -208,7 +208,7 @@ begin
                     
                 when PORT_SOURCE =>
                 
-                    -- If proto was either UDP or TCP, need to wait (ipHeaderLen - 20) + 0bytes - 2 bytes wide. 
+                    -- If proto was either UDP or TCP, need to wait (ipHeaderLen - 5) * 4 + 0bytes - 2 bytes wide. 
                     if ipProto /= x"06" and ipProto /= x"11" and ipProto /= x"01" then -- If not TCP or UDP forward - no ports.
                         pc_valid <= '1';
                         pc_forward <= '0';
@@ -230,7 +230,7 @@ begin
                     else 
                         -- wait for bytes. 
                         -- Need to wait for 0bits = 0 bytes - 4 byte wide.
-                        if stateCounter = ((unsigned(ipHeaderLen) - 20) * 4 + (2 * 4) - 1) then
+                        if stateCounter = ((unsigned(ipHeaderLen) - 5) * 16 + (2 * 4) - 1) then
                         
                             -- Check fields
                             for i in 0 to ruleSize-1 loop
@@ -265,6 +265,12 @@ begin
                                 rulesMatch(i) <= '0';
                             end if;
                         end loop;
+                        pcState <= DECIDE;
+                    else
+                        stateCounter := stateCounter + 1;
+                    end if;
+                        
+                 when DECIDE =>
                         
                         if rulesMatch(7 downto 0) = x"00" then
                             pc_valid <= '1';
@@ -276,9 +282,7 @@ begin
                         
                         pcState <= PRE_IDLE;
                         stateCounter := 0;
-                    else
-                        stateCounter := stateCounter + 1;
-                    end if;
+                    
         end case;
     end if;
 end process;
