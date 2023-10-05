@@ -59,23 +59,29 @@ There are 5 PMOD connectors on the development board. Initally, one of these wou
 
 \begin{table}[h]
     \centering
-    \begin{tabular}{cccccccc}
+    \begin{tabular}{m{2.25cm}m{2cm}m{1.5cm}m{2cm}m{2cm}m{2cm}m{2cm}}
         \toprule
         Device & Dest. IP & Protocol & Src. Port & Dest. Port & Expected Outcome & Actual Outcome \\
         \midrule
-        \parbox[c]{2.5cm}{\centering Node1\\10.20.1.10} & [FW IP] & TCP & Any & 1337 & Allow & [Actual] \\
-        \parbox[c]{2.5cm}{\centering Node2\\10.20.1.11} & [FW IP] & ICMP & - & - & Allow & [Actual] \\
-        \parbox[c]{2cm}{\centering Node3\\10.0.0.5} & [FW IP] & UDP & Any & 9999 & Allow & [Actual] \\
-        \parbox[c]{2cm}{\centering Node4\\10.0.0.93} & [FW IP] & TCP & Any & 80 & Allow & [Actual] \\
-        \parbox[c]{2cm}{\centering Node1\\10.20.1.10} & [FW IP] & UDP & Any & 1337 & Allow & [Actual] \\
-        \parbox[c]{2cm}{\centering Node2\\10.20.1.11} & [FW IP] & TCP & Any & 80 & Allow & [Actual] \\
-        \parbox[c]{2cm}{\centering Node3\\10.0.0.5} & [FW IP] & ICMP & - & - & Allow & [Actual] \\
-        \parbox[c]{2cm}{\centering Node4\\10.0.0.93} & [FW IP] & UDP & Any & 9999 & Allow & [Actual] \\
+        \parbox[c]{2.25cm}{\centering Node1\\\textcolor{gray}{(10.20.1.10)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node2\\\textcolor{gray}{(10.20.1.11)} \vspace*{14pt}} & 10.20.1.34 & ICMP & - & - & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 9999 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node1\\\textcolor{gray}{(10.20.1.10)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 1337 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 80 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Deny & Denied \\
+        \parbox[c]{2.25cm}{\centering Node2\\\textcolor{gray}{(10.20.1.11)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Deny & Denied \\
+        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 1337 & Deny & Denied \\
+        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 80 & Deny & Denied \\
         \bottomrule
     \end{tabular}
     \caption{Firewall Test Cases}
     \label{tab:firewall_test_cases}
 \end{table}
+
+
+
+
 
 \section{Ultilisation}
 
