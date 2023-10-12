@@ -99,7 +99,8 @@ void eth_ack_irq() {
 void eth_recv(uint8_t *buffer, size_t size) {
     neorv32_gpio_pin_clr(GPIO_PIN_0);
     neorv32_gpio_pin_set(GPIO_PIN_1);
-
+    
+    
     // May need to factor in MAC header stuff - depends what freertos tcp wants.
 
     // Copy the data from the receive buffer.
@@ -110,6 +111,7 @@ void eth_recv(uint8_t *buffer, size_t size) {
             buffer[(i << 2) + j] = 0xFF & (dat >> ((3 - j) * 8)); 
 
     }
+
     neorv32_gpio_pin_set(GPIO_PIN_3);
 
 }

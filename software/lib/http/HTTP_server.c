@@ -269,6 +269,13 @@ static BaseType_t prvOpenURL( HTTPClient_t *pxClient )
 		return xRc;
 	}
 
+	FreeRTOS_printf( ( "Accessing '%s'\n", pxClient->pcUrlData));
+
+	// Handle case where just root directory is given - set to index.html
+	if (strcmp(pxClient->pcUrlData, "/") == 0) {
+		pxClient->pcUrlData = "/index.html";
+	}
+
 
 	snprintf( pxClient->pcCurrentFilename, sizeof( pxClient->pcCurrentFilename ), "%s%s%s",
 		pxClient->pcRootDir,

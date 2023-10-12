@@ -49,11 +49,11 @@
  */
 
 #ifndef ipconfigTCP_COMMAND_BUFFER_SIZE
-	#define ipconfigTCP_COMMAND_BUFFER_SIZE	( 2048 )
+	#define ipconfigTCP_COMMAND_BUFFER_SIZE	( 1400 )
 #endif
 
 #ifndef ipconfigTCP_FILE_BUFFER_SIZE
-	#define ipconfigTCP_FILE_BUFFER_SIZE	( 2048 )
+	#define ipconfigTCP_FILE_BUFFER_SIZE	( 1400 )
 #endif
 
 struct xTCP_CLIENT;

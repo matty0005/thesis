@@ -32,6 +32,8 @@ static const uint8_t ucDNSServerAddress[ 4 ] = { 1, 1, 1, 1 };
 static void tsk_udp_receive( void *pvParameters );
 static void tsk_udp_send( void *pvParameters );
 
+void create_tcp_task();
+
 /* Handle of the task that runs the FTP and HTTP servers. */
 static TaskHandle_t xServerWorkTaskHandle = NULL;
 
@@ -225,6 +227,79 @@ static void tsk_udp_ping( void *pvParameters ) {
 }
 
 
+static uint32_t compute_checksum(const uint8_t* data, size_t len) {
+    uint32_t sum = 0;
+    for (size_t i = 0; i < len; i++) {
+        sum += (uint8_t) data[i];
+    }
+    return sum;
+}
+
+static void tsk_tcp_checksum_reply(void *pvParameters) {
+
+    Socket_t xListeningSocket, xConnectedSocket;
+    struct freertos_sockaddr xAddress;
+    uint8_t ucBuffer[1400];
+    size_t xReceivedBytes;
+    socklen_t xClientAddressLength = sizeof(struct freertos_sockaddr);
+
+    // Create the TCP socket.
+    xListeningSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_STREAM, FREERTOS_IPPROTO_TCP);
+    if (xListeningSocket == FREERTOS_INVALID_SOCKET) {
+        // Handle error - failed to create socket.
+        vTaskDelete(NULL);
+    }
+
+    // Bind to port.
+    xAddress.sin_port = FreeRTOS_htons(1337);
+    if (FreeRTOS_bind(xListeningSocket, &xAddress, sizeof(xAddress)) != 0) {
+        // Handle error - failed to bind socket.
+        FreeRTOS_closesocket(xListeningSocket);
+        vTaskDelete(NULL);
+    }
+
+    // Listen for incoming connection requests.
+    if (FreeRTOS_listen(xListeningSocket, 15) != 0) {
+        // Handle error - failed to listen.
+        FreeRTOS_closesocket(xListeningSocket);
+        vTaskDelete(NULL);
+    }
+
+    while (1) {
+        // Accept an incoming connection.
+        xConnectedSocket = FreeRTOS_accept(xListeningSocket, &xAddress, &xClientAddressLength);
+
+        if (xConnectedSocket != FREERTOS_INVALID_SOCKET) {
+            // Read data from the connection.
+
+            xReceivedBytes = FreeRTOS_recv(xConnectedSocket, ucBuffer, 1400, 0);
+            
+            if ((int)xReceivedBytes > 0) {
+
+                // Compute the checksum.
+                uint32_t checksum = compute_checksum(ucBuffer, xReceivedBytes);
+
+                memset(ucBuffer, 0, sizeof(ucBuffer));
+                sprintf(ucBuffer, "%x", checksum);                
+
+                // Send back the checksum.
+                FreeRTOS_send(xConnectedSocket, &ucBuffer, strlen(ucBuffer), 0);
+            }
+            
+            // Close the connection.
+            FreeRTOS_closesocket(xConnectedSocket);
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(1));
+    }
+
+    // Clean up (though we'll never reach here in this example).
+    FreeRTOS_closesocket(xListeningSocket);
+    vTaskDelete(NULL);
+}
+
+
+
 static void tsk_udp_reply( void *pvParameters ) {
 
     Socket_t xSocket;
@@ -342,6 +417,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 
 
             create_udp_task();
+            create_tcp_task();
             xTaskCreate(tsk_HTTP_server, "HTTPServer", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xServerWorkTaskHandle );
 
             // vIPerfInstall();
@@ -357,4 +433,8 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 void create_udp_task() {
     xTaskCreate(tsk_udp_ping, "UDPPing", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, &xUDPPingTaskHandle );
     xTaskCreate(tsk_udp_reply, "UDPReply", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, NULL );
+}
+
+void create_tcp_task() {
+    xTaskCreate(tsk_tcp_checksum_reply, "TCPReply", mainTCP_SERVER_STACK_SIZE, NULL, UDP_PRIORITY + 3, NULL );
 }
