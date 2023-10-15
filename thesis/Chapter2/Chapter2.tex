@@ -2,44 +2,12 @@
 \label{Chap:label}	%CREATE YOUR OWN LABEL.
 \pagestyle{headings}
 
-Research into existing literature has been conducted on multiple topics in relation to the project. These topics include, field programmable gate arrays, packet filter firewalls, RISC-V processors, Ethernet MAC, webs servers and network stacks.  
+This chapter introduces the necessary topics in relation to the project. These topics include, field programmable gate arrays, packet filter firewalls, RISC-V processors, Ethernet MAC, webs servers and network stacks.  
 
 
-% Some of the concepts behind the proposed project, such as an Ethernet MAC or RISC-V processor are not new. Consequently, there is a variety of previous work 
-% in these areas. This part of the proposal will explore the prior work related to the project. 
 
 
-\section{Field Programmable Gate Arrays}
-\label{subsection:fpga}	
-First introduced by Xilinx in 1984, field programmable gate arrays (FPGAs) allowed for large custom logic designs to be recognised without the need for 
-expensive application specific integrated circuits (ASICs). More importantly, FPGAs did not suffer from the same scalability issues that
-programmable array logic (PAL) encountered and has allowed for larger and more complex designs \cite{30YearsOfFPGA}. 
 
-A big advantage to custom logic is the ability to create highly parallelised designs with lower latencies than software based serialised algorithms. This comes down to 
-having a great degree of freedom when it comes to designing the architecture and ability to optimise for specific tasks.
-As such, FPGAs have became ubiquitous in both digital signal processing and for accelerating an assortment of heterogeneous computing architectures and processes \cite{FPGAComputing}.
-System on chip (SoC) design with custom hardware acceleration modules is an active area research. As \cite{FPGAComputing} points out, there is a focus towards 
-using both hardware and software in \textit{edge} devices due to growing numbers of IoT devices.
-
-
-Several papers, \cite{LwIPFPGAFirewall} \cite{IPFPGAFirewall2000} \cite{packetFilteringFPGA}, have proposed a range of other related FPGA based firewalls that have 
-different properties and focus on different optimisations. The key benefit to these firewalls is their high performance - namely, low latency, and high throughput. 
-Article \cite{LwIPFPGAFirewall} proposed an Ethernet firewall using LwIP (A TCP/IP stack) with five-tuple binding (the five filtered parameters in packet filters) 
-to achieve a throughput of 950Mbps with a latency of 61.266us. A conference proceeding in 2000 \cite{IPFPGAFirewall2000} used a comparator unit to check the 
-fields of the IP headers obtained a filtering rate of 500,000 packets per second. 
-
-
-The enabling concept behind the above FPGA based firewalls is SoC design which involves integrating multiple components into a single package, or in this case a 
-single FPGA. Often these will include small softcore microprocessors and some custom hardware such as the Ethernet or packet filtering like the proposed packet filters in \cite{LwIPFPGAFirewall}.
-Having a microprocessor in the FPGA design can significantly reduce the complexity of the design and allows for quick and easy development in software instead of 
-hardware \cite{SoftcoreBasedEmbeddedSystems}. In FPGA design, softcore processors are configurable and can be modelled in a hardware description language (HDL) 
-which can then be synthesised onto ASICs or FPGAs hardware \cite{SoftcoreBasedEmbeddedSystems}. There are several softcore processors available for FPGA 
-designs including ARM Cortex, Nios II, MicroBlaze, and RISC-V. 
- 
-While recently the royalty free RISC-V based cores have been popular amongst many SoC designs, other older processors are still common in the literature. The two 
-big FPGA vendors, Xilinx (now AMD) and Altera (now Intel) have their own RISC based softcores. As an example, Janik et al. \cite{LwIPMicroblaze} used Xilinx's MicroBlaze processor 
-as a media converter between optical (SFP interface) and copper (Ethernet) networks. Likewise, Altera's Nios II can be found in a variety of research papers 
-including an embedded web server which significantly simplified the design \cite{NiosIIWebserver}. 
 
 
 
@@ -86,23 +54,63 @@ expandability.
 
 
 
-\section{RISC-V processor}
-In the world of processor architectures, there are four major families, namely AMD64, x86, ARM and RISC-V. The two former instruction set architectures (ISA) 
-are apart of the complex instructions sets (CISC) and are found in the majority of computers. ARM and RISC-V have a reduced instruction set compared to the CISC family and 
-subsequently fall under the RISC family and are ideal for low power microprocessors \cite{RV16Embedded}.
 
-RISC-V is an open and royalty free ISA and as a result, a plethora of softcore based custom implementations have been designed \cite{CatalogRISCSoftcore}. 
+
+
+
+
+\section{Field Programmable Gate Arrays}
+\label{subsection:fpga}	
+First introduced by Xilinx in 1984, field programmable gate arrays (FPGAs) allowed for large custom logic designs to be recognised without the need for 
+expensive application specific integrated circuits (ASICs). More importantly, FPGAs did not suffer from the same scalability issues that
+programmable array logic (PAL) encountered and has allowed for larger and more complex designs \cite{30YearsOfFPGA}. 
+
+A large advantage to custom logic is the ability to create highly parallelised designs with lower latencies and higher throughput than software-based serialised algorithms. This comes down to 
+having a great degree of freedom when it comes to designing the architecture and ability to optimise for specific tasks.
+As such, FPGAs have became ubiquitous in both digital signal processing and for accelerating an assortment of heterogeneous computing architectures and processes including networking \cite{FPGAComputing}.
+More specifically, system on chip (SoC) design with custom hardware acceleration modules is an active area research. As \cite{FPGAComputing} points out, there is a focus towards using both hardware and software in \textit{edge devices}\footnote[1]{\textit{Edge devices} are a result of the edge computing paradigm which moves computation closer to the source \cite{EdgeComputing}} due to growing numbers of IoT devices.
+
+
+Several papers, \cite{LwIPFPGAFirewall} \cite{IPFPGAFirewall2000} \cite{packetFilteringFPGA}, have proposed a range of related FPGA based firewalls that have different properties and focus on different optimisations. The key benefit to these firewalls is their high performance - namely, low latency, and high throughput. 
+Article \cite{LwIPFPGAFirewall} proposed an Ethernet firewall using LwIP (A TCP/IP stack) with five-tuple binding (the five filtered parameters in packet filters) 
+to achieve a throughput of 950Mbps with a latency of 61.266us. A conference proceeding in 2000 \cite{IPFPGAFirewall2000} used a comparator unit to check the fields of the IP headers obtained a filtering rate of 500,000 packets per second. 
+
+
+The enabling concept behind the above FPGA based firewalls is SoC design which involves integrating multiple components into a single package, or in this case a 
+single FPGA. Often these will include small softcore microprocessors and some custom hardware such as Ethernet controllers or packet filtering hardware like the proposed designs in \cite{LwIPFPGAFirewall}.
+Having a microprocessor in the FPGA design can significantly reduce the complexity of the design and allows for quick and easy development in software instead of hardware \cite{SoftcoreBasedEmbeddedSystems}. In FPGA design, softcore processors are generally highly configurable and can be modelled in a hardware description language (HDL) which can then be synthesised onto ASICs or FPGAs hardware \cite{SoftcoreBasedEmbeddedSystems}. There are several softcore processor architectures available for FPGA designs including ARM Cortex, Nios II, MicroBlaze, and RISC-V. 
+ 
+While recently the royalty free RISC-V based cores have been popular amongst many SoC designs, other older processors are still common in the literature. The two big FPGA vendors, Xilinx (now AMD) and Altera (now Intel) have their own RISC based softcores. As an example, Janik et al. \cite{LwIPMicroblaze} used Xilinx's MicroBlaze processor as a media converter between optical (SFP interface) and copper (Ethernet) networks. Likewise, Altera's Nios II can be found in a variety of research papers including an embedded web server which significantly simplified the design \cite{NiosIIWebserver}. 
+
+ 
+
+
+
+
+
+
+
+\section{RISC-V processor}
+There are four major processor architecture families, namely AMD64, x86, ARM and RISC-V. The two former instruction set architectures (ISA) 
+are a part of the complex instructions sets (CISC) and are found in the majority of computers such as laptops and servers. ARM and RISC-V have a reduced instruction set compared to the CISC family and subsequently fall under the RISC family and are ideal for low power microprocessors \cite{RV16Embedded}.
+
+RISC-V is an open and royalty free ISA and as a result, a plethora of softcore based custom implementations have been designed and are available for use in designs\cite{CatalogRISCSoftcore}. 
 Consequently, there is an abundance of articles delving into RISC-V from evaluating the ISA \cite{InvestigatingRiscv} to creating multicore architectures
 \cite{RiscVMulticore}. A 2019 paper, \cite{CatalogRISCSoftcore} evaluated a variety of different RISC-V softcore processors. RISC-V International have 
 also published a list\footnote[1]{See: https://github.com/riscv/riscv-isa-manual/blob/master/marchid.md} of different RISC-V implementations 
 that have a unique architecture ID. The majority of these are either written in a HDL for either application specific integrated circuits (ASICs) or FPGAs.
-The \textit{NEORV32 RISC-V} softcore processor is written purely in vendor-agnostic VHDL and importantly has a considerable amount of documentation. 
+The \textit{NEORV32 RISC-V} softcore processor is written purely in vendor-agnostic VHDL and importantly has a considerable amount of documentation. The design is regularly updated by the maintainers with the original creator, Stephan Nolting, emphasising the importance of understandability. 
 
 Being a softcore processor, control is given over which modules are implemented. Some basic features of the \textit{NEORV32 RISC-V} include 
 UART, SPI, and GPIO interfaces \cite{neorv32Datasheet}. The datasheet, \cite{neorv32Datasheet}, also mentions that it supports a \textit{'Wishbone b4 classic'} 
 external bus interface. A Wishbone B4 (or just 'wishbone') interconnection is designed specifically to connect modular pieces of hardware together on a 
-SoC into the memory mapped 32bit address space in the processor \cite{WishboneSpec}. This approach has the benefit of not needing to create custom 
+SoC into the memory mapped 32bit address space in the processor \cite{WishboneSpec}. This translates into accessing the hardware as a bunch of regular memory accesses like setting any other registers or values stored in main memory. This approach results in the benefit of not needing to create custom 
 instructions for the microprocessor. 
+
+
+
+
+
 
 
 \section{Ethernet MAC}
@@ -145,6 +153,8 @@ In addition to the papers, there are a plethora of intellectual property (IP) bl
 which have their own benefits and drawbacks. Some freely available HDL modules for Ethernet MACs can be found in both a complete \footnote[1]{See: https://github.com/yol/ethernet\_mac} \footnote[2]{See: https://github.com/alexforencich/verilog-ethernet/} 
 \footnote[3]{See: https://opencores.org/projects/ethernet\_tri\_mode} and incomplete state
 \footnote[4]{See: https://github.com/pabennett/ethernet\_mac}.
+
+
 
 
 
