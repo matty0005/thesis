@@ -10,8 +10,7 @@
 
 
 In a technology era of increasing numbers of cyber attacks and record number of connected devices, ensuring these devices operate safely and securely is 
-paramount. The Australian Cyber Security Center (ACSC) received in 
-excess of 76,000 cybercrime reports and growing in the 2021-22 financial year \cite{acsc_2022}. The growing trend of Internet of Things (IoT) will provide 
+paramount. Consider the infamous Mirai botnet which strictly targeted IoT devices to become a part of their potent Distributed-Denial-of-Service (DDoS) network to cripple services such as Dyn (a DNS provider), Sony, Facebook, CNN among others like they did in 2016 \cite{Shapiro_2023}. In more recent years, the Australian Cyber Security Center (ACSC) received in excess of 76,000 cybercrime reports and growing in the 2021-22 financial year \cite{acsc_2022}. The growing trend of Internet of Things (IoT) will provide 
 more opportunity for black hats (malicious attackers). IHS Markit estimates 125 billion IoT devices will be connected by 2030 \cite{IHS_iot}.
 This proliferation of IoT devices necessitates robust and adaptable security measures to counter the evolving threats posed by malicious actors. 
 
@@ -25,16 +24,32 @@ at the edge/perimeter of these networks \cite{EdgeComputingPerspectives}.
 
 \section{Aim and Objectives}
 
-As with any networked device, IoT devices are also vulnerable and at risk due to their lower availability to protect themselves. To help alleviate the growing number of cyber attacks, this thesis aims to increase IoT security by designing and implementing a hardware firewall on a FPGA for use with a RISC-V processor. The key objectives of this thesis are:
+To help alleviate the growing number of cyber attacks, this thesis aims to increase the security of IoT devices against cyber threads by designing and implementing a hardware firewall with Ethernet controller on an FPGA for use with a RISC-V processor. The work conducted in this thesis hopes to inspire future microcontroller/SoC designs to include hardware firewalls to help protect against cyber attacks. 
 
+The key objectives of this thesis are:
 
 \begin{itemize}
-    \item Design and implement a hardware firewall on a FPGA that is capable of filtering packets at wire-speed.
-    \item Decrease the latency of hardware firewalls in embedded systems. 
-    \item Implement a HTTP webserver on the RISC-V processor to allow for configuration of the firewall.
-    
+    \item Design and implement a hardware firewall capable of wire-speed filtering on an FPGA for IoT devices,
+    \item Reduce the latency of hardware firewalls in embedded systems, ensuring packet classification adds the minimum possible delay after the relevant headers have been parsed, and to
+    \item Establish a simple HTTP webserver on the RISC-V processor to facilitate user configuration of the firewall.
 \end{itemize}
 
 
 \section{Scope}
 
+This thesis focuses on the core development of a hardware firewall and Ethernet controller with a RISC-V processor system. The scope of this thesis is limited to the following:
+
+\begin{itemize}
+    \item Development of a 5-tuple binding packet filter for IPv4 networks to block unauthorised packets from reaching the microcontroller,
+    \item Hardware design of Ethernet controller with integration to a RISC-V processor, and
+    \item Configurability of the packet filter via a Web application.
+\end{itemize}
+
+Since cyber security is a broad topic and is constantly changing, this thesis will not cover all aspects of it. As such, the following topics are out of scope for this thesis:
+
+\begin{itemize}
+    \item Protecting against all attacks,
+    \item IPv6 packet handling and filtering,
+    \item Deep packet inspection, and 
+    \item IEEE802.1Q VLANs.
+\end{itemize}
