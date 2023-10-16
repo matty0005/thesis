@@ -189,21 +189,17 @@ which have their own benefits and drawbacks. Some freely available HDL modules f
 
 \section{Web servers and network stacks}
 
+
+
 Almost all firewalls need to be configured with a ruleset which can be configured in two common ways, using a command line interface (CLI) 
-or by a web-based graphical user interface (GUI). Before a web server can be realised, the network stack (Layers 3, and 4) need to be established since a web server 
-operates at the application layer (layer 4). As embedded platforms are resource limited, special precautions need to be taken into consideration when it comes to memory and resource 
-usage \cite{OptimCortexLwIP}.
+or by a web-based graphical user interface (GUI). Before a web server can be realised, the network stack (Layers 3, and 4) need to be established since a web server operates at the application layer (layer 5). As embedded platforms are resource limited, special precautions need to be taken into consideration when it comes to memory and resource usage \cite{OptimCortexLwIP}.
 
 Article \cite{LwIPFPGAFirewall} investigated using the open source lightweight IP (LwIP) network stack as a mechanism for interfacing with the firewall. 
 The LwIP library is a popular lightweight TCP/IP stack which has been investigated in a plethora of research papers and projects \cite{ImprovemntOptimLWIP} 
-\cite{OptimCortexLwIP}. Often these papers run LwIP on real time operating systems (RTOS) such as FreeRTOS or Zephyr.
+\cite{OptimCortexLwIP}. Often these papers run LwIP on real time operating systems (RTOS) such as FreeRTOS or Zephyr. These provide an abstraction to the hardware that allows for multitasking and brings other OS-Like features to embedded systems. 
 
-FreeRTOS is a leading RTOS for microprocessors and is distributed freely under the MIT license. As an RTOS, it provides an abstraction to the hardware that allows 
-for multitasking and brings other OS-Like features to embedded systems. Several ports are available including one for RISC-V. 
+LwIP is not threadsafe and typically suffers from memory issues as found in \cite{OptimCortexLwIP}. However, FreeRTOS's own TCP/IP network stack called \textit{FreeRTOS-Plus-TCP} provides a threadsafe Berkley sockets API and is newer. Consequently, less research can be found apart from existing documentation. These libraries typically implement multiple protocols such as DHCP, DNS, TCP, and UDP \cite{FreeRTOSTCP}.
 
-FreeRTOS also provide their own TCP/IP network stack called \textit{FreeRTOS-Plus-TCP} which includes a HTTP web server example and is much newer than LwIP.
-Consequently, less research can be found apart from existing documentation. The library aims to provide a threadsafe Berkley sockets API and network stack 
-supporting multiple protocols such as DHCP, DNS, TCP, and UDP \cite{FreeRTOSTCP}. LwIP is not threadsafe and typically suffers from memory issues as found 
-in \cite{OptimCortexLwIP}.
+RFC2616 \cite{rfc2616}, defines the HTTP protocol used by all browsers and web servers and includes the formatting, allowed characters and the different request methods for each packet. HTTP1.1 and HTTP2 use TCP, typically on port 80, to communicate between the client and the server. However, HTTP3 uses the UDP protocol as defined in RFC9114 \cite{rfc9114}. For the remainder of this thesis \textit{'HTTP'} will be used to refer to HTTP1.1.
 
-
+The HTTP specification, \cite{rfc2616}, defines the protocol as a stateless request-response type where the client first initiates a request to the server and the server responds with a status code and the requested data such as HTML data or images. \textit{GET} and \textit{POST} requests are the most common type and allow data to be retrieved and sent to the server. Since the browser renders the received HTML the data on screen, the webserver only needs to forward the raw HTML data (which can be stored on physical media) to the client.
