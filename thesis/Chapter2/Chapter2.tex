@@ -23,7 +23,7 @@ Due to this, PFs are inherently simple, efficient and relatively effective in mo
 
 While firewalls such as \textit{iptables} in Linux are software based, hardware acceleration can vastly improve the performance of a packet filter. As mentioned in section \ref{subsection:fpga}, hardware acceleration allows for parallelised algorithms to be executed independently of a central processing unit (CPU). Wicaksana and Sasongko, \cite{FastRecongifFPGAFirewall}, proposed a packet classification engine as shown in figure \ref{fig:fast-fpga-classifier}. To obtain a fast yet reconfigurable and scalable packet classifier, the authors of \cite{FastRecongifFPGAFirewall} used a hierarchical tree-based algorithm that inspects the multidimensional fields of the IP header through the use of parallel decision trees.
 
-Essentially, the architecture in figure \ref{fig:fast-fpga-classifier} employs memory to store the ruleset and uses a multiplexer and a comparator to evaluate each of the fields in the header. As a safegaurd, the authors opted for a \textit{default-deny} ruleset to prevent any unwanted traffic. One inherent downside to this design is that it requires additional clock cycles for each rule that gets added to the ruleset. 
+Essentially, the architecture in figure \ref{fig:fast-fpga-classifier} employs memory to store the ruleset and uses a multiplexer and a comparator to evaluate each of the fields in the header. As a safeguard, the authors opted for a \textit{default-deny} ruleset to prevent any unwanted traffic. One inherent downside to this design is that it requires additional clock cycles for each rule that gets added to the ruleset. 
 
 
 \begin{figure}[h]
@@ -34,7 +34,7 @@ Essentially, the architecture in figure \ref{fig:fast-fpga-classifier} employs m
 \end{figure}
 
 
-Wasti \cite{Wasti2001HardwareAP} presents several other classification algorithms for both hardware and software packet filters. \textit{'Sequential matching'} provides the most trivial solution as it matches each rule to the incoming packet. While simple, this design has scalability issues as more rules get added. Another method proposed in \cite{Wasti2001HardwareAP} is by using a \textit{'Grid of tries'} which uses tries (a type of tree datastructure) to help pattern match the packets, but fails to extend to multiple fields. 
+Wasti \cite{Wasti2001HardwareAP} presents several other classification algorithms for both hardware and software packet filters. \textit{'Sequential matching'} provides the most trivial solution as it matches each rule to the incoming packet. While simple, this design has scalability issues as more rules get added. Another method proposed in \cite{Wasti2001HardwareAP} is by using a \textit{'Grid of tries'} which uses tries (a type of tree data-structure) to help pattern match the packets, but fails to extend to multiple fields. 
 Hardware algorithms using \textit{Ternary CAMs} (stores words with 3-valued-digits - namely '0', '1' and '*') and \textit{Bit-parallelism} were also discussed. Both of these exploited the parallelised nature of hardware design. One limiting factor with the classification methods cited in \cite{Wasti2001HardwareAP} is their configurability and expandability. 
 
 
@@ -149,12 +149,19 @@ After the packet has been constructed, the data is forwarded to the PHY least si
 These PHY chips can often be interfaced with the media independent interfaces such as MII, RMII, GMII and RGMII \cite{OptimisedEthernetMAC}. The Reduced Media Independent Interface (RMII) is one of these standards defined in \cite{IEEE802.3-2012} and consists of a reference clock, 2 bit wide transmit (TX), 2 bit wide receive (RX) lines and a few other supplementary signals like defined in the LAN8720A datasheet, an example RMII PHY \cite{LAN8720ADatasheet}.
 
 
-The MAC layer itself is usually implemented in hardware as it has several advantages over a software implementation. The core reasons behind this are due to parallelised nature of hardware and that parts of the MAC can operate independently \cite{reducedEtherentMacFPGA} of each other. One key example is the calculation of the Frame Check Sequence (FCS in figure \ref{fig:ieee-mac-headers}). The FCS for Ethernet is a 32bit cyclic redundancy check (CRC) \cite{IEEE802.3-2012}. CRC32 is not unique to Ethernet, but rather can be found in an extensive amount of applications. As such, prior research into parallelised architectures for the calculation have been made by others. Noteably, Mitra and Nayak \cite{ParallelCRC} proposed a low latency parallelised architecture for FPGA design on CRC32. As a result, packets can be assembled faster and offload additional processing burden from the CPU. 
+The MAC layer itself is usually implemented in hardware as it has several advantages over a software implementation. The core reasons behind this are due to parallelised nature of hardware and that parts of the MAC can operate independently \cite{reducedEtherentMacFPGA} of each other. One key example is the calculation of the Frame Check Sequence (FCS in figure \ref{fig:ieee-mac-headers}). The FCS for Ethernet is a 32bit cyclic redundancy check (CRC) \cite{IEEE802.3-2012}. CRC32 is not unique to Ethernet, but rather can be found in an extensive amount of applications. As such, prior research into parallelised architectures for the calculation have been made by others. Notably, Mitra and Nayak \cite{ParallelCRC} proposed a low latency parallelised architecture for FPGA design on CRC32. As a result, packets can be assembled faster and offload additional processing burden from the CPU. 
 
 
 Numerous articles, \cite{OptimisedEthernetMAC} \cite{EthernetAXI} \cite{EthernetRMII}, can be found about implementing Ethernet MACs 
-on FPGAs each with a slightly different approach and focusing on different properties. Fundamentally though, as best highlighted in \cite{OptimisedEthernetMAC}, a simple way of implementing a MAC is by employing a finite state machine (FSM) to set the required fields and send out the packet. Another technique found in these articles is to use first-in first-out (FIFO) buffers to cross clock domains as the PHY speed likely won't match the clock frequency of the rest of the system. This is a common technique used in FPGA design as it allows you to have the packet assembly logic at a much higher clock rate than the output RMII reference clock speed \cite{EthernetAXI}. 
+on FPGAs each with a slightly different approach and focusing on different properties. Fundamentally though, as best highlighted in \cite{OptimisedEthernetMAC}, a simple way of implementing a MAC is by employing a finite state machine (FSM) like the one in figure \ref{fig:eth_fsm} to set the required fields and send out the packet. Another technique found in these articles is to use first-in first-out (FIFO) buffers to cross clock domains as the PHY speed likely won't match the clock frequency of the rest of the system. This is a common technique used in FPGA design as it allows you to have the packet assembly logic at a much higher clock rate than the output RMII reference clock speed \cite{EthernetAXI}. 
 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images/eth_fsm.png}
+    \caption[An example Ethernet MAC FSM]{An example Ethernet MAC FSM \cite{OptimisedEthernetMAC}. Left: Receiver FSM, Right: Transmitter FSM}
+    \label{fig:eth_fsm}
+\end{figure}
 
 The source address field is typically filled in by hardware and is fixed as the MAC address is supposed to be globally unique to prevent address clashes on the same network. The destination address is typically set by software however as the ARP (Address Resolution Protocol) tables are typically stored in software due to them storing a mapping between the layer three IP addresses and the MAC addresses to forward a packet to. 
 
@@ -162,9 +169,9 @@ The Length/Type field has a dual purpose, and it depends on the value. If a valu
 
 
 In addition to the papers, there are a plethora of intellectual property (IP) blocks for xMII interfaces in HDL 
-which have their own benefits and drawbacks. Some freely available HDL modules for Ethernet MACs can be found in both a complete \footnote[2]{See: https://github.com/yol/ethernet\_mac} \footnote[3]{See: https://github.com/alexforencich/verilog-ethernet/} 
-\footnote[4]{See: https://opencores.org/projects/ethernet\_tri\_mode} and incomplete state
-\footnote[5]{See: https://github.com/pabennett/ethernet\_mac}.
+which have their own benefits and drawbacks. Some freely available HDL modules for Ethernet MACs can be found in both a complete \footnote[1]{See: https://github.com/yol/ethernet\_mac} \footnote[2]{See: https://github.com/alexforencich/verilog-ethernet/} 
+\footnote[3]{See: https://opencores.org/projects/ethernet\_tri\_mode} and incomplete state
+\footnote[4]{See: https://github.com/pabennett/ethernet\_mac}.
 
 
 
