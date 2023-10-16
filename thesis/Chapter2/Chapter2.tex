@@ -17,22 +17,13 @@ Usually, the first line of defence against bad actors, firewalls play a vital co
 In essence, the job of a firewall is to isolate and restrict access to an internal network from an external one to increase security \cite{BuildingInternetFirewalls}.
 
 There are several types of firewalls such as packet filters (PF), stateful packet firewalls and application firewalls \cite{FirewallsBook}. 
-Traditional PFs are considered as stateless and filter exclusively on the fields in the network (layer 2) and transport 
-(layer 3) layer headers \cite{FirewallsBook}. Such fields include IP addresses, port numbers and protocol type.
+Traditional PFs are considered as stateless and filter exclusively on the fields in the network and transport layer headers \cite{FirewallsBook}. More information on the different layers in a network can be found in section \ref{sec:computer_networks}. Such fields include IP addresses, port numbers and protocol type.
 
-Due to this, PFs are inherently simple and efficient. Consequently, they are widely available and can be either implemented in software or in 
-hardware \cite{BuildingInternetFirewalls}. The book, \cite{BuildingInternetFirewalls}, also highlights some inherent flaws with PFs which include not being able 
-to suppress sophisticated attacks and in some cases, can be challenging to properly configure. More advanced firewalls can perform deep packet inspection which 
-explore the contents of the higher layers to better evaluate a packets true intention \cite{FirewallsBook}. 
+Due to this, PFs are inherently simple, efficient and relatively effective in most situations. As a result, they are widely available and can be either implemented in software or in hardware \cite{BuildingInternetFirewalls}. The book, \cite{BuildingInternetFirewalls}, also highlights some inherent flaws with PFs which include not being able to suppress sophisticated attacks and in some cases, can be challenging to properly configure. More advanced firewalls can perform deep packet inspection which explore the contents of the higher layers and factor in previous packets to better evaluate a packets true intention \cite{FirewallsBook}. 
 
-While firewalls such as \textit{iptables} in Linux are software based, hardware acceleration can vastly improve the performance of a packet filter. As stated in section 
-\ref{subsection:fpga}, hardware acceleration allows for parallelised algorithms to be executed independently of a central processing unit (CPU). Wicaksana and Sasongko, 
-\cite{FastRecongifFPGAFirewall}, proposed a packet classification engine as shown in figure \ref{fig:fast-fpga-classifier}. To obtain a fast and reconfigurable packet 
-classifier, the authors of \cite{FastRecongifFPGAFirewall} used a hierarchical tree-based algorithm that inspects the multidimensional fields of the IP header through 
-the use of parallel decision trees.
+While firewalls such as \textit{iptables} in Linux are software based, hardware acceleration can vastly improve the performance of a packet filter. As mentioned in section \ref{subsection:fpga}, hardware acceleration allows for parallelised algorithms to be executed independently of a central processing unit (CPU). Wicaksana and Sasongko, \cite{FastRecongifFPGAFirewall}, proposed a packet classification engine as shown in figure \ref{fig:fast-fpga-classifier}. To obtain a fast yet reconfigurable and scalable packet classifier, the authors of \cite{FastRecongifFPGAFirewall} used a hierarchical tree-based algorithm that inspects the multidimensional fields of the IP header through the use of parallel decision trees.
 
-Essentially, the architecture in figure \ref{fig:fast-fpga-classifier} employs memory to store the ruleset and uses a multiplexer and a comparator to evaluate each of the fields 
-in the header. As an safegaurd, the authors opted for a \textit{default-deny} ruleset to prevent any unwanted traffic. 
+Essentially, the architecture in figure \ref{fig:fast-fpga-classifier} employs memory to store the ruleset and uses a multiplexer and a comparator to evaluate each of the fields in the header. As a safegaurd, the authors opted for a \textit{default-deny} ruleset to prevent any unwanted traffic. One inherent downside to this design is that it requires additional clock cycles for each rule that gets added to the ruleset. 
 
 
 \begin{figure}[h]
@@ -43,14 +34,8 @@ in the header. As an safegaurd, the authors opted for a \textit{default-deny} ru
 \end{figure}
 
 
-\newpage
-
-Wasti \cite{Wasti2001HardwareAP} presents several other classification algorithms for both hardware and software packet filters. \textit{'Sequential matching'} provides the most 
-trivial solution as it matches each rule to the incoming packet. While simple, this design has scalability issues as more rules get added. Another method proposed in 
-\cite{Wasti2001HardwareAP} is by using a \textit{'Grid of tries'} which uses tries (a type of tree datastructure) to help pattern match the packets, but fails to extend to multiple fields. 
-Hardware algorithms using \textit{Ternary CAMs} (stores words with 3-valued-digits - namely '0', '1' and '*') and \textit{Bit-parallelism} were also discussed. Both of these 
-exploited the parallelised nature of hardware design. One limiting factor with the classification methods cited in \cite{Wasti2001HardwareAP} is their configurability and 
-expandability. 
+Wasti \cite{Wasti2001HardwareAP} presents several other classification algorithms for both hardware and software packet filters. \textit{'Sequential matching'} provides the most trivial solution as it matches each rule to the incoming packet. While simple, this design has scalability issues as more rules get added. Another method proposed in \cite{Wasti2001HardwareAP} is by using a \textit{'Grid of tries'} which uses tries (a type of tree datastructure) to help pattern match the packets, but fails to extend to multiple fields. 
+Hardware algorithms using \textit{Ternary CAMs} (stores words with 3-valued-digits - namely '0', '1' and '*') and \textit{Bit-parallelism} were also discussed. Both of these exploited the parallelised nature of hardware design. One limiting factor with the classification methods cited in \cite{Wasti2001HardwareAP} is their configurability and expandability. 
 
 
 
@@ -114,6 +99,7 @@ instructions for the microprocessor.
 
 
 \section{Computer Networks}
+\label{sec:computer_networks}
 To understand how one might go about creating an Ethernet interface and firewall, it is important to understand how networks operate. The TCP/IP model is a layered model that blueprints the different protocols and standards used in computer networks so that two devices can communicate in a prescriptive way. 
 Figure \ref{fig:tcp_ip_model} shows the updated five layers of the TCP/IP model mentioned in \cite{ciscoCCNABook}.
 
