@@ -8,11 +8,9 @@
 \label{Chap:label}	%CREATE YOUR OWN LABEL.
 \pagestyle{headings}
 
+This chapter aims to demonstrate the practicality and effectiveness of the designed hardware. To ensure the design is effective, the performance of the design is evaluated by inspecting the latency of the filter, resource utilisation, timing and power consumption. The design is also tested with a small sample of real life packets of different properties to ensure the packet filter can correctly block unwanted packets. The performance of the design is then compared to preexisting solutions through latency, power and thermal tests.
 
-To ensure that the firewall was performing properly, a few tests were conducted. In this chapter, the testing results for the performance and the resource utilisation among other features are discussed. 
 
-\section{Modifications}
-The design was changed from the 2 ethernet interfaces to a design with just a single ethernet interface. 
 
 \section{Performance}
 
@@ -39,17 +37,6 @@ There is two pulses in this graph. This is due to when the crs\_dv line gets dis
 
 The same setup was used to test the preexisting solution, except this time GPIO pins were set high and low. It is assumed that the latency of setting the pin high cancels out with the latency of setting the pin low. 
 
-\subsection{Limitations}
-\subsubsection{PMOD Interface}
-
-There are 5 PMOD connectors on the development board. Initally, one of these would be used for a second Ethernet PHY, but due to bandwidth limitations of the interface, the design had to be altered. The recommended bandwidth of these ports are 25MHz while the Ethernet RMII PHY would have been using 50Mhz signals over the interface. As such, signal integrity issues arose (see figure \ref{fig:eye_diagram}) and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.65\textwidth]{Images/EyeDiagramTX.png}
-    \caption[Eye diagram of TXD through PMOD interface]{Eye diagram of TXD through PMOD interface.}
-    \label{fig:eye_diagram}
-\end{figure}
 
 
 \subsection{Testing setup}
@@ -390,3 +377,28 @@ The second test is what happens when you click to navigate to the about page. Th
     \label{fig:ppk_http_annotated}
 \end{figure}
 
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Modifications}
+The design was changed from the 2 ethernet interfaces to a design with just a single ethernet interface. 
+\subsection{Limitations}
+\subsubsection{PMOD Interface}
+
+There are 5 PMOD connectors on the development board. Initally, one of these would be used for a second Ethernet PHY, but due to bandwidth limitations of the interface, the design had to be altered. The recommended bandwidth of these ports are 25MHz while the Ethernet RMII PHY would have been using 50Mhz signals over the interface. As such, signal integrity issues arose (see figure \ref{fig:eye_diagram}) and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Images/EyeDiagramTX.png}
+    \caption[Eye diagram of TXD through PMOD interface]{Eye diagram of TXD through PMOD interface.}
+    \label{fig:eye_diagram}
+\end{figure}
