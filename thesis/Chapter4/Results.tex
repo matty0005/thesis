@@ -12,16 +12,18 @@ This chapter aims to demonstrate the practicality and efficacy of the designed h
 
 
 
-\section{Performance}
+\section{Latency Performance}
 
-Talk about wishbone bus speed. 
-Initial tests were also conducted at 100MHz, but due to timing issues, it was reverted to 80MHz.
+One of the key objectives of this thesis is to reduce the latency of hardware packet filtering on embedded systems, as such, measurement of the latency added due to the filtering is crucial.
+
+\subsection{Theoretical analysis}
+The design uses a 200 stage shift register to store the incoming packet where each stage is 2bits. At a clock frequency of 50Mhz, the added latency can be calculated to be $200 \times \frac{1}{50\times 10^6} = 4 \times 10^{-6} = 4\mu s$.
+
+\subsection{Measured analysis}
 
 
-To test the speed of the packet classifier, a Agilent MSO6054A MSO was used (4GSa/s). A pin was set to the output of the crs\_dv of the PHY and the crs\_dv after the packet filter. The time between the rising and falling edge of the output will be the delay added by the packet filter. 
+To test the speed of the packet classifier, an Agilent MSO6054A MSO was used (4GSa/s sample rate). A pin was set to the output of the xor between the carrier sense line (crs\_dv) of the PHY and the crs\_dv after the packet filter. The added latency of the filter is then given by the time between the rising and falling edge of the output. The measured output can be seen to match the theoretical calculation of $4\mu s$ in figure \ref{fig:pf_added_latency}.
 
-
-As the shift register in the hardware has a length of 200 bits, at a clock frequency of 50Mhz, the added latency is $200 \times \frac{1}{50\times 10^6} = 4 \times 10^{-6} = 4uS$. The measured result in figure \ref{fig:pf_added_latency} confirms the theory aligns with the hardware.
 
 
 \begin{figure}[h!]
@@ -31,57 +33,31 @@ As the shift register in the hardware has a length of 200 bits, at a clock frequ
     \label{fig:pf_added_latency}
 \end{figure}
 
-There is two pulses in this graph. This is due to when the crs\_dv line gets disasserted at the end of the packet. From this the time taken to receive the packet can be found to be 8.92uS. This is just an observation and is proportional to the packet size.
+
+The two pulses in this graph are due to the PHY crs\_dv and delayed crs\_dv line having a phase shift and consequently a those two points, the value of the crs\_dv is different to the other. The distance between the two pulses indicates the size of the packet. 
+
+
+\subsection{Improvements}
+The result could be improved further to 0 added latency if the packet filter was integrated with the receive logic of the Ethernet MAC. This would involve storing the packet as it's coming in and then if the packet is deemed to be blocked, the FSM controlling the receive logic could be reset to ignore the packet. 
 
 
 
-The same setup was used to test the preexisting solution, except this time GPIO pins were set high and low. It is assumed that the latency of setting the pin high cancels out with the latency of setting the pin low. 
 
 
 
-\subsection{Testing setup}
+\section{Utilisation}
 
-\subsection{Tests}
+The resource utilisation is an integral part of the design as it determines the feasibility of implementing the design on a particular FPGA or microchip. Importantly, the resource consumption as a result of the NEORV32 is of less significance as other softcores can be used in its place.
 
-
-\begin{table}[h]
-    \centering
-    \begin{tabular}{m{2.25cm}m{2cm}m{1.5cm}m{2cm}m{2cm}m{2cm}m{2cm}}
-        \toprule
-        Device & Dest. IP & Protocol & Src. Port & Dest. Port & Expected Outcome & Actual Outcome \\
-        \midrule
-        \parbox[c]{2.25cm}{\centering Node1\\\textcolor{gray}{(10.20.1.10)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Allow & Allowed \\
-        \parbox[c]{2.25cm}{\centering Node2\\\textcolor{gray}{(10.20.1.11)} \vspace*{14pt}} & 10.20.1.34 & ICMP & - & - & Allow & Allowed \\
-        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 9999 & Allow & Allowed \\
-        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Allow & Allowed \\
-        \parbox[c]{2.25cm}{\centering Node1\\\textcolor{gray}{(10.20.1.10)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 1337 & Allow & Allowed \\
-        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 80 & Allow & Allowed \\
-        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Deny & Denied \\
-        \parbox[c]{2.25cm}{\centering Node2\\\textcolor{gray}{(10.20.1.11)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Deny & Denied \\
-        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 1337 & Deny & Denied \\
-        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 80 & Deny & Denied \\
-        \bottomrule
-    \end{tabular}
-    \caption{Firewall Test Cases}
-    \label{tab:firewall_test_cases}
-\end{table}
-
-
-The output of the simple test script can be found in appendix \ref{app:testing_pf} for more test cases across all four nodes.
-
-
-\section{Ultilisation}
-
-The design can be broken down into several parts including the NeoRV32 processor itself, Ethernet and packet filtering hardware.
+After synthesisng the design in Xilinx Vivado 2022.2, the resource utilisation shown in figure \ref{fig:resource_util} indicates a total of 64.5\% LUT utilisation, 12.9\% flip flop utilisation and 96.3\% BRAM utilisation. Figure \ref{fig:resource_util} also breaks down the utilisation by the different components in the design including the NEORV32 processor itself, Ethernet and packet filtering hardware.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.85\textwidth]{Images/FPGAUtilisationResources.png}
     \caption[Summary of the resource utilisation on XC7A100T FPGA]{Summary of the resource utilisation on XC7A100T FPGA.}
-    \label{fig:eye_diagram}
+    \label{fig:resource_util}
 \end{figure}
 
-The total number of resoruces on the FPGA are as follows: 63,400 LUTs, 126,800 flip flops, 135 BRAM tiles, 240 DSPs and 6 MMCMs.
 
 LUT6 and LUT5 primatives were used the most in the design and by far the FDRE flip flop was the most used flip flop type. 2436 MUXF7s were also used. RAMD64E was also used in the design. The report from vivado can be found in appendix \ref{app:res_usage}.
 
@@ -123,11 +99,58 @@ The critical path is from the wishbone interface to the BRAM block inside the et
 
 
 
+
+
+
+
+
+
+\section{Filtering performance}
+
+\subsection{Tests}
+
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{m{2.25cm}m{2cm}m{1.5cm}m{2cm}m{2cm}m{2cm}m{2cm}}
+        \toprule
+        Device & Dest. IP & Protocol & Src. Port & Dest. Port & Expected Outcome & Actual Outcome \\
+        \midrule
+        \parbox[c]{2.25cm}{\centering Node1\\\textcolor{gray}{(10.20.1.10)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node2\\\textcolor{gray}{(10.20.1.11)} \vspace*{14pt}} & 10.20.1.34 & ICMP & - & - & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 9999 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node1\\\textcolor{gray}{(10.20.1.10)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 1337 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 80 & Allow & Allowed \\
+        \parbox[c]{2.25cm}{\centering Node3\\\textcolor{gray}{(10.0.0.5)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Deny & Denied \\
+        \parbox[c]{2.25cm}{\centering Node2\\\textcolor{gray}{(10.20.1.11)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 1337 & Deny & Denied \\
+        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & UDP & Any & 1337 & Deny & Denied \\
+        \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 80 & Deny & Denied \\
+        \bottomrule
+    \end{tabular}
+    \caption{Firewall Test Cases}
+    \label{tab:firewall_test_cases}
+\end{table}
+
+
+The output of the simple test script can be found in appendix \ref{app:testing_pf} for more test cases across all four nodes.
+
+
+
+
+
 \section{Comparison to preexisting solutions}
 
 To ensure the effectiveness of the designed hardware, some comparisons to preexisting solutions have been made. Three other devices that featured Ethernet connectivity were compared. These devices were the WIZ5500 Pico \footnote[1]{See: https://www.wiznet.io/product-item/w5500-evb-pico/}, Nucloe-F767ZI \footnote[2]{See: https://www.st.com/en/evaluation-tools/nucleo-f767zi.html} and MilkV-Duo \footnote[3]{See: https://milkv.io/duo}. The WIZ5500 pico board uses a Raspberry Pi RP2040 as the MCU at 133Mhz, while it uses the WIZ5500 IC for handling the Ethernet traffic. The WIZ5500 handles layers 1 to 4 onboard and is interfaced over SPI. The Nucleo-F767ZI (referred to as just F767ZI) is powered by the STM32F767 MCU and features an onboard LAN8742A PHY chip onboard. Like the Nexys board, it is also connected over an RMII interface. The STM32 has hardware support for the RMII interface. Finally, the MilkV-Duo is the most recent RISC-V based board which features the CVITEK CV1800B processor. The CV1800B is a 64bit RISC-V processor that operates at a 1Ghz, includes 64MB of RAM and provides the MAC and PHY inside the chip itself.
 
 \subsection{Latency tests}
+
+
+The same setup was used to test the preexisting solution, except this time GPIO pins were set high and low. It is assumed that the latency of setting the pin high cancels out with the latency of setting the pin low. 
+
+
+
+
 To see how these boards compare in a standard use case, a small program was made to first receive a UDP packet on port 9999 and then reply with another UDP packet. The round trip time was then averaged over 1,000 transactions and has been presented in figure \ref{fig:avg_udp_rtt}. Two tests were conducted, one with a smaller 7 byte payload and another with a larger 256 byte payload to see the effects on packet length had on the round trip time. 
 
 \begin{figure}[ht]
