@@ -94,6 +94,8 @@ end component;
 -- FRAME BUFFER
 type ramType is array (1526 - 1 downto 0) of std_logic_vector(8 - 1 downto 0);
 shared variable FRAME_BUFFER : ramType;
+attribute ram_style : string;
+attribute ram_style of FRAME_BUFFER : variable is "block";
 
 -- Used for Main fsm.
 type state is (IDLE, FCS, TRANSMIT, RESET_FCS, LOAD_FCS, NEXT_IDLE);
@@ -211,7 +213,7 @@ begin
                 end if;
                 
                 -- Check to make sure we are in the safe memory range.
-                if wb_i_addr >= x"13371004" and wb_i_addr <= x"13376410" then
+                if wb_i_addr(31 downto 16) = x"1337" and wb_i_addr(15 downto 0) >= x"1004" and wb_i_addr(15 downto 0) <= x"6410" then
                     
                     -- 322375680 = 0x13371000.
                     virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4100));

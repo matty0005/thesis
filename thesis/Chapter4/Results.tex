@@ -14,16 +14,17 @@ This chapter aims to demonstrate the practicality and efficacy of the designed h
 
 \section{Latency Performance}
 
-One of the key objectives of this thesis is to reduce the latency of hardware packet filtering on embedded systems, as such, measurement of the latency added due to the filtering is crucial.
+Reducing the latency of hardware packet filtering in embedded systems is one of the key objectives of this thesis. As such, verification of the latency added due to the filtering is essential.
 
 \subsection{Theoretical analysis}
-The design uses a 200 stage shift register to store the incoming packet where each stage is 2bits. At a clock frequency of 50Mhz, the added latency can be calculated to be $200 \times \frac{1}{50\times 10^6} = 4 \times 10^{-6} = 4\mu s$.
+The design employs a 200-stage shift register to temporarily store the incoming packet with each stage being 2bits wide. Given a clock frequency of 50Mhz, the added latency can be calculated to be $200 \times \frac{1}{50\times 10^6} = 4 \times 10^{-6} = 4\mu s$.
 
 \subsection{Measured analysis}
 
 
-To test the speed of the packet classifier, an Agilent MSO6054A MSO was used (4GSa/s sample rate). A pin was set to the output of the xor between the carrier sense line (crs\_dv) of the PHY and the crs\_dv after the packet filter. The added latency of the filter is then given by the time between the rising and falling edge of the output. The measured output can be seen to match the theoretical calculation of $4\mu s$ in figure \ref{fig:pf_added_latency}.
+The packet classifier's performance was measured with an Agilent MSO6054A MSO due to its high sampling rate of 4GSa/s. A PMOD pin was connected to output of an xor operation between the carrier sense line (crs\_dv) from the PHY and the crs\_dv post packet filtering. 
 
+This process allowed the added latency to be measured characterised by the time between the rising and falling edge of either pulse as shown in figure \ref{fig:pf_added_latency}. The measured output can be seen to match the theoretical calculation of $4\mu s$.
 
 
 \begin{figure}[h!]
@@ -34,11 +35,16 @@ To test the speed of the packet classifier, an Agilent MSO6054A MSO was used (4G
 \end{figure}
 
 
-The two pulses in this graph are due to the PHY crs\_dv and delayed crs\_dv line having a phase shift and consequently a those two points, the value of the crs\_dv is different to the other. The distance between the two pulses indicates the size of the packet. 
+The two distinct pulses are a result of the phase shift between the PHY crs\_dv and the delayed crs\_dv line. Additionally, the distance between the two pulses indicates the size of the packet. 
 
 
 \subsection{Improvements}
-The result could be improved further to 0 added latency if the packet filter was integrated with the receive logic of the Ethernet MAC. This would involve storing the packet as it's coming in and then if the packet is deemed to be blocked, the FSM controlling the receive logic could be reset to ignore the packet. 
+A potential improvement on the design could be to integrate the packet classifier with the Ethernet MAC. This could reduce the added latency to zero by removing the need to store the packet in the additional shift register. The approach would involve storing the incoming packet and if the packet is later deemed to be blocked, the controlling FSM could be reset to ignore the packet. 
+
+
+
+
+
 
 
 
@@ -53,30 +59,62 @@ After synthesisng the design in Xilinx Vivado 2022.2, the resource utilisation s
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\textwidth]{Images/FPGAUtilisationResources.png}
+    \includegraphics[width=1\textwidth]{Images/FPGAUtilisationResources.png}
     \caption[Summary of the resource utilisation on XC7A100T FPGA]{Summary of the resource utilisation on XC7A100T FPGA.}
     \label{fig:resource_util}
 \end{figure}
 
+A detailed breakdown of the resource utilisation including the primitives can be found in appendix \ref{app:res_usage}. 
 
-LUT6 and LUT5 primatives were used the most in the design and by far the FDRE flip flop was the most used flip flop type. 2436 MUXF7s were also used. RAMD64E was also used in the design. The report from vivado can be found in appendix \ref{app:res_usage}.
 
-\subsection{NeoRV32 processor}
 
-The NeoRV32 SoC was configured to use the SPI, UART, GPIO, external interupts (XIRQ), true random number generator and importantly the wishbone B4 classic interface. The DSP48 blocks were used by the SoC to handle the multiply operations as this would free up LUTs and compute the result faster. 
 
-The IMEM and DMEM sizes were chosen to consume as much of the remaining BRAM blocks left as possible. IMEM, the program storage was configured to 256KB while the DMEM, effectively the RAM, was configured to take the remaining amount left and set to 168KB in size. 
 
-After synthesis of the design at 50Mhz, it was deemed that there was some headroom in the critical path delays. Hence the design was updated to 80MHz. This however does not affect the resource utilisation except for taking up some extra clock buffers. A single MMCM was still used to add the additional 80MHz output. 
 
-The NeoRV32 itself took 28455 slice LUTs, 2507 Slice registers, 130 Block RAM tiles and 4 DSPs. 
+
+\subsection{NEORV32 processor}
+
+The NEORV32 SoC consumed the majority (69.5\%, or 28455), of the slice LUTs in the design. The SoC was configured to use the SPI, UART, GPIO, external interupts (XIRQ), true random number generator and importantly the wishbone B4 classic interface. Notably, the 32bit wide wishbone interface consumed a large proportion of the LUTs, namely 25992 slice LUTs, or 91.3\% of the NEORV32 usage. The large LUT utilisation is related to the frame buffers used in the Ethernet hardware, this is discussed further in section \ref{sec:eth_hardware_util}. DSP48 blocks were also used by the SoC to handle the multiply operations to free up LUTs. 
+
+The instruction memory (IMEM) and data memory (DMEM) sizes were chosen to consume as much of the remaining BRAM blocks left as possible for more flexibility in the firmware. Namely, IMEM was configured to 256KB while the DMEM, effectively the RAM, was configured to take the remaining amount left and set to 168KB in size. 
+
+
+
 
 
 \subsection{Ethernet hardware}
-Comparatively, the Ethernet hardware took 11738 Slice LUTs and 12505 Slice registers, most of which is consumed by the transmit logic. This is largely due to the required buffers when storing (to construct) and sending out the frame. 
+\label{sec:eth_hardware_util}
+
+
+Comparatively, the Ethernet hardware took 11738 Slice LUTs and 12505 Slice registers, most of which is consumed by the transmit logic (78\% LUT and 99\%  registers). The reason for this and for why the NEORV32 Wishbone interface has such high LUT utilisation is due to the way the frame buffer is written to as shown in listing \ref{lst:code_snippet}. First the address is validated to be within range of the designed buffer space. This consumes large amounts of LUTs due to needing to implement large 32bit wide comparators. The other main contributing factor is the need to write/modify to the frame buffer array which again causes large LUT utilisation.
+
+\begin{lstlisting}[style=vhdl, caption={Code for writing to the frame buffer}, label=lst:code_snippet]
+if wb_i_addr >= x"13371004" and wb_i_addr <= x"13376410" then         
+    -- Subtract 4100 from the address to get the virtual address
+    virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4100));
+    FRAME_BUFFER(8 + virtAddr) := wb_i_dat(31 downto 24);
+    FRAME_BUFFER(9 + virtAddr) := wb_i_dat(23 downto 16);
+    FRAME_BUFFER(10 + virtAddr) := wb_i_dat(15 downto 8);
+    FRAME_BUFFER(11 + virtAddr) := wb_i_dat(7 downto 0);
+end if;
+\end{lstlisting}
+
+This design choice ultimately contributed to the critical path as discussed in section \ref{sec:timing_summary}. Optimisations would need to be made around this area to drastically reduce the resource consumption.
+
+By contrast, the receive logic consumed far less resources at 12\% LUT and 1\% registers. This is mostly due to a much simpler design which stores the incoming packets in the correct endianness in the frame buffer and then trigger an interrupt after the packet has being received. 
+
+The rmii\_init logic is just the glue logic between the PHY and the MAC. It is responsible for crossing the clock and bus domains between the 8bit wide 80Mhz MAC and the 2bit wide 50Mhz RMII PHY. 
+
+
 
 \subsection{Packet filter}
-The packet classifier took a total of 571 Slice LUTs and 1145 Slice registers. This is lower than expected and indicates that the design could easily be increased to consolidate more rules. However, the fanout of the design will need to be considered due to the nature of the implementation. 
+The packet classifier took a total of 571 Slice LUTs and 1145 Slice registers. This is lower than expected and indicates that the design could easily be increased to consolidate more rules. However, the fanout of the design will need to be considered due to the nature of the implementation. Interestingly the synthesiser has decided to use registers instead of BRAM for the rule storage. This is possibly due to the rules being small in size and the synthesiser deciding that the BRAM blocks are better used elsewhere.
+
+
+
+
+
+
 
 
 
@@ -84,6 +122,13 @@ The packet classifier took a total of 571 Slice LUTs and 1145 Slice registers. T
 
 \section{Timing Summary}
 \label{sec:timing_summary}
+
+After synthesis of the design at 50Mhz, it was deemed that there was some headroom in the critical path delays. Hence the design was updated to 80MHz. This however does not affect the resource utilisation except for taking up some extra clock buffers. A single MMCM was still used to add the additional 80MHz output. 
+
+
+
+
+
 After running the post synthesis timing summary in Vivado, a worst negative slack of -2.634ns was reported for the setup timing with a total of 82 endpoints failing the constraints. For the hold summary, a worst hold slack of -0.021ns was found. 
 
 The critical path is from the wishbone interface to the BRAM block inside the ethernet hardware - seen in figure \ref{fig:crit_path}. The level is 3 and stems from the NeoRV32 processor's wishbone bus. This cannot be easily updated and so is the leading limitation in the speed of the design. Even though this, in practice, doesn't seem to cause any issues, a caution for reliabilty is raised. 
@@ -94,8 +139,6 @@ The critical path is from the wishbone interface to the BRAM block inside the et
     \caption[Critical path in SoC design]{Critical path in SoC design.}
     \label{fig:crit_path}
 \end{figure}
-
-
 
 
 
