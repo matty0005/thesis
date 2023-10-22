@@ -168,7 +168,27 @@ More accurate timing constraints would need to be set to acquire the absolute ma
 
 \section{Filtering performance}
 
-\subsection{Tests}
+Blocking unwanted packets is imperative to a firewall's operation with any packets bypassing the filter rendering it useless. Testing all possible permutations of bits going through the firewall is infeasible due to the shear number of packets needed which is on the order of $2^104$. Instead, a small sample of packets were tested to ensure the filter is working as intended.
+
+\subsection{Test setup}
+
+Four nodes across two networks were tested and the network diagram can be seen in figure \ref{fig:network_layout_test}. The network consisted of three Raspberry Pi 4s and an x86 based Ubuntu machine. 
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images/NetworkArchitecture.png}
+    \caption[Network architecture for firewall tests]{Network architecture for firewall tests.}
+    \label{fig:network_layout_test}
+\end{figure}
+
+All devices used a common script\footnote[1]{The python \textit{test} script can be found at https://github.com/matty0005/thesis-tools} to test each of the services available on different ports and protocols. 
+
+
+
+
+
 
 
 \begin{table}[h]
