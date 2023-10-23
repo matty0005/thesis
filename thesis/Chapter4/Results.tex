@@ -185,13 +185,34 @@ Four nodes across two networks were tested and the network diagram can be seen i
 
 All devices used a common script\footnote[1]{The python \textit{test} script can be found at https://github.com/matty0005/thesis-tools} to test each of the services available on different ports and protocols. 
 
-
+\begin{table}[h!]
+    \centering
+    \caption{Firewall configuration for testing}
+    \label{tab:firewall_testing_config}
+    \begin{tabular}{ccccc}
+        \toprule
+        Source IP & Destination IP & Source Port & Destination Port & Protocol \\
+        \midrule
+        any       & 10.20.1.34      & n/a         & n/a              & ICMP     \\
+        10.0.0.5  & 10.20.1.34      & any         & any              & UDP      \\
+        10.0.0.5  & 10.20.1.34      & any         & 80               & TCP      \\
+        10.0.0.93 & 10.20.1.34      & any         & 1337             & TCP      \\
+        10.0.0.93 & 10.20.1.34      & any         & 9999             & UDP      \\
+        10.20.1.10& 10.20.1.34      & any         & 1337             & any      \\
+        10.20.1.10& 10.20.1.34      & any         & any              & UDP      \\
+        10.20.1.11& 10.20.1.34      & any         & 9999             & UDP      \\
+        \bottomrule
+    \end{tabular}
+    
+\end{table}
 
 
 
 
 \begin{table}[h]
     \centering
+    \caption{Firewall Test Cases}
+    \label{tab:firewall_test_cases}
     \begin{tabular}{m{2.25cm}m{2cm}m{1.5cm}m{2cm}m{2cm}m{2cm}m{2cm}}
         \toprule
         Device & Dest. IP & Protocol & Src. Port & Dest. Port & Expected Outcome & Actual Outcome \\
@@ -208,8 +229,7 @@ All devices used a common script\footnote[1]{The python \textit{test} script can
         \parbox[c]{2.25cm}{\centering Node4\\\textcolor{gray}{(10.0.0.93)} \vspace*{14pt}} & 10.20.1.34 & TCP & Any & 80 & Deny & Denied \\
         \bottomrule
     \end{tabular}
-    \caption{Firewall Test Cases}
-    \label{tab:firewall_test_cases}
+    
 \end{table}
 
 
@@ -429,18 +449,20 @@ Vivado further breaks down the design into the different hierarchical components
 \begin{table}
     \centering
     \caption{Power consumption of components.}
-    \begin{tabular}{|l|c|}
-        \hline
-        \textbf{Name} & \textbf{Total (W)} \\
-        \hline
+    \begin{tabular}{lc}
+        \toprule
+        Name & Total (W) \\
+        \midrule
         neorv32 & 0.158 \\
         clk control & 0.097 \\
         ethernet\_mac & 0.097 \\
         packet classifier & 0.002 \\
-        \hline
+        \bottomrule
     \end{tabular}
     \label{tab:power_consumption}
 \end{table}
+
+
 
 
 
