@@ -168,11 +168,12 @@ More accurate timing constraints would need to be set to acquire the absolute ma
 
 \section{Filtering performance}
 
-Blocking unwanted packets is imperative to a firewall's operation with any packets bypassing the filter rendering it useless. Testing all possible permutations of bits going through the firewall is infeasible due to the shear number of packets needed which is on the order of $2^104$. Instead, a small sample of packets were tested to ensure the filter is working as intended.
+Blocking unwanted packets is imperative to a firewall's operation with any packets bypassing the filter rendering it useless. Testing all possible permutations of bits going through the firewall is infeasible due to the sheer number of packets needed, which is on the order of $2^{104}$. For example, a complete testing suite for all source IP addresses alone would require $2^32$ (about 4.3 billion) packets to be sent to the device. Therefore, a small sample of packets, shown in table \ref{tab:firewall_testing_config}, were tested to ensure the filter is working as intended. 
+
 
 \subsection{Test setup}
 
-Four nodes across two networks were tested and the network diagram can be seen in figure \ref{fig:network_layout_test}. The network consisted of three Raspberry Pi 4s and an x86 based Ubuntu machine. 
+Four hosts distributed across two networks were used to test the device as depicted in the network diagram in figure \ref{fig:network_layout_test}. The network consisted of three Raspberry Pi 4s and an x86 based Ubuntu machine. The specifics characteristics of these devices are irrelevant to this thesis, given that they all adhere to the TCP/IP standards. More specifically they were chosen due to their capability to run python scripts and are accessibility over Ethernet. A common script\footnote[1]{The python \textit{test} script can be found at https://github.com/matty0005/thesis-tools} was used on all devices to test each of the services available on different ports and protocols. 
 
 
 
@@ -183,7 +184,20 @@ Four nodes across two networks were tested and the network diagram can be seen i
     \label{fig:network_layout_test}
 \end{figure}
 
-All devices used a common script\footnote[1]{The python \textit{test} script can be found at https://github.com/matty0005/thesis-tools} to test each of the services available on different ports and protocols. 
+
+The rules shown in table \ref{tab:firewall_testing_config} shows the rules that were loaded on the packet filter.  While these test cases is only a subset of the total coverage, a mix of different combinations of ports, protocols and IP addresses were chosen. More specifically the rules were chosen to test the following cases:
+
+\begin{itemize}
+    \item All devices can access the device in some way (eg, over ICMP),
+    \item All machines could access at least two services,
+    \item Identical ports over different protocols can be filtered (eg, port 1337 over TCP and UDP),
+    \item Ports can be blocked on a device even though the device can access other services with the same protocol,
+    \item The wildcard operator works in each field, and
+    \item Any port that is not explicitly allowed is blocked.
+\end{itemize}
+
+By default, as the packet filter is a default-deny, any packet that doesn't fit these constraints is blocked and can be verified in the tests summarised in \ref{tab:firewall_test_cases}.
+
 
 \begin{table}[h!]
     \centering
@@ -206,12 +220,18 @@ All devices used a common script\footnote[1]{The python \textit{test} script can
     
 \end{table}
 
+Typically, firewalls have a second interface that connects to a local network, allowing packets from multiple IP addresses to be processed and forwarded on. However, in this setup, a single device is behind the firewall, requiring the \textit{destination IP's} to be the same (the NEORV32's IP address, 10.20.1.34). 
+
+Additionally, the \textit{source port} was configured to allow any source port through. This is important due to the client arbitrarily choosing the source port at random. Therefore, a wildcard was used as this makes the source port impossible to predict. It's worth noting that some niche programs operate with predicable ports, though none of the programs used in this test were of this nature.
 
 
+\subsection{Test results}
+
+A summary of the results can be seen in table \ref{tab:firewall_test_cases} which show the firewall blocking and allowing the respective packets correctly.
 
 \begin{table}[h]
     \centering
-    \caption{Firewall Test Cases}
+    \caption{Summary of packets including expected and actual outcomes}
     \label{tab:firewall_test_cases}
     \begin{tabular}{m{2.25cm}m{2cm}m{1.5cm}m{2cm}m{2cm}m{2cm}m{2cm}}
         \toprule
@@ -233,7 +253,9 @@ All devices used a common script\footnote[1]{The python \textit{test} script can
 \end{table}
 
 
-The output of the simple test script can be found in appendix \ref{app:testing_pf} for more test cases across all four nodes.
+The detailed output from the script on each host is available in appendix \ref{app:testing_pf}. While these tests don't formally prove the firewall is correctly working, they do provide substantial evidence of the design's correctness. It's important to note that additional rigorous testing, which wasn't formally documented, was conducted throughout the development of the design. Such an example test case involves spamming ping packets from one host while sending valid packets from another. 
+
+These results stipulate the devices suitability for use in a real world environment. The filter exhibits capacity to filter out the significant majority of unwanted packets, making it ideal for low security applications. However, formal verification and meticulous testing is imperative to suitability for high-security applications. With the absence of these in the above tests, the design would necessitate further validation to be deployed in high security environments. 
 
 
 
