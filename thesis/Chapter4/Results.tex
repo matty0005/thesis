@@ -261,6 +261,19 @@ These results stipulate the devices suitability for use in a real world environm
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Comparison to preexisting solutions}
 
 To ensure the effectiveness of the designed hardware, some comparisons to preexisting solutions have been made. Three other devices that featured Ethernet connectivity were compared. These devices were the WIZ5500 Pico \footnote[1]{See: https://www.wiznet.io/product-item/w5500-evb-pico/}, Nucloe-F767ZI \footnote[2]{See: https://www.st.com/en/evaluation-tools/nucleo-f767zi.html} and MilkV-Duo \footnote[3]{See: https://milkv.io/duo}. The WIZ5500 pico board uses a Raspberry Pi RP2040 as the MCU at 133Mhz, while it uses the WIZ5500 IC for handling the Ethernet traffic. The WIZ5500 handles layers 1 to 4 onboard and is interfaced over SPI. The Nucleo-F767ZI (referred to as just F767ZI) is powered by the STM32F767 MCU and features an onboard LAN8742A PHY chip onboard. Like the Nexys board, it is also connected over an RMII interface. The STM32 has hardware support for the RMII interface. Finally, the MilkV-Duo is the most recent RISC-V based board which features the CVITEK CV1800B processor. The CV1800B is a 64bit RISC-V processor that operates at a 1Ghz, includes 64MB of RAM and provides the MAC and PHY inside the chip itself.
