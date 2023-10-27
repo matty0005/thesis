@@ -276,12 +276,12 @@ These results stipulate the devices suitability for use in a real world environm
 
 \section{Comparison to preexisting solutions}
 
-To ensure the effectiveness of the designed hardware, some comparisons to preexisting solutions have been made. Three other devices that featured \textit{Fast Ethernet} (100Mbit/s) connectivity were compared. These devices were the WIZ5500 Pico \footnote[1]{See: https://www.wiznet.io/product-item/w5500-evb-pico/}, Nucloe-F767ZI \footnote[2]{See: https://www.st.com/en/evaluation-tools/nucleo-f767zi.html} and MilkV-Duo \footnote[3]{See: https://milkv.io/duo}. The WIZ5500 pico board uses a \textit{Raspberry Pi RP2040} as the MCU at 133Mhz, while it uses the \textit{WIZ5500} IC for handling the Ethernet traffic. The WIZ5500 additionally handles layers 1 to 4 onboard and is interfaced over SPI. The Nucleo-F767ZI (referred to as just F767ZI) is powered by the \textit{STM32F767} MCU and features an onboard \textit{LAN8742A} PHY chip onboard. Like the Nexys board, it is also connected over an RMII interface, making it a logical comparison to the Nexys A7. The STM32 has hardware support for the RMII interface. Unlike the FPGA board, it utilised the LwIP network stack instead of FreeRTOS-Plus-TCP. Finally, the \textit{MilkV-Duo} is the most recent RISC-V based board which features the 64-bit\textit{CVITEK CV1800B} processor. The CV1800B operates at a 1Ghz, includes 64MB of RAM and provides the MAC and PHY inside the chip itself.
+To ensure the effectiveness of the designed hardware, some comparisons to preexisting solutions have been made. Three other devices that featured \textit{Fast Ethernet} (100Mbit/s) connectivity were compared. These devices were the WIZ5500 Pico \footnote[1]{See: https://www.wiznet.io/product-item/w5500-evb-pico/}, Nucloe-F767ZI \footnote[2]{See: https://www.st.com/en/evaluation-tools/nucleo-f767zi.html} and MilkV-Duo \footnote[3]{See: https://milkv.io/duo}. The WIZ5500 pico board uses a \textit{Raspberry Pi RP2040} as the MCU at 133Mhz, while it uses the \textit{WIZ5500} IC for handling the Ethernet traffic. The WIZ5500 additionally handles layers 1 to 4 onboard and is interfaced over SPI. The Nucleo-F767ZI (referred to as just F767ZI) is powered by the \textit{STM32F767} MCU and features an onboard \textit{LAN8742A} PHY chip onboard. Like the Nexys board, it is also connected over an RMII interface, making it a logical comparison to the Nexys A7. The STM32 has hardware support for the RMII interface. Unlike the Nexys A7, it utilised the LwIP network stack instead of FreeRTOS-Plus-TCP. Finally, the \textit{MilkV-Duo} is the most recent RISC-V based board which features the 64-bit\textit{CVITEK CV1800B} processor. The CV1800B operates at a 1Ghz, includes 64MB of RAM and provides the MAC and PHY inside the chip itself.
 
 \subsection{Network latency tests}
 
 
-A small UDP ping program was made on the NEORV32 to receive a UDP packet on port 9999 and reply to the client to test the round trip time (RTT). This test also had the benefit of quantitatively determining the software overhead on the platform. The round trip time was then averaged over 1,000 transactions and has been presented in figure \ref{fig:avg_udp_rtt}. To determine the amount of software overhead the TCP/IP stack had on the RTT, two packets of different payloads was tested as the time difference in hardware between the packet size is in the order of nanoseconds, whereas the software processing time is several orders of magnitude larger due to moving more data around and processing it. The two UDP payload sizes were 8 bytes and 256 bytes.
+A small UDP ping program was made on the NEORV32 to receive a UDP packet on port 9999 and reply to the client to test the round trip time (RTT). This test also had the benefit of quantitatively determining the software overhead on the platform. The round trip time was then averaged over 1,000 transactions and has been presented in figure \ref{fig:avg_udp_rtt}. To determine the amount of software overhead the TCP/IP stack had on the RTT, two packets of different payloads was tested. This is because the time difference in hardware between the packet size is in the order of nanoseconds, whereas the software processing time is several orders of magnitude larger due to moving more data around and processing it. The two UDP payload sizes were 8 bytes and 256 bytes.
 
 
 \begin{figure}[ht]
@@ -289,7 +289,7 @@ A small UDP ping program was made on the NEORV32 to receive a UDP packet on port
     \begin{tikzpicture}
     \begin{axis}[
         ybar,
-        symbolic x coords={WIZ5500 Pico, F767ZI, F767ZI 80Mhz, MilkV,  FPGA board},
+        symbolic x coords={WIZ5500 Pico, F767ZI, F767ZI 80Mhz, MilkV, Nexys A7},
         xtick=data,
         ylabel={Average UDP RTT (ms)},
         legend style={at={(0.5,-0.2)},anchor=north},
@@ -304,14 +304,14 @@ A small UDP ping program was made on the NEORV32 to receive a UDP packet on port
         (WIZ5500 Pico,1.88)
         (F767ZI 80Mhz,1.41)
         (F767ZI,1.30)
-        (FPGA board,1.45)
+        (Nexys A7,1.45)
         (MilkV,1.04)
     };
     \addplot coordinates {
         (WIZ5500 Pico,2.07)
         (F767ZI 80Mhz,1.51)
         (F767ZI,1.39)
-        (FPGA board,1.72)
+        (Nexys A7,1.72)
         (MilkV,1.09)
     };
     \legend{8 bytes,256 bytes}
@@ -321,13 +321,13 @@ A small UDP ping program was made on the NEORV32 to receive a UDP packet on port
     \label{fig:avg_udp_rtt}
     \end{figure}
     
-A table of the results can be found in appendix \ref{app:udp_ping_measurements}. Testing on the FPGA board observed a larger difference compared to the competing products. This indicates that the software overhead on the FPGA board is larger. The difference in delay at the hardware level can be calculated by knowing the number of bits and the clock frequency. Fast Ethernet has a throughput of 100Mbit/s, which when sending 248 bytes results in a delay of $\frac{248 \times 8}{100 \times 10^6}=19.84\mu s$. This is likely due to the FreeRTOS-Plus-TCP stack using more computations per packet than LwIP on the F767ZI. The MilkV not only runs linux, it operates at 12.5 times the frequency, 1Ghz.
+A table of the results can be found in appendix \ref{app:udp_ping_measurements}. Testing on the Nexys A7 observed a larger difference compared to the competing products. This indicates that the software overhead on the Nexys A7 is larger. The difference in delay at the hardware level can be calculated by knowing the number of bits and the clock frequency. Fast Ethernet has a throughput of 100Mbit/s, which when sending 248 bytes results in a delay of $\frac{248 \times 8}{100 \times 10^6}=19.84\mu s$. This is likely due to the FreeRTOS-Plus-TCP stack using more computations per packet than LwIP on the F767ZI. The MilkV not only runs linux, it operates at 12.5 times the frequency, 1Ghz.
 
 This test results indicate that the device is relatively comparable to preexisting solutions in terms of networking latency. To further compare the network performance, network throughput tests were conducted. 
 
 
 \subsection{Network throughput tests}
-In this section, only the F767ZI, MilkV Duo and FPGA board were tested. The WIZ5500 Pico was not tested as software limitations prevented easy testing with the software used. Iperf 3 was used to test the bandwidth of the network between two devices. The client device was a desktop connected at gigabit speeds to the network. Iperf 3 was chosen for it's a universally accepted throughput measuring tool and that both FreeRTOS and LwIP had Iperf 3 server implementations. Table \ref{tab:bitrate_tests} summaries the bitrates of the tested devices.
+In this section, only the F767ZI, MilkV Duo and Nexys A7 were tested. The WIZ5500 Pico was not tested as no direct support for Iperf 3 was available. Iperf 3 was used to test the bandwidth of the network between two devices. The client device was a desktop connected at gigabit speeds to the network. Iperf 3 was chosen for it's a universally accepted throughput measuring tool and that both FreeRTOS and LwIP had Iperf 3 server implementations. Table \ref{tab:bitrate_tests} summaries the bitrates of the tested devices.
 
 
 \begin{table}[h]
@@ -339,7 +339,7 @@ In this section, only the F767ZI, MilkV Duo and FPGA board were tested. The WIZ5
         Device & Bitrate \\
         \midrule
 
-        FPGA board & 1.32Mbits/s \\
+        Nexys A7 & 1.32Mbits/s \\
         F767ZI & 7.11Mbits/s \\
         MilkV & 92.4Mbits/s \\
         \bottomrule
@@ -347,17 +347,17 @@ In this section, only the F767ZI, MilkV Duo and FPGA board were tested. The WIZ5
     
 \end{table}
 
-It came at no surprise when the MilkV Duo with it's 1Ghz processor saturated the 100Mbits/s \textit{Fast Ethernet} interface. This test is consistent the idea that the software on the FPGA board is the bottleneck as alluded to in the latency tests. It is also of the belief that the FreeRTOS task priorities and interrupts on the device are not optimal which is also decreasing the performance. This was evident when changing the tick frequency in FreeRTOS from  500Hz to 1000Hz as it gave more time for the packet to be processed before switching tasks. This resulted in a 41.8\% drop in performance. 
+It came at no surprise when the MilkV Duo with it's 1Ghz processor saturated the 100Mbits/s \textit{Fast Ethernet} interface. This test is consistent the idea that the software on the Nexys A7 is the bottleneck as alluded to in the latency tests. It is also of the belief that the FreeRTOS task priorities and interrupts on the device are not optimal which is also decreasing the performance. This was evident when changing the tick frequency in FreeRTOS from  500Hz to 1000Hz as it gave more time for the packet to be processed before switching tasks. This resulted in a 41.8\% drop in performance. The F767ZI was able to achieve a higher throughput than the Nexys A7 which is likely due to using LwIP over FreeRTOS-Plus-TCP and having more optimised drivers that handle interrupts and better task scheduling.
 
-While the FPGA board provides comparable performance in the UDP ping tests, the throughput is lacking, but can be improved with optimisations in the firmware of the device. However, in having a hardware firewall, the design in this thesis has an advantage in security, which is discussed in the next section.
+While the Nexys A7 provides comparable performance in the UDP ping tests, the throughput is lacking, but can be improved with optimisations in the firmware of the device. However, in having a hardware firewall, the design in this thesis has an advantage in security, which is discussed in the next section.
 
 
 
 \subsection{Security analysis}
 
-Only the FPGA board designed in this thesis employed a hardware packet filter. The other devices required a software based packet filter. On the surface this makes the two sound equivalent. However, software based firewalls in embedded systems may be susceptible to power-glitch attacks. Power glitch attacks are a common vulnerability in embedded systems. It consists of switching off and on power very rapidly at a critical point in the code to essentially bypass a certain instruction. While this is highly unlikely and often hard to implement, it is an advantage nonetheless.  
+Only the Nexys A7 designed in this thesis employed a hardware packet filter. The other devices required a software based packet filter. The issue with software based firewalls in embedded systems is that they may be susceptible to power-glitch attacks. Power-glitch attacks are a common vulnerability in embedded systems which consists of switching off and on the power very rapidly at a critical point in the code to essentially bypass a certain instruction. While this is highly unlikely and often hard to implement, it is an advantage nonetheless for the hardware firewall.  
 
-As the packet filter is designed in hardware and is directly reading the bits from the PHY and doesn't consist of instructions as such, the hardware packet classifier in this design should not susceptible to a power glitch attack. Formal testing of this however was not part of the scope of this thesis. Another benefit of the design created in this thesis is the latency properties, which is discussed in the next section. 
+As the packet filter is designed in hardware and is directly reading the bits from the PHY and doesn't operate in the same way as a software implementation, the hardware packet classifier in this design should not susceptible to power-glitch attacks. Formal testing of this however was not part of the scope of this thesis. Another benefit of the design created in this thesis is the latency properties, which is discussed in the next section. 
 
 
 
@@ -365,9 +365,9 @@ As the packet filter is designed in hardware and is directly reading the bits fr
 
 To measure the latency of the software firewalls accurately, a GPIO pin was configured to toggle when the packet first enters the packet filter and then again after it has been filtered. It is assumed that the latency of setting the pin high cancels out with the latency of setting the pin low and that it simply results in a phase shift and does not introduce any additional delay between the start and end. 
 
-A software based implementation of the firewall was created on the Nucleo-F767ZI board with eight rules. Using an oscilloscope to measure the time, the classification time depended on the number of rules and where a valid rule would be matched, if at all, at the start or end of the sequence. 
+A software based implementation of the firewall was created on the Nucleo-F767ZI board with eight rules to make for a fair comparison as the FPGA design is limited to eight rules. Using an oscilloscope to measure the time, the measured classification delay depended on the number of rules and where a valid rule would be matched, if at all, at the start or end of the sequence. 
 
-As a best case, the time was found to be $3.14\mu s$ (figure \ref{fig:sw_pf_best_case}) while an average-to-bad case was 10.76us (figure \ref{fig:sw_pf_bad_case}).
+As a best case, the time was found to be $3.14\mu s$ (figure \ref{fig:sw_pf_best_case}) while an average-to-bad case was $10.76\mu s$ (figure \ref{fig:sw_pf_bad_case}).
 
 
 
@@ -388,37 +388,17 @@ As a best case, the time was found to be $3.14\mu s$ (figure \ref{fig:sw_pf_best
     \label{fig:sw_pf_timings}
 \end{figure}
 
-Importantly these delays unlike the FPGA one, do impact throughput as the processor is limited to filtering the packets and not doing other things like receiving another packet. 
-
-\subsection{Thermal analysis}
-
-A thermal camera was used to record the temperatures periodically. At an ambient room temperature of $24.8\degree C$ throughout the test, after 5mins the WIZ5500 ethernet chip heated to $58.0\degree C$ and RP2040 was at $46.6\degree C$. While the FPGA was at $38.0 \degree C$. This is a bit of an unfair comparison as the physical size of the FPGA is much larger than the WIZ5500. After two hours of constant UDP ping requests to both devices, figure \ref{fig:thermal_2hr_fpga_pico} shows the FPGA board and WIZ5500 board's temperature gradient. The FPGA plateaued to a maximum of $40.4 \degree C$ while the WIZ5500 was $1.c \degree C$ cooler at, $56.8 \degree C$. This could be due to accuracy of the measurements, in addition to not getting aiming the thermal camera in the hottest part. The RP2040 chip however was measured to be $53.2 \degree C$. Some additional thermal images can be found in the appendix. 
+The lower delay in the ideal software case is due to the small number of rules needed to be considered reducing the number of comparisons needed to be made. In practice, it is expected that the first rule is not always matched, and hence the average case should be used for an amortised latency. Importantly these delays unlike the FPGA one, do impact throughput as the processor is limited to filtering the packets and not doing other things like receiving another packet. In a low bandwidth environment, there is little benefit other than security over a hardware firewall in an embedded system.However, if latency is critical, like it is in real time robotic control systems and bandwidth is high or even if the highest security is needed such as in secure access control systems, a hardware firewall provides a better alternative to a software implementation. Another difference between hardware and software is efficiency of the design, which will be detailed in the next section. 
 
 
-
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth} % Adjust the width to your needs
-        \includegraphics[width=\textwidth]{Images/flir_2hs.jpg}
-        \caption{FPGA board (top) and WIZ5500 Pico (bottom)}
-        \label{fig:thermal_2hr_fpga_pico}
-    \end{subfigure}
-    \hfill % this will add a small space between the two images
-    \begin{subfigure}[b]{0.45\textwidth} % Adjust the width to your needs
-        \includegraphics[width=\textwidth]{Images/flir_nucleo_milkv.jpg}
-        \caption{Nucleo board (left) and MilkV Duo (right)}
-        \label{fig:thermal_2hr_nucleo_milkv}
-    \end{subfigure}
-    \caption{Thermal images of boards under test after two hours}
-    \label{fig:thermal_2hr}
-\end{figure}
-
-A STM32 Nucleo-F767ZI board and a MilkV Duo board was also tested (figure \ref{fig:thermal_2hr_nucleo_milkv}). After two hours, the STM32F767 reached a temperature of $36.8\degree C$ while the LAN8742 reached $36.2\degree C$. The MilkV Duo which consists of the Ethernet PHY internally reached $38.1\degree C$ after two hours.
-
-These temperatures though cannot be considered as accurate, but rather used as an indication to see the hotspots in the boards and determine if one board gets excessively hot over the other. With this in mind, The WIZ5500 seems to reach the hottest out of the boards tested. The FPGA itself was consistently the lowest temperature across the board with the MilkV coming in a close second (considering it only has one source of heat).
 
 
 \subsection{Power consumed between boards}
+
+No measurable difference in current consumption was observed when using the packet filter in hardware over it being disabled. This is likely due to the measurment equiptment not featuring a high enough resolution. However, when implementing a software firewall, a relative current increase of 1mA was observed which is due to running more comparisons per loop. 
+
+The remainder of this section compares the absolute current measurements recorded across the devices which can be seen in figure \ref{fig:power_comparison}. In this figure, four measurements were made, Idle, Busy, No Ethernet and Clean state. The Idle is just the design loaded, but idling and not receiving any packets. Busy is the measurement when the device is receiving packets and processing them. This is typically lower due to the flashing status LED providing more of an impact than the additional power consumed by the hardware. No Ethernet is the measurement when the Ethernet cable is unplugged and the device is idling. This is an important measurement as the PHY chips tend to implement a low power sleep state when no Ethernet cable is connected. Clean state is the measurement when the device is idling and with no design loaded. This is effectively the quiescent current consumed by the device. 
+
 
 \begin{figure}[ht]
     \centering
@@ -486,9 +466,89 @@ These temperatures though cannot be considered as accurate, but rather used as a
 
 In Appendix \ref{app:current_measurements} figure \ref{tab:power_consumption} shows the same data in table form presenting numerical values.
 
-From figure \ref{fig:power_comparison}, the difference between the clean state and the busy states can be learned. The FPGA board had the largest difference at 99.27mA, compared to the 87.94mA difference witnessed in the F767ZI board. What must be taken into consideration is that the measurement for the FPGA board is without the hardware design (both Ethernet MAC, packet filter and RISC-V core) applied. Another reading of 283.75mA was observed when the design and hardware had been loaded (no firmware). What this means is that even though the FPGA board has the highest quiescent current amoungst the devices, it still has the larger design current for the project itself. 
+From figure \ref{fig:power_comparison}, the difference between the clean state and the busy states can be learned. The Nexys A7 had the largest difference at 99.27mA, compared to the 87.94mA difference witnessed in the F767ZI board. What must be taken into consideration is that the measurement for the Nexys A7 is without the hardware design (both Ethernet MAC, packet filter and RISC-V core) applied. Another reading of 283.75mA was observed when the design and hardware had been loaded (no firmware). What this means is that even though the Nexys A7 has the highest quiescent current amoungst the devices, it still has the larger design current for the project itself. Power optimisations would be needed to be made in both the Ethernet and RISC-V core to reduce this current to perform better than the preexisting solution. However, this was not a focus of this thesis.
 
-The smaller difference from the no Ethernet attached to the active state on the FPGA in comparison to the differences noticed on the F767ZI and WIZ5500 boards indicates that this is likely due to the MAC hardware in the F767ZI and WIZ5500 enters a sleep state to consume less current. The hardware designed in this thesis did not take this case into consideration. 
+As it stands, this result indicates that the Nexys A7 board is not ideal to be used in a low power environment due to its large quiescent current. The purpose of the Nexys A7 board isn't to be power efficient, but rather be used as a platform for development. In a production environment, the board design would not have unused parts and may also feature more power efficient components or FPGAs. This is not the scope of this thesis, but is an important consideration for future work.
+
+A byproduct of current draw is heat output. By using a thermal camera, one can learn where the majority of the power is being drawn and as such is discussed in the next section.
+
+
+
+
+\subsection{Thermal analysis}
+
+A Flir One thermal camera was used to record the temperatures periodically with a summary of results presented in table \ref{tab:temperature_comparison}. Throughout the test, an ambient room temperature of $24.8\degree C$ was maintained. Measurements were made after 5, 10, 30, 60 and 120 minutes to track how the PCB board impacted the thermal properties of the chips. This is important due to the larger PCBs having a larger thermal mass, skewing the results. A table of results can be found in appendix \ref{app:thermal_measurements}. No major differences were observed in the thermal images after 60 minutes, hence results halted at the 120-minute mark.
+
+\begin{table}[h]
+    \centering
+    \caption{Temperature comparison of different chips during the test}
+    \label{tab:temperature_comparison}
+    \begin{tabular}{P{3.5cm} P{3.5cm} P{3.5cm} }
+        \toprule
+        Time & Chip & Temperature ($\degree C$) \\
+        \midrule
+        5 min & WIZ5500 & 58.0  \\
+              & FPGA & 38.0 \\
+              & MilkV & 36.7 \\
+              & F767ZI & 35.9 \\
+        \midrule
+        2 hours & WIZ5500 & 56.8 \\
+                & FPGA & 40.4 \\
+                & MilkV & 38.1 \\
+                & F767ZI & 36.8 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The thermal distribution on each of these boards after two hours can be seen in figure \ref{fig:thermal_2hr}. It is important to note the measurements cannot be considered as accurate, but rather should be interpreted as an indication to the hotspots and the relative temperatures of the chips to everything else on the board. Variations due to the self calibration procedure and aiming of the thermal camera to record the hottest part are expected.
+
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth} % Adjust the width to your needs
+        \includegraphics[width=\textwidth]{Images/flir_2hs.jpg}
+        \caption{Nexys A7 (top) and WIZ5500 Pico (bottom)}
+        \label{fig:thermal_2hr_fpga_pico}
+    \end{subfigure}
+    \hfill % this will add a small space between the two images
+    \begin{subfigure}[b]{0.45\textwidth} % Adjust the width to your needs
+        \includegraphics[width=\textwidth]{Images/flir_nucleo_milkv.jpg}
+        \caption{Nucleo board (left) and MilkV Duo (right)}
+        \label{fig:thermal_2hr_nucleo_milkv}
+    \end{subfigure}
+    \caption{Thermal images of boards under test after two hours}
+    \label{fig:thermal_2hr}
+\end{figure}
+
+
+From the figure \ref{fig:thermal_2hr_fpga_pico}, the Nexys A7 seems to have other hotspots on the board other than the FPGA itself. This is what is likely causing the higher quiescent current in the previous section. Relatively compared to the other designs, the Nexys A7 shows minimal heat output, indicating a more efficient design. It is important to remember the physical sizes of the chips and the thermal mass behind them. 
+
+The WIZ5500 seems to reach the hottest out of the boards tested, while the MilkV board seems to output the least amount of heat radiated. The F767ZI board records a lower temperature, but is significantly larger in chip size and PCB size. In addition, the F767ZI has an additional PHY chip which also adds to the thermal output. The MilkV in comparison only has one small chip with the MCU, MAC and PHY in the same package. These results indicate that the WIZ5500 is inefficient and may not be suitable for use in temperature sensitive environments such as recording temperature measurements in a room, wheras the MilkV or FPGA on a different board may be more suitable.
+
+While these thermal tests don't provide a great deal of useful information, it does help support the idea that a lot of the current drawn by the Nexys A7 is not from the FPGA itself and that the device is relatively efficient. The following section delves deeper into the power consumption aspects of the design.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -538,7 +598,7 @@ As the voltage would remain constant between devices (all powered over USB), onl
 
 The device for testing the current was the Nordic Semiconductor Power Profiler Kit 2 which can record at up to 100kSa/s. For the tests in this report, only a sampling rate of 10kSa/s was used as it produces less noisy results. 
 
-As a baseline, the Nexys A7 board draws 200mA (1W at 5V) with no design applied and is due to all the additional components on the board. With the design loaded up but without the processor flashed, the board took 284.4mA. After flashing the board, the idle current reached an average of 301.84mA. Multiplying this by 5V gives us a power draw of 1.51W. To factor in the quiescent current for the other devices on the FPGA board and if it is assumed that the 200mA reading solely for the other components on the FPGA board, it can be found that the design draws around 0.51W. This is rather close to what the synthesis tool calculated. 
+As a baseline, the Nexys A7 board draws 200mA (1W at 5V) with no design applied and is due to all the additional components on the board. With the design loaded up but without the processor flashed, the board took 284.4mA. After flashing the board, the idle current reached an average of 301.84mA. Multiplying this by 5V gives us a power draw of 1.51W. To factor in the quiescent current for the other devices on the Nexys A7 and if it is assumed that the 200mA reading solely for the other components on the Nexys A7, it can be found that the design draws around 0.51W. This is rather close to what the synthesis tool calculated. 
 
 A series of tests were then done and the currents were measured. By pinging the device every 50ms, the average current consumption was 300.72mA. Interestingly, the current consumption was cyclic similar to what is shown in figure \ref{fig:ppk_icmp_ping}. A UDP ping test was conducted and had an average current draw of 301.13mA. In both the ICMP and UDP pings, the current consumption was of similar style where the variance of the current was about 10mA. 
 
@@ -562,9 +622,25 @@ The second test is what happens when you click to navigate to the about page. Th
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.9\textwidth]{Images/PPK_http_annotated.png}
-    \caption[Current consumption of FPGA board with HTTP requests]{Current consumption of FPGA board with HTTP requests.}
+    \caption[Current consumption of Nexys A7 with HTTP requests]{Current consumption of Nexys A7 with HTTP requests.}
     \label{fig:ppk_http_annotated}
 \end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
