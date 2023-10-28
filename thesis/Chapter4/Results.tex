@@ -624,19 +624,46 @@ Vivado further breaks down the design's power consumption into the different hie
 
 
 
-
-
-
 \subsection{Measured power analysis}
 
-As the voltage would remain constant between devices (all powered over USB), only the current was measured. These results however should be taken with caution as they do not account for regulator inefficiencies and do not give a true current reading of the device, rather just an indication. The device for testing the current was the Nordic Semiconductor PPK2 which can record at up to 100kSa/s. For the tests in this report, only a sampling rate of 10kSa/s was used as it produces less noisy results. 
+For the empirical analysis, the current was measured since the voltage remained constant across devices (5V from USB power). The Nordic Semiconductor PPK2, used for current measurements, can record up to 100kSa/s. However, a 10kSa/s sampling rate was chosen to reduce noise in the results. It's important to treat these results as indication of power consumption as they do not account for regulator inefficiencies and do not give a true power rating of the core parts of the design. 
 
-As a baseline, the Nexys A7 board draws 200mA (1W at 5V) with no design loaded due to all the additional components on the board. With the design loaded up but without the processor flashed, the board took 284.4mA. After flashing the board, the idle current reached an average of 301.84mA. Multiplying this by 5V gives us a power draw of 1.51W. To factor in the quiescent current for the other devices on the Nexys A7 and if it is assumed that the 200mA reading solely for the other components on the Nexys A7, it can be found that the design draws around 0.51W. This is rather close to what the synthesis tool calculated. 
+As a baseline, the Nexys A7 board with no design loaded drew 200mA (1W at 5V), which is attributable to all the board's additional components. Upon loading the hardware design (not including the firmware), the current consumption increased to 284.4mA. After flashing the firmware, the idle current reached an average of 301.84mA, or a power draw of 1.51W was observed. Deducting the quiescent current of the board's miscellaneous components (assumed to be the baseline 200mA measurement) yields a power consumption of 0.51W,roughly aligning with the synthesis tool's calculations.
+
+
+
+
+
+
+
+
+
+
+==== UPTO HERE ======
+
+
+
+Various tests were conducted, including ICMP and UDP pings, and measurements were recorded. A consistent current consumption pattern emerged, as seen in figure \ref{fig:ppk_icmp_ping}, with an average consumption of around 300mA, exhibiting cyclic variations with a minor 10mA fluctuation.
+
+
+
+------
+
 
 A series of tests were then done and the currents were measured. By pinging the device every 50ms, the average current consumption was 300.72mA. Interestingly, the current consumption was cyclic similar to what is shown in figure \ref{fig:ppk_icmp_ping}. A UDP ping test was conducted and had an average current draw of 301.13mA. In both the ICMP and UDP pings, the current consumption was of similar style where the variance of the current was about 10mA. 
 
 
 If the packets are now blocked by the filter, more about the design in terms of power consumption can be learned. After adding a rule in the packet filter, very little could be observed in the current consumption over the unblocked case. The same cyclic pattern in figure \ref{fig:ppk_icmp_ping} could be seen. An average of 300.92mA was been consumed by the device and is within the margin of error of the device. Figure \ref{fig:ppk_icmp_ping} shows the that the period for the current waveform is about 83ms, which is much larger than the 50ms between pings to the device. After filming the status LED on the PHY output at 240 frames per second, the period of the LED was 20 frames equivalent to $\approx 84ms$ which aligns with the current measurements. 
+
+
+
+
+
+
+
+
+
+
 
 
 \begin{figure}[h]
