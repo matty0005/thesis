@@ -24,6 +24,18 @@ Conclude your thesis.
 \end{itemize}
 
 
+If a second interface was added, you'd have to design a seperate board as the Nexys A7 board only has one ethernet PHY and the additional PMOD ports are not suitable for ethernet. This is because the PMOD ports are only rated for a 25Mhz bandwidth, while the RMII signals are 50Mhz. As such, signal integrity issues arose (see figure \ref{fig:eye_diagram}) and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Images/EyeDiagramTX.png}
+    \caption[Eye diagram of TXD through PMOD interface]{Eye diagram of TXD through PMOD interface.}
+    \label{fig:eye_diagram}
+\end{figure}
+
+
+
+
 \section{Recommendations}
 
 Add dedicated hardware packet filtering to SoC based computers - safer - faster, efficient and lightweight
