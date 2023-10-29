@@ -32,28 +32,24 @@ In addition, only one interface is supported due to the Nexys A7 board only cons
 
 
 
+The sustainability of the designed system in this thesis is multi-layered with considerations in hardware, software, and web development taken into consideration. 
 
-Ethernet standards have been in place since 1985 \cite{IEEE802.3-2012} and the IP, TCP, UDP and other layer 4 protocols have been in service for decades and have not changed. Typically when new features are added in these areas, they are added ontop of and not modify the packet structure itself. Such event was in 1998 with the introduction of IPv6 \cite{rfc2460}.
+Starting at the hardware level, the specific implementation in this thesis uses the Digilent Nexys A7 FPGA board with a Xilinx Artix 7 FPGA and a LAN8720A PHY. The LAN8720A PHY uses the standardised RMII interface, increasing the portability across various FPGAs assuming adequate resources. Likewise, other RMII PHY chips could be swapped out with the LAN8720A without issue due to the standardised interfae. The specific implementation of the hardware in this thesis requires minimal modification to support other media independent interfaces such as RGMII or XGMII. The main difference would be in the input and output FIFOs being able to support the different clock rates and bit widths. Apart from the clocking IP block, the design is written in vendor-agnostic VHDL and can be easily ported to other FPGAs. 
 
-While malicious bad actors come up with new and innovative ways to breach a system, the core of this packet filter is solid and fundamentally should not need to change in future. Instead other additions and modification should be made to the system architecture to improve security, including but not limited to, HTTPS, public key cryptography and deep packet inspection.
+The TCP/IP standards including the IEEE 802.3 Ethernet standards and protocols such as IP, TCP, and UDP, have being around for decades with minimal adjustments to the standards since their inception. New features in these standards typically are additive and do not modify the packet structure itself, allowing for backwards compatibility. An example of this is the introduction of IPv6 in 1998 \cite{rfc2460}. This is important when designing a hardware layer packet filter which assumes the bit positioning of the fields in the packet. Considering this, the packet filter should be still applicable in the future as the packet structure is unlikely to change.
 
-Using the neorv32 while is feature-rich, as it's in its developement process and new features are continually getting added and existing features moved around, it doesn't make for the best choice for ease of updating, but it does get regularly updated so if there was a security vulnerability, odds are that it will get patched.
 
-Similarly, the FreeRTOS-Plus-TCP is a first-party library for FreeRTOS and is actively maintained. It is also feature-rich and is continually getting updated, however, it's documentation and community support is more limited than that of LwIP.
+The choice of using a RISC-V processor architecture is another sustainable consideration made in this project. While RISC-V is royalty-free and the core instruction set architecture is open-source, not all implementations of RISC-V cores are open-source or free. The specific implementation of RISC-V used in this thesis is the NEORV32, which is open-source and free to use under the BSD-3-Clause license \footnote[1]{See: https://github.com/stnolting/neorv32/blob/main/LICENSE}. This importantly allows for commercial use and redistribution, but does not carry any liability. Additionally, the NEORV32 is still in active development and is continually getting updated with new features and bug fixes. While this means that new features and security patches will get added, it also incurs additional work to update the design to the latest version. The future of the open-source design is also vulnerable to becoming abandoned if the developer decides to stop working on it. 
 
-Perhaps a larger issue with sustainability is the lifecyle of a Vue.js webapp. When updates are needed, potentially new versions of the toolchain may be needed thus contributing to longer development times. 
 
-Choice of riscv makes this project easy to commercialise since there is no licences needed for the risc-v cores are royalty free and the specific variant, neorv32 is open sourced under the BSD-3-Clause license. \footnote[1]{See: https://github.com/stnolting/neorv32/blob/main/LICENSE}
-
-This design was deployed on a Xilinx Artix 7 FPGA board with the LAN8720A PHY. As the LAN8720A chip uses the standardised RMII interface, there should be no issues porting the project to another FPGA or FPGA board so long as there is sufficient LUTs and BRAM available on the FPGA and uses an RMII phy. The hardware could be updated to RGMII or XGMII without too many issues with the main difference being in the input and output FIFO being able to support the different clock rates and bit widths.  
+Similarly to the NEORV32, FreeRTOS and their first-party FreeRTOS-Plus-TCP library are also open-source and free to use under the MIT license \footnote[2]{See: https://www.freertos.org/a00114.html}. Like the NEORV32, FreeRTOS and it's libraries are actively maintained by Amazon and feature updates, albeit less frequently than the NEORV32. The FreeRTOS-Plus-TCP library is also feature-rich and is continually getting updated, however, it's documentation and community support is more limited than that of LwIP.
 
 
 
+In terms of web development, Vue.js was used as a framework for web development. Primary issues of concern for web applications are dependencies and library support and maintenance. In this project, only a small handful of packages were used, each of which are well maintained and have a large community support. If future designs were to use Vue.js with other packages, it is recommended that the packages used are well maintained. Like the TCP/IP stack, HTTP, HTML, Javascript and CSS, which Vue.js is built upon, are heavily standardised but do change over time. As such, future designs should be aware of these changes and adapt accordingly.
 
 
-
-
-
+Finally, the security of the design poses the greatest risk to sustainability. Malicious bad actors are continually innovating and finding new ways to breach systems. Despite this, the core design of the packet filter remains fundamentally strong due to it's basic filtering capabilities. While it will not prevent all cyber attacks, it can be used as a tool in a much larger system to help mitigate the risk of such attacks. Further fortifications can be made to the system architecture by using HTTPs, public key cryptography, and deep packet inspection.
 
 
 
@@ -88,4 +84,6 @@ In addition to these recommendations for future designs, the work in this thesis
 
 \section{Summary}
 
-This thesis explored the design and implementation of a hardware packet filter, Ethernet MAC with a RISC-V softcore processor. The design was implemented on a Xilinx Artix 7 FPGA board with the LAN8720A PHY. The design was able to achieve a throughput of 94Mbit/s with a latency of 1.04ms. The design was also able to achieve a power consumption of 128mA at 94Mbit/s. 
+This thesis explored the design and implementation of a hardware packet filter, Ethernet MAC with a RISC-V softcore processor. The Ethernet MAC and packet filter were created from scratch, while the NEORV32 RISC-V softcore was used to interface with the custom hardware. This was all implemented on a Xilinx Artix 7 FPGA board with the LAN8720A PHY. The design was evaluated and compared against similar preexisting solutions on the market. While the design in this thesis did not outperform the preexisting solutions in all cases, it was comparable and did provide new and unique features not seen before in the embedded systems space. In addition to the hardware, a webserver and web application was created to allow for easy configuration of the packet filter. 
+
+The design in this thesis shows that hardware packet filters in embedded systems are feasible and consume minimal resources while providing great performance. The design was able to achieve a latency of $4\mu s$ while only consuming 571 slice LUTs and 1145 slice registers. The packet filter design was also able to achieve a power consumption of just 2mW.
