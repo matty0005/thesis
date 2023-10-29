@@ -630,40 +630,9 @@ For the empirical analysis, the current was measured since the voltage remained 
 
 As a baseline, the Nexys A7 board with no design loaded drew 200mA (1W at 5V), which is attributable to all the board's additional components. Upon loading the hardware design (not including the firmware), the current consumption increased to 284.4mA. After flashing the firmware, the idle current reached an average of 301.84mA, or a power draw of 1.51W was observed. Deducting the quiescent current of the board's miscellaneous components (assumed to be the baseline 200mA measurement) yields a power consumption of 0.51W,roughly aligning with the synthesis tool's calculations.
 
+A series of tests were conducted including sending ICMP pings and web requests. When the device was pinged at 50ms intervals, the average current of 300.72mA was measured. Interestingly, the current consumption patterns were cyclic in nature, as illustrated in figure \ref{fig:ppk_icmp_ping}. Subsequent UDP ping tests resulted in a similar waveform pattern, with an average current draw of 301.13mA.
 
-
-
-
-
-
-
-
-
-==== UPTO HERE ======
-
-
-
-Various tests were conducted, including ICMP and UDP pings, and measurements were recorded. A consistent current consumption pattern emerged, as seen in figure \ref{fig:ppk_icmp_ping}, with an average consumption of around 300mA, exhibiting cyclic variations with a minor 10mA fluctuation.
-
-
-
-------
-
-
-A series of tests were then done and the currents were measured. By pinging the device every 50ms, the average current consumption was 300.72mA. Interestingly, the current consumption was cyclic similar to what is shown in figure \ref{fig:ppk_icmp_ping}. A UDP ping test was conducted and had an average current draw of 301.13mA. In both the ICMP and UDP pings, the current consumption was of similar style where the variance of the current was about 10mA. 
-
-
-If the packets are now blocked by the filter, more about the design in terms of power consumption can be learned. After adding a rule in the packet filter, very little could be observed in the current consumption over the unblocked case. The same cyclic pattern in figure \ref{fig:ppk_icmp_ping} could be seen. An average of 300.92mA was been consumed by the device and is within the margin of error of the device. Figure \ref{fig:ppk_icmp_ping} shows the that the period for the current waveform is about 83ms, which is much larger than the 50ms between pings to the device. After filming the status LED on the PHY output at 240 frames per second, the period of the LED was 20 frames equivalent to $\approx 84ms$ which aligns with the current measurements. 
-
-
-
-
-
-
-
-
-
-
+This phenomenon was explored further by blocking the network packets using the packet filter. The results revealed that the filter had a negligible impact on the current consumption, with an average current of 300.92mA. Notably, the cycle's periodicity, approximately 83ms which not only exceeds to the 50ms time between pings, but is also consistent with the previous tests, indicating that it's not a consequence of the firmware. Secondary observations were made by capturing the PHY status LED at 240 frames per second which revealed a 20-frame period (approximately 84ms), consistent with the current measurements indicating that the difference in current is due to the LED.
 
 
 \begin{figure}[h]
@@ -673,11 +642,9 @@ If the packets are now blocked by the filter, more about the design in terms of 
     \label{fig:ppk_icmp_ping}
 \end{figure}
 
+The subsequent test was centred around accessing the webserver, and the results are detailed in figure \ref{fig:ppk_http_annotated}, where five distinctive regions are depicted, each corresponding to a specific action.
 
 
-The next test was done when accessing the webserver. Figure \ref{fig:ppk_http_annotated} shows 5 different regions where each region is a result of a different action. The left most tests is from the inital HTTP requests to get the index page. Notably, there is 2 separate sections here, this is because the client fetches the html, css and favicon first and then requests the main (and much larger) javascript file after. The readings for each of these points is given as: average current, maximum current and time going from top to bottom. 
-
-The second test is what happens when you click to navigate to the about page. The third event is when navigating to the config page and the 4th event is what happens when you press the 'load rules' button. The final test case is a refresh on the main page for the statistics. Notably, as the javascript (thus client) is doing the routing and page handling, future requests to get the contents of the pages are not needed, but only small API requests to update the data. Coincidentally, these first 3 requests also trigger a SD card read and explains the higher current draw. The fourth request also creates a read request to the SD card, but only needs to read a single page. The fifth request does not involve a read or write to the SD card, but rather just a simple SPI transaction takes place and consequently doesn't draw much additional power. 
 
 \begin{figure}[h]
     \centering
@@ -686,4 +653,11 @@ The second test is what happens when you click to navigate to the about page. Th
     \label{fig:ppk_http_annotated}
 \end{figure}
 
-A key take away from this is that using a static page application and employing client side routing, large portions of network traffic and also power consumption can be reduced, making frameworks such as Vue.js an optimal choice.
+
+The first action (on the far left) is the initial HTTP GET requests. Notably, this section is split in two, as the client fetches the html, css, and favicon first, followed by a request for a considerably larger javascript file. The readings for each of these points are given as: average current, maximum current, and time, going from top to bottom.
+
+The second section was triggered by navigating to the 'about page'. The third part of the test involves navigating to the config page, while the fourth segment is initiated by pressing the 'load rules' button on the config page. The final test case is a result of refreshing the statistics on the main page.
+
+A crucial observation to highlight is the role of client side routing and rendering, which makes subsequent full-page requests unnecessary and instead, only requires smaller API requests for data updates. The savings are two-fold due to the reduced network traffic and not requring and SD card read or write operations, which greatly impact the current consumption. The fourth request, albeit involving an SD card read, is limited to accessing a single page due to the small file it is accessing. Conversely, the fifth request does not include SD card read/write operations, instead only a single SPI transaction, which consequently consumes significantly less power.
+
+An essential learning from this is the efficacy of static page applications with client-side routing, like those created with Vue.js, in embedded systems for minimising resource utilisation, network traffic and power consumption. Another result from these tests is the negligible impact of the packet filter on the power consumption, which is Vivado predicted, making it a perfect addition to future microprocessors with built-in Ethernet MACs.
