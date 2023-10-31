@@ -73,7 +73,7 @@ The design as a whole uses a total of 64.5\% of the available slice LUTs, 12.9\%
 
 \subsection{NEORV32 processor}
 
-significant LUT usage was attributed to the 32-bit wide wishbone interface. Considerable LUT consumption relates to frame buffers used in Ethernet hardware, elucidated further in subsection \ref{sec:eth_hardware_util}.
+Significant LUT usage was attributed to the 32-bit wide wishbone interface. Considerable LUT consumption relates to frame buffers used in Ethernet hardware, elucidated further in subsection \ref{sec:eth_hardware_util}.
 
 
 The NEORV32 SoC consumed the majority (69.5\%, or 28455), of the slice LUTs in the design. While many interfaces were enabled such as SPI, UART, GPIO, external interupts (XIRQ) and the true random number generator, a considerable amount of the LUTs were consumed by the 32bit wide wishbone interface. More specifically, 25992 slice LUTs, or 91.3\% of the NEORV32 usage. 
@@ -168,12 +168,12 @@ More accurate timing constraints would need to be set to acquire the absolute ma
 
 \section{Filtering performance}
 
-Blocking unwanted packets is imperative to a firewall's operation with any packets bypassing the filter rendering it useless. Testing all possible permutations of bits going through the firewall is infeasible due to the sheer number of packets needed, which is on the order of $2^{104}$. For example, a complete testing suite for all source IP addresses alone would require $2^32$ (about 4.3 billion) packets to be sent to the device. Therefore, a small sample of packets, shown in table \ref{tab:firewall_testing_config}, were tested to ensure the filter is working as intended. 
+Blocking unwanted packets is imperative to a firewall's operation with any packets bypassing the filter rendering it useless. Testing all possible permutations of bits going through the firewall is infeasible due to the sheer number of packets needed, which is on the order of $2^{104}$. For example, a complete testing suite for all source IP addresses alone would require $2^{32}$ (about 4.3 billion) packets to be sent to the device. Therefore, a small sample of packets, shown in table \ref{tab:firewall_testing_config}, were tested to ensure the filter is working as intended. 
 
 
 \subsection{Test setup}
 
-Four hosts distributed across two networks were used to test the device as depicted in the network diagram in figure \ref{fig:network_layout_test}. The network consisted of three Raspberry Pi 4s and an x86 based Ubuntu machine. The specifics characteristics of these devices are irrelevant to this thesis, given that they all adhere to the TCP/IP standards. More specifically they were chosen due to their capability to run python scripts and are accessibility over Ethernet. A common script\footnote[1]{The python \textit{test} script can be found at https://github.com/matty0005/thesis-tools} was used on all devices to test each of the services available on different ports and protocols. 
+Four hosts distributed across two networks were used to test the device as depicted in the network diagram in figure \ref{fig:network_layout_test}. The network consisted of three Raspberry Pi 4s and an x86 based Ubuntu machine. The specifics characteristics of these devices are irrelevant to this thesis, given that they all adhere to the TCP/IP standards. More specifically they were chosen due to their capability to run Python scripts and are accessibility over Ethernet. A common script\footnote[1]{The Python \textit{test} script can be found at https://github.com/matty0005/thesis-tools} was used on all devices to test each of the services available on different ports and protocols. 
 
 
 
@@ -184,8 +184,11 @@ Four hosts distributed across two networks were used to test the device as depic
     \label{fig:network_layout_test}
 \end{figure}
 
+\newpage
 
 The rules shown in table \ref{tab:firewall_testing_config} shows the rules that were loaded on the packet filter.  While these test cases is only a subset of the total coverage, a mix of different combinations of ports, protocols and IP addresses were chosen. More specifically the rules were chosen to test the following cases:
+
+
 
 \begin{itemize}
     \item All devices can access the device in some way (eg, over ICMP),
@@ -285,6 +288,7 @@ The most contemporary board in the lineup is the MilkV-Duo which employs the 64-
 The following sections detail the relative performance of the respective devices in terms of latency, throughput, security and power consumption. Thermal measurements are also conducted to bring greater detail to the power consumption of the devices.
 
 
+\newpage
 
 \subsection{Network latency tests}
 
@@ -654,10 +658,10 @@ The subsequent test was centred around accessing the webserver, and the results 
 \end{figure}
 
 
-The first action (on the far left) is the initial HTTP GET requests. Notably, this section is split in two, as the client fetches the html, css, and favicon first, followed by a request for a considerably larger javascript file. The readings for each of these points are given as: average current, maximum current, and time, going from top to bottom.
+The first action (on the far left) is the initial HTTP GET requests. Notably, this section is split in two, as the client fetches the HTML, CSS, and favicon first, followed by a request for a considerably larger Javascript file. The readings for each of these points are given as: average current, maximum current, and time, going from top to bottom.
 
 The second section was triggered by navigating to the 'about page'. The third part of the test involves navigating to the config page, while the fourth segment is initiated by pressing the 'load rules' button on the config page. The final test case is a result of refreshing the statistics on the main page.
 
-A crucial observation to highlight is the role of client side routing and rendering, which makes subsequent full-page requests unnecessary and instead, only requires smaller API requests for data updates. The savings are two-fold due to the reduced network traffic and not requring and SD card read or write operations, which greatly impact the current consumption. The fourth request, albeit involving an SD card read, is limited to accessing a single page due to the small file it is accessing. Conversely, the fifth request does not include SD card read/write operations, instead only a single SPI transaction, which consequently consumes significantly less power.
+A crucial observation to highlight is the role of client side routing and rendering, which makes subsequent full-page requests unnecessary and instead, only requires smaller API requests for data updates. The savings are two-fold due to the reduced network traffic and not requiring and SD card read or write operations, which greatly impact the current consumption. The fourth request, albeit involving an SD card read, is limited to accessing a single page due to the small file it is accessing. Conversely, the fifth request does not include SD card read/write operations, instead only a single SPI transaction, which consequently consumes significantly less power.
 
 An essential learning from this is the efficacy of static page applications with client-side routing, like those created with Vue.js, in embedded systems for minimising resource utilisation, network traffic and power consumption. Another result from these tests is the negligible impact of the packet filter on the power consumption, which is Vivado predicted, making it a perfect addition to future microprocessors with built-in Ethernet MACs.

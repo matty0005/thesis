@@ -15,7 +15,7 @@ This chapter details the design decisions and steps taken to complete the projec
 \subsection{FPGA}
 Digilent, parented by National Instruments, make a wide range of Xilinx based FPGA development boards and test equipment. In this project, the Digilent Nexys A7-100T FPGA development board (figure \ref{fig:fpga_dev_board}) was used due to it's availability and features including: a Xilinx Artix 7 100T FPGA (part number XC7A100T-1CSG324C), LAN8720A 100MBit/s RMII PHY, micro SD card slot and PMOD (auxiliary outputs) among other IO. 
 
-Xilinx has multiple FPGAs in their 7-series lineup with different target audiences. The Artix-7 family is optimised for low power designs with high logic throughput. The XC7A100T has 101,440 logic cells, 4,860Kbits of Block RAM (BRAM) and 240 DSP blocks \cite{Xilinx7SeriesDatasheet}. There is a varient of the Nexys A7 FPGA board that consists of a XC7A50T FPGA (fewer resources), but ultimately the XC7A100T variant was used due to its larger amount of resources.  
+Xilinx has multiple FPGAs in their 7-series lineup with different target audiences. The Artix-7 family is optimised for low power designs with high logic throughput. The XC7A100T has 101,440 logic cells, 4,860Kbits of Block RAM (BRAM) and 240 DSP blocks \cite{Xilinx7SeriesDatasheet}. There is a variant of the Nexys A7 FPGA board that consists of a XC7A50T FPGA (fewer resources), but ultimately the XC7A100T variant was used due to its larger amount of resources.  
 
 Importantly, there are four ways this FPGA can be configured (essentially \textit{'programmed'}), at each power on cycle using JTAG, nonvolatile SPI flash, microSD card or using a USB stick through the HID interface. These modes are switchable using jumpers, JP1 and JP2, on the board. The JTAG interface is ideal for testing and as such it was used throughout development process, while storing these configurations on a microSD card was used once the design was solidified. 
 
@@ -63,9 +63,9 @@ A benefit to using an FPGA is that full control is given to the overall system d
 
 The NEORV32 processor is RISC-V compatible and designed by GitHub user \textit{stnolting} and is highly configurable. In this design, seen in figure \ref{fig:soc_architecture}, the Wishbone, SPI, UART and external interrupts interfaces were enabled and configured. In addition to these, the M extension (Multiplier) was configured to use the DSP blocks to reduce the number of LUTs needed to handle multiplication in the core. 
 
-The Wishbone B4 classic bus is an open source interface that allows for multiple bits of hardware to connect and communicate together. In this project, the bus is 32bits wide and clocked at 80MHz, giving a bandwidth of $32 \times 80 \times 10^6 = 2.56\times 10^9bit/s=2.56Gbit/s$. Due to its relatively high bandwidth, it was used to connect the MAC with the NEORV32 as packets of 1500 bytes would need to be transferred quickly to not bottleneck the 100Mbit Ethernet interface. In addition to this, the MAC had an interrupt line to the NEORV32 processor to notify it when a packet has been recieved and ready for processing in the higher layers. This connects into the XIRQ lines which creates a fast interrupt request by firing a mcause trap event (RISC-V terminology).
+The Wishbone B4 classic bus is an open source interface that allows for multiple bits of hardware to connect and communicate together. In this project, the bus is 32bits wide and clocked at 80MHz, giving a bandwidth of $32 \times 80 \times 10^6 = 2.56\times 10^9bit/s=2.56Gbit/s$. Due to its relatively high bandwidth, it was used to connect the MAC with the NEORV32 as packets of 1500 bytes would need to be transferred quickly to not bottleneck the 100Mbit Ethernet interface. In addition to this, the MAC had an interrupt line to the NEORV32 processor to notify it when a packet has been received and ready for processing in the higher layers. This connects into the XIRQ lines which creates a fast interrupt request by firing a mcause trap event (RISC-V terminology).
 
-Serial Perhipheral Interface (SPI) was used to connect to both the MicroSD card and Packet classifier. These are comparatively low speed and low priority perhipherals and so do not require a high speed interface. UART was connected to the onboard serial to USB converter chip for CLI commands and debugging. 
+Serial peripheral Interface (SPI) was used to connect to both the MicroSD card and Packet classifier. These are comparatively low speed and low priority peripherals and so do not require a high speed interface. UART was connected to the onboard serial to USB converter chip for CLI commands and debugging. 
 
 
 
@@ -84,7 +84,7 @@ To do the filtering itself, a shift register can be used to essentially delay th
 
 As the hardware in the MAC only processes the input if crs\_dv is high, we only need to gate the crs\_dv and can always have the rxd lines always attached. However, these should also go through a shift register.
 
-By doing this, it means that we can operate the filter at wirespeed with the only downside is the extra latency that the shift registers bring. The delay that these registers add to the latency can be found to be $T_{latency} = N\times T_{clk}$ where $N$ is the size of the registers. In the design a size of 224 ticks was used. This is because at a minimum, the packet classifier needed to input a maximum of $22 + 24 + 4 = 50$ bytes (22 for MAC headers including preamble, maximum 24 bytes for IP header and 4 bytes for the TCP/UDP headers (only need to check the source and destination port)) need to be processed. As there are four clock cycles per byte the needed register size is $50 \times 4=200$ for the data to propagate to the end of the registers after the packet classifier has determined whether to drop or allow the packet. Importantly this does not effect the speed/bandwidth of the connection. 
+By doing this, it means that we can operate the filter at wirespeed with the only downside is the extra latency that the shift registers bring. The delay that these registers add to the latency can be found to be $T_{latency} = N\times T_{clk}$ where $N$ is the size of the registers. In the design a size of 224 ticks was used. This is because at a minimum, the packet classifier needed to input a maximum of $22 + 24 + 4 = 50$ bytes (22 for MAC headers including preamble, maximum 24 bytes for IP header and 4 bytes for the TCP/UDP headers (only need to check the source and destination port)) need to be processed. As there are four clock cycles per byte the needed register size is $50 \times 4=200$ for the data to propagate to the end of the registers after the packet classifier has determined whether to drop or allow the packet. Importantly this does not affect the speed/bandwidth of the connection. 
 
 
 It is assumed that any traffic leaving from the device is safe and trusted. In a larger network where there are several devices behind the firewall, it may be desirable to also have a packet filter on the output. 
@@ -103,7 +103,7 @@ It is assumed that any traffic leaving from the device is safe and trusted. In a
 \label{sec:ethernet_mac}
 The advantage of using an FPGA is that custom hardware can be designed for specific tasks. In this design the MAC layer was done in hardware to free up the microprocessor by handling the lower level logic. 
 
-This MAC was implemented as a memory-mapped perhipheral which used the MCU's Wishbone B4 classic interface. This then made it easily accessible over the memory address space of the MCU.  
+This MAC was implemented as a memory-mapped peripheral which used the MCU's Wishbone B4 classic interface. This then made it easily accessible over the memory address space of the MCU.  
 
 
 
@@ -112,6 +112,9 @@ The hardware can be broken down into two main sections: the transmit logic and r
 In the receive logic, there are two main functions, one that stores the incoming frame into BRAM and then another to interface the BRAM with the Wishbone interface. On the input side the data is shifted into a 8bit wide shift register - shown in figure \ref{fig:soc_architecture}. While crs\_dv is asserted, after every four clock cycles (modulo four since 2 bits is received at a time) the contents of the shift register is stored into BRAM. After each byte has been added to BRAM, a counter is incremented to store the next byte in the next index. The end of the packet is signified when crs\_dv is deasserted, at which point the payload length is stored for use when the processor receives the frame over the wishbone interface. After the first two bits equals "01" (first 2 bits of the preamble) have been received, a trigger output is asserted so that it can fire a CPU interrupt.
 
 On the wishbone side of the receive logic, only read requests are accepted and processed. A register access returns the payload size of the received frame to help the driver (section \ref{sec:ethernet_mac_driver}) identify how much data it needs to extract from the hardware buffer. When accessing the BRAM memory locations over the Wishbone interface two things are considered. The first is that an offset of eight is needed since the BRAM stores the preamble and SFD which is not wanted by the processor. The second is that the payload is stored in 8bit values whereas the wishbone interface can send 32bits at once. Therefore some conversion between the memory addresses and the memory accesses to BRAM take place. 
+
+
+\newpage
 
 \begin{lstlisting}[language=VHDL, caption=Wishbone access logic for Ethernet receive]
 if wb_i_stb = '1' and wb_i_addr(31 downto 16) = x"1338" then 
@@ -248,7 +251,7 @@ The design of the packet classifier hardware, figure \ref{fig:packet_classifier_
 
 The wildcard attribute signifies whether to allow all possible combinations (in other words, disregard) for the positional attribute where the most significant bit refers to the $IP_{Dest}$ and the least significant bit refers to the $Protocol$.
 
-A FSM then records the position of the incoming and configures the multiplexers on the BRAM to output the current property to the comparators where they compare with the shift register which contains the current field being classified. On a successful match, a bit is left set in the result register, otherwise clear if no match. Importantly, the bits only get set on the first iteration of the classification. 
+An FSM then records the position of the incoming and configures the multiplexers on the BRAM to output the current property to the comparators where they compare with the shift register which contains the current field being classified. On a successful match, a bit is left set in the result register, otherwise clear if no match. Importantly, the bits only get set on the first iteration of the classification. 
 
 After passing through all the fields, if there is any bit set in the results register, it indicates that a rule matched and that a packet should be forwarded. 
 
@@ -293,7 +296,7 @@ Notably, the data is received into a shift register and after all bits have been
 \subsection{Ethernet drivers}
 \label{sec:ethernet_mac_driver}
 
-Since the Ethernet hardware was custom, drivers were needed to interface with the hardware in software. There were two types of commands that were needed, first the RMII serial managment interface (SMI) and secondly the MAC drivers - the drivers that would handle the data.  The SMI interface is used to control the mode of operation of the PHY chip including the speed, Auto-MDIX, duplex settings. The LAN8720A datasheet, (\cite{LAN8720ADatasheet}) provided some details (seen in figure \ref{fig:smi_packet_structure}) into how the protocol operated. The datasheet also outlined that a maximum frequency of 2.5MHz, but no lower bound. As such the interface was \textit{'bitbanged'} with GPIO pins to reduce complexity. The maximum switching frequency of the NEORV32's GPIO was measured to be $\approx 1$MHz, thus no additional delays were needed in the code and that the GPIO pin could be toggled at the fasted speed possible. 
+Since the Ethernet hardware was custom, drivers were needed to interface with the hardware in software. There were two types of commands that were needed, first the RMII serial management interface (SMI) and secondly the MAC drivers - the drivers that would handle the data.  The SMI interface is used to control the mode of operation of the PHY chip including the speed, Auto-MDIX, duplex settings. The LAN8720A datasheet, (\cite{LAN8720ADatasheet}) provided some details (seen in figure \ref{fig:smi_packet_structure}) into how the protocol operated. The datasheet also outlined that a maximum frequency of 2.5MHz, but no lower bound. As such the interface was \textit{'bitbanged'} with GPIO pins to reduce complexity. The maximum switching frequency of the NEORV32's GPIO was measured to be $\approx 1$MHz, thus no additional delays were needed in the code and that the GPIO pin could be toggled at the fasted speed possible. 
 
 
 \begin{figure}[h!]
@@ -311,6 +314,8 @@ As the Ethernet hardware used the Wishbone interface, the register locations wer
 
 To simplify the design and improve readability, a range of macros was setup, such example of macros can be seen below. 
 
+\newpage
+
 \begin{lstlisting}[language=C, caption=Python example]
 #define ETH_MAC_TX_BASE 0x13371000
 #define ETH_MAC_CMD_BASE 0x13370000
@@ -327,7 +332,7 @@ typedef struct __attribute__((__packed__))  {
 This allowed for the connected wishbone Ethernet to be accessed like any other register in the embedded system. 
 
 
-There are three fundamental functions that the driver itself must fulfill, initialisation, send data and receive data. The intialisation resets the Ethernet MAC and resets the interrupt registers. 
+There are three fundamental functions that the driver itself must fulfill, initialisation, send data and receive data. The initialisation resets the Ethernet MAC and resets the interrupt registers. 
 
 The send method is also trivial, but importantly it takes in two parameters, the first is an array of data to send and the second is the amount or length of the data. Like with the SMI interface, these instructions and data transfers were actioned without any delays as the hardware was capable of handling the native speed of the processor. After the data had been transferred, the hardware is instructed to send out the packet. There is no need to provide the FCS as this is calculated on the fly in hardware. 
 
@@ -336,9 +341,9 @@ Similarly, a receive method was created that took in a buffer to store the bytes
 
 \subsection{SD card drivers}
 \label{sec:microsd_drivers}
-To use a micro SD card, drivers must be created so that the card can be initialised, written to and read from. More preciesly, in accordance to the  documentation for the FreeRTOS-Plus-FAT file system, the driver had to implement a function that reads sectors from the media and one that rights sectors to the media. 
+To use a micro SD card, drivers must be created so that the card can be initialised, written to and read from. More precisely, in accordance to the  documentation for the FreeRTOS-Plus-FAT file system, the driver had to implement a function that reads sectors from the media and one that rights sectors to the media. 
 
-Unlike the Ethernet MAC, initialising a MicroSD card isn't as trivial and requires multiple steps. A guide online for AVRs\footnote[1]{See: http://www.rjhcoding.com/avrc-sd-interface-1.php} was followed and the code was ported to the NEORV32 system. In a nutshell, the SPI interface was initalised with a clock divisor of 1 and a prescalar of 3, several commands were sent and recieved from the SD card and then it was put into IDLE mode after increasing the speed of the SPI interface to have no clock divisor and a prescalar of 1.
+Unlike the Ethernet MAC, initialising a MicroSD card isn't as trivial and requires multiple steps. A guide online for AVRs\footnote[1]{See: http://www.rjhcoding.com/avrc-sd-interface-1.php} was followed and the code was ported to the NEORV32 system. In essence, the SPI interface was initialised with a clock divisor of 1 and a prescalar of 3, several commands were sent and received from the SD card and then it was put into IDLE mode after increasing the speed of the SPI interface to have no clock divisor and a prescalar of 1.
 
 Similarly, the same guide was followed to implement the read and write sector functions. Importantly, these functions would read and write a whole block at a time. On a microSD card, a block is considered to be 512 bytes. 
 
@@ -365,7 +370,7 @@ A single function was created that takes in all the attributes needed in the pac
 \section{Software}
 
 \subsection{Real Time Operating System}
-In addition to simplifying the software, an RTOS was used to allow the use of network TCP stacks and handle multiple concurrent connections at a time. FreeRTOS version V10.4.4 was used due to its familirity and compatability with the NEORV32 MCU. FreeRTOS also had integration with their own filesystem (section \ref{sec:freertos_filesystem}) and TCP/IP stack (section \ref{sec:freertos_tcpip_stack}).
+In addition to simplifying the software, an RTOS was used to allow the use of network TCP stacks and handle multiple concurrent connections at a time. FreeRTOS version V10.4.4 was used due to its familiarity and compatibility with the NEORV32 MCU. FreeRTOS also had integration with their own filesystem (section \ref{sec:freertos_filesystem}) and TCP/IP stack (section \ref{sec:freertos_tcpip_stack}).
 
 \subsection{Filesystem}
 \label{sec:freertos_filesystem}
@@ -379,14 +384,14 @@ The library then uses the microSD card drivers (section \ref{sec:microsd_drivers
 
 Two main options for the network stack were available, LwIP and FreeRTOS-Plus-TCP. The main concern with LwIP was that it was not threadsafe and had memory issues. In addition to this, as FreeRTOS was chosen as the RTOS, their own TCP stack had tighter integration. The stack provides a Berkeley sockets API which is the same used in full-blown operating systems such as Linux. It also includes support for ARP, DHCP, DNS and ICMP protocols, which were used throughout this project. 
 
-Like with the filesystem library, the stack needed to be ported to the NEORV32 processor and importantly the custom Etherent hardware. In addition to the transmit, receive and initalisation methods, functions to return random numbers were needed. These are for the TCP sequence numbers and are required to truely random for security. As such, the hardware based true random number generator in the NEORV32 core was used. 
+Like with the filesystem library, the stack needed to be ported to the NEORV32 processor and importantly the custom Etherent hardware. In addition to the transmit, receive and initialisation methods, functions to return random numbers were needed. These are for the TCP sequence numbers and are required to truely random for security. As such, the hardware based true random number generator in the NEORV32 core was used. 
 
-The network stack was configured to use DHCP to automatically aquire an IP address from a DHCP server on a network so that when it's transported between networks it can dynamically get a new IP address and can be accessed without needing to reconfigure the device. The device can then be given a static IP through the DHCP server by creating a static mapping. This will then prevent the DHCP server from assigning the desired IP address to another device accidentally. 
+The network stack was configured to use DHCP to automatically acquire an IP address from a DHCP server on a network so that when it's transported between networks it can dynamically get a new IP address and can be accessed without needing to reconfigure the device. The device can then be given a static IP through the DHCP server by creating a static mapping. This will then prevent the DHCP server from assigning the desired IP address to another device accidentally. 
 
 \subsection{Web application}
-With the resource constraints of the RISC-V microcontroller in mind and other design requirements, Vue.js was chosen as the framework of choice for developing the web application in. Vue.js is a framework for developing componentised single page applications. Although technically single page, the javascript it compiles handles routing between web pages on the client side in javascript. This means that once the initial page has loaded, no additional server requests need to be made to change page. To make the website appear dynamic, an API can be used to fetch data and statistics from the device itself. These HTTP API requests are much smaller than the requests needed to load the webpage initally. This results in very low network traffic between the client and server, perfect for embedded systems. 
+With the resource constraints of the RISC-V microcontroller in mind and other design requirements, Vue.js was chosen as the framework of choice for developing the web application. Vue.js is a framework for developing componentised single page applications. Although technically single page, the Javascript it compiles handles routing between web pages on the client side in Javascript. This means that once the initial page has loaded, no additional server requests need to be made to change page. To make the website appear dynamic, an API can be used to fetch data and statistics from the device itself. These HTTP API requests are much smaller than the requests needed to load the webpage initially. This results in very low network traffic between the client and server, perfect for embedded systems. 
 
-For styling, Tailwindcss was used to help style the webpages to give the webapp a contempory feel. 
+For styling, TailwindCSS was used to help style the webpages to give the webapp a contemporary feel. 
 
 The webapp consisted of 3 main pages, the index or home page, about page and config page. The home page, figure \ref{fig:webapp_home} showed statistics such as total and blocked packet count, and statuses for a few tasks on the microcontroller. These tasks, through an API call, can be toggled on and off to save resources. An uptime reading is also present. These values are updatable by clicking the 'refresh' button.
 
@@ -397,19 +402,19 @@ The webapp consisted of 3 main pages, the index or home page, about page and con
     \label{fig:webapp_home}
 \end{figure}
 
-The configuration page, (figure \ref{fig:web_app_config} shown in appendix \ref{app:additional_webpages}) is where the user configures the firewall rules. The rules first need to be loaded which is requested through an API request. This API request reads the rules from the microsd card, sets the rules (for consistency) and then returns them in the response packet. When the user saves a set of rules, an API request is made which first applies the rules and then saves the rules to the microsd card so that the changes are persistant. 
+The configuration page, (figure \ref{fig:web_app_config} shown in appendix \ref{app:additional_webpages}) is where the user configures the firewall rules. The rules first need to be loaded which is requested through an API request. This API request reads the rules from the microsd card, sets the rules (for consistency) and then returns them in the response packet. When the user saves a set of rules, an API request is made which first applies the rules and then saves the rules to the microsd card so that the changes are persistent. 
 
 An about page (figure \ref{fig:web_app_about} shown in appendix \ref{app:additional_webpages}) was also created for demonstration purposes and contained an image.
 
-In addition, as this is all client side and compiles to html, css and javascript, no special webserver is required for things such as server side rendering.
+In addition, as this is all client side and compiles to HTML, CSS and Javascript, no special webserver is required for things such as server side rendering.
 
 
 \subsection{Webserver}
-A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. FreeRTOS give an example of how to setup a TCP and HTTP server that uses the FAT filesystem to get the content such as the html, css and javascript files. All the TCP webserver has to do is determine the route requested by the client, based on this it knows whether to read a file from the micro SD card and send it over multiple TCP packets or if it needs to respond with raw data like in the case of the API. Regardless of the type of request, a response is formed in the standard HTTP 1.1 format given in RFC2616 \cite{rfc2616}.
+A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. FreeRTOS give an example of how to setup a TCP and HTTP server that uses the FAT filesystem to get the content such as the HTML, CSS and Javascript files. All the TCP webserver has to do is determine the route requested by the client, based on this it knows whether to read a file from the micro SD card and send it over multiple TCP packets or if it needs to respond with raw data like in the case of the API. Regardless of the type of request, a response is formed in the standard HTTP 1.1 format given in RFC2616 \cite{rfc2616}.
 
 
 \subsubsection{API server}
-A subset of the webserver is the API server itself. To make the design simpler, an API was created so that the interface to set and get the firewall rules was independant of the web content. The way the software distinguishes between requests to load a webpage and the API server itself is by inspecting both the route/URL (pcUrlData) and the method type (GET, POST, PUT).
+A subset of the webserver is the API server itself. To make the design simpler, an API was created so that the interface to set and get the firewall rules was independent of the web content. The way the software distinguishes between requests to load a webpage and the API server itself is by inspecting both the route/URL (pcUrlData) and the method type (GET, POST, PUT).
 
 For setting the firewall rules, a POST request to the \textit{'/api/firewall'} endpoint can be made. The body of the request would contain the rule in the following format
 
@@ -417,10 +422,10 @@ For setting the firewall rules, a POST request to the \textit{'/api/firewall'} e
 payload=Index | Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
 \]
 
-Where $|$ is the concatination operator and all fields are in hexadecimal. As an example, to insert a rule at index 0, and with a wildcard operator for all items with a destination IP of 10.20.1.120, source IP of 10.0.0.159, source and destination port of 80 and a protocol of TCP, the following body would need to be sent to the API: \codebg{payload=003F0A1401780A00009F0050005006}. The API server then takes the necessary action and applies the rule to the packet filter by calling the methods in the packet filter driver (section \ref{sec:packet_filter_driver}).
+Where $|$ is the concatenation operator and all fields are in hexadecimal. As an example, to insert a rule at index 0, and with a wildcard operator for all items with a destination IP of 10.20.1.120, source IP of 10.0.0.159, source and destination port of 80 and a protocol of TCP, the following body would need to be sent to the API: \codebg{payload=003F0A1401780A00009F0050005006}. The API server then takes the necessary action and applies the rule to the packet filter by calling the methods in the packet filter driver (section \ref{sec:packet_filter_driver}).
 
 
 
 \subsection{Command line interface}
 
-To aid with debugging the FreeRTOS-Plus-CLI framework was used. This would easily allow certain actions to be executed on demand without the need to reflash or reset the device each time. Such examples include configuring the PHY, ethernet MAC, sending ICMP packets and filesystem related commands. In additon, the firewall rules can be set from the CLI in the event that the firewall blocks HTTP connections. 
+To aid with debugging the FreeRTOS-Plus-CLI framework was used. This would easily allow certain actions to be executed on demand without the need to reflash or reset the device each time. Such examples include configuring the PHY, Ethernet MAC, sending ICMP packets and filesystem related commands. In addition, the firewall rules can be set from the CLI in the event that the firewall blocks HTTP connections. 

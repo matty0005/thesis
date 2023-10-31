@@ -1,6 +1,13 @@
 \chapter[Conclusion]{Conclusion}
 \label{Chap:Conclusion}
 
+\section{Summary}
+
+This thesis explored the design and implementation of a hardware packet filter, Ethernet MAC with a RISC-V softcore processor. The Ethernet MAC and packet filter were created from scratch, while the NEORV32 RISC-V softcore was used to interface with the custom hardware. This was all implemented on a Xilinx Artix 7 FPGA board with the LAN8720A PHY. The design was evaluated and compared against similar preexisting solutions on the market. While the design in this thesis did not outperform the preexisting solutions in all cases, it was comparable and did provide new and unique features not seen before in the embedded systems space. In addition to the hardware, a webserver and web application was created to allow for easy configuration of the packet filter. 
+
+The design in this thesis shows that hardware packet filters in embedded systems are feasible and consume minimal resources while providing great performance. The design was able to achieve a latency of $4\mu s$ while only consuming 571 slice LUTs and 1145 slice registers. The packet filter design was also able to achieve a power consumption of just 2mW.
+
+
 
 \section{Limitations}
 While this thesis explored the design and implementation of a hardware packet filter, Ethernet MAC with a RISC-V softcore processor, there are some limitations to the design and the research conducted. These can be summarised in the following points:
@@ -82,8 +89,3 @@ In addition to these recommendations for future designs, the work in this thesis
 
 
 
-\section{Summary}
-
-This thesis explored the design and implementation of a hardware packet filter, Ethernet MAC with a RISC-V softcore processor. The Ethernet MAC and packet filter were created from scratch, while the NEORV32 RISC-V softcore was used to interface with the custom hardware. This was all implemented on a Xilinx Artix 7 FPGA board with the LAN8720A PHY. The design was evaluated and compared against similar preexisting solutions on the market. While the design in this thesis did not outperform the preexisting solutions in all cases, it was comparable and did provide new and unique features not seen before in the embedded systems space. In addition to the hardware, a webserver and web application was created to allow for easy configuration of the packet filter. 
-
-The design in this thesis shows that hardware packet filters in embedded systems are feasible and consume minimal resources while providing great performance. The design was able to achieve a latency of $4\mu s$ while only consuming 571 slice LUTs and 1145 slice registers. The packet filter design was also able to achieve a power consumption of just 2mW.
