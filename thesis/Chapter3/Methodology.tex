@@ -356,7 +356,7 @@ In addition to these, a simple function to determine if a SD card is present in 
 
 \subsection{Packet classifier drivers}
 \label{sec:packet_filter_driver}
-An initialisation function was created to enable and configure the SPI interface on the microprocessor for mode 0, and with no clock diviser and a prescalar of 1. The SPI hardware for the classifier can handle speeds in excess of 80Mhz (seen in section \ref{sec:timing_constraints}), hence there was no need to slow down the clock. Moreover, calling this initialise function is only required if the microSD card intialise function has not been called. 
+An initialisation function was created to enable and configure the SPI interface on the microprocessor for mode 0, and with no clock diviser and a prescalar of 1. The SPI hardware for the classifier can handle speeds in excess of 80Mhz (given by the positive slack in section \ref{sec:timing_summary}), hence there was no need to slow down the clock. Moreover, calling this initialise function is only required if the microSD card intialise function has not been called. 
 
 A single function was created that takes in all the attributes needed in the packet filter and that sends these out in the correct order and format to the hardware. 
 
