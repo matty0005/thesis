@@ -69,18 +69,16 @@ The resource breakdown referred to in this section can be found in figure \ref{f
 The design as a whole uses a total of 64.5\% of the available slice LUTs, 12.9\% of the available flip flops and 96.3\% of the available BRAM.
 
 
-
+\newpage
 
 \subsection{NEORV32 processor}
 
-Significant LUT usage was attributed to the 32-bit wide wishbone interface. Considerable LUT consumption relates to frame buffers used in Ethernet hardware, elucidated further in subsection \ref{sec:eth_hardware_util}.
+Significant LUT usage was attributed to the 32-bit wide wishbone interface and relates to the frame buffers used in Ethernet hardware, discussed further in subsection \ref{sec:eth_hardware_util}.
 
 
 The NEORV32 SoC consumed the majority (69.5\%, or 28455), of the slice LUTs in the design. While many interfaces were enabled such as SPI, UART, GPIO, external interupts (XIRQ) and the true random number generator, a considerable amount of the LUTs were consumed by the 32bit wide wishbone interface. More specifically, 25992 slice LUTs, or 91.3\% of the NEORV32 usage. 
 
-The large LUT utilisation relates to the frame buffers used in the Ethernet hardware, elucidated further in section \ref{sec:eth_hardware_util}. 
-
-DSP48 blocks were also used by the SoC to handle the multiply operations to free up LUTs. 
+The large LUT utilisation relates to the frame buffers used in the Ethernet hardware, discussed further in section \ref{sec:eth_hardware_util}. DSP48 blocks were also used by the SoC to handle the multiply operations to free up LUTs. 
 
 The instruction memory (IMEM) and data memory (DMEM) sizes were configured to optimise the remaining BRAM blocks for increasing flexibility in firmware. Specifically, IMEM was allocated 256KB while the DMEM (acting as RAM) amounting to 168KB. 
 
@@ -92,24 +90,27 @@ The instruction memory (IMEM) and data memory (DMEM) sizes were configured to op
 \label{sec:eth_hardware_util}
 
 
-Comparatively, the Ethernet hardware accounted for 11738 slice LUTs and 12505 slice registers, most of which is consumed by the transmit logic (78\% LUT and 99\% registers). The considerable LUT utilisation in the transmit logic and NEORV32 Wishbone interface is due to the manner in which the frame buffer is written to. The complex operations such as address validation and array modification for writing to the frame buffer can be seen in listing \ref{lst:code_snippet}. Notably, the address validation specifically implements a 32bit wide comparator and the need to write/modify to the frame buffer array causes large LUT utilisation.
+Comparatively, the Ethernet hardware accounted for 11738 slice LUTs and 12505 slice registers, most of which is consumed by the transmit logic (78\% LUT and 99\% registers). The considerable LUT utilisation in the transmit logic and NEORV32 Wishbone interface is due to the manner in which the frame buffer is written to. The complex operations such as address validation and array modification for writing to the frame buffer can be seen in listing \ref{lst:code_snippet}. Notably, the address validation specifically implements a 32bit wide comparator and the need to write/modify to the frame buffer array causes large LUT utilisation. This design choice also influenced the critical path delay as detailed further in section \ref{sec:timing_summary}. Optimisations to this area would be imperative to drastically reduce the resource consumption and improve the critical path delay.
 
-\begin{lstlisting}[style=vhdl, caption={Code for writing to the frame buffer}, label=lst:code_snippet]
-if wb_i_addr >= x"13371004" and wb_i_addr <= x"13376410" then         
-    -- Subtract 4100 from the address to get the virtual address
-    virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4100));
-    FRAME_BUFFER(8 + virtAddr) := wb_i_dat(31 downto 24);
-    FRAME_BUFFER(9 + virtAddr) := wb_i_dat(23 downto 16);
-    FRAME_BUFFER(10 + virtAddr) := wb_i_dat(15 downto 8);
-    FRAME_BUFFER(11 + virtAddr) := wb_i_dat(7 downto 0);
-end if;
-\end{lstlisting}
 
-This design choice also influenced the critical path delay as detailed further in section \ref{sec:timing_summary}. Optimisations to this area would be imperative to drastically reduce the resource consumption and improve the critical path delay.
 
 By contrast, the receive logic consumed far less resources of 12\% of the Ethernet MAC's LUTs and only 1\% of the registers. This is attributed to the simpler design which stores the incoming packets with the correct endianness in the frame buffer before subsequently triggering an interrupt upon the packet's arrival. 
 
-The rmii\_init logic acts as the glue logic between the PHY and the MAC. It facilitates the clock and bus domain crossings between the 8bit wide 80Mhz MAC and the 2bit wide 50Mhz RMII PHY. 
+\newpage
+
+\begin{lstlisting}[style=vhdl, caption={Code for writing to the frame buffer}, label=lst:code_snippet]
+    if wb_i_addr >= x"13371004" and wb_i_addr <= x"13376410" then         
+        -- Subtract 4100 from the address to get the virtual address
+        virtAddr := to_integer((unsigned(wb_i_addr(15 downto 0)) - 4100));
+        FRAME_BUFFER(8 + virtAddr) := wb_i_dat(31 downto 24);
+        FRAME_BUFFER(9 + virtAddr) := wb_i_dat(23 downto 16);
+        FRAME_BUFFER(10 + virtAddr) := wb_i_dat(15 downto 8);
+        FRAME_BUFFER(11 + virtAddr) := wb_i_dat(7 downto 0);
+    end if;
+    \end{lstlisting}
+
+
+The rmii\_init logic acts as the glue logic between the PHY and the MAC. It facilitates the clock and bus domain crossings between the 8-bit wide 80Mhz MAC and the 2-bit wide 50Mhz RMII PHY. 
 
 
 
@@ -173,7 +174,7 @@ Blocking unwanted packets is imperative to a firewall's operation with any packe
 
 \subsection{Test setup}
 
-Four hosts distributed across two networks were used to test the device as depicted in the network diagram in figure \ref{fig:network_layout_test}. The network consisted of three Raspberry Pi 4s and an x86 based Ubuntu machine. The specifics characteristics of these devices are irrelevant to this thesis, given that they all adhere to the TCP/IP standards. More specifically they were chosen due to their capability to run Python scripts and are accessibility over Ethernet. A common script\footnote[1]{The Python \textit{test} script can be found at https://github.com/matty0005/thesis-tools} was used on all devices to test each of the services available on different ports and protocols. 
+Four hosts distributed across two networks were used to test the device as depicted in the network diagram in figure \ref{fig:network_layout_test}. The network consisted of three Raspberry Pi 4s and an x86 based Ubuntu machine. The specifics characteristics of these devices are irrelevant to this thesis, given that they all adhere to the TCP/IP standards. Although importantly, they were chosen due to their capability to run Python scripts and are accessable over Ethernet. A common script\footnote[1]{The Python \textit{test} script can be found at https://github.com/matty0005/thesis-tools} was used on all devices to test each of the services available on different ports and protocols. 
 
 
 
@@ -286,11 +287,9 @@ The following sections detail the relative performance of the respective devices
 \subsection{Network latency tests}
 
 
-A simply UDP ping program was devised on each device to empirically assess the round-trip-time (RTT). This not only helps understand the latency of the system as a while, but by using two different packet sizes, the software overhead can be assessed. The program was configured to receive a UDP packet on port 9999 and reply with a corresponding packet. 
+A simple UDP ping program was devised on each device to empirically assess the round-trip-time (RTT). This not only helps understand the latency of the system as a whole, but by using two different packet sizes, the software overhead can be assessed. The program was configured to receive a UDP packet on port 9999 and reply with a corresponding packet. 
 
-To alleviate nuances in the network and once off delays, 1,000 UDP packets were averaged and the results are presented in \ref{fig:avg_udp_rtt}. A table highlighting the numerical values of the results can be found in appendix \ref{app:udp_ping_measurements}.
-
-Two specific UDP payloads sizes, 8 bytes and 256 bytes, were selected to evaluate the software overhead. 
+To alleviate nuances in the network and once off delays, 1,000 UDP packets were averaged with the results are presented in \ref{fig:avg_udp_rtt}. A table highlighting the numerical values of the results can be found in appendix \ref{app:udp_ping_measurements}. Two specific UDP payloads sizes, 8 bytes and 256 bytes, were selected to evaluate the software overhead. 
 
 These values were chosen due to the additional time required to process the packet in hardware is in the order of nanoseconds. More specifically, the delay can be calculated by knowing the bitrate and difference in packet size. In this test, at a speed of 100Mbit/s, sending 248 more bytes takes an additional $\frac{248 \times 8}{100 \times 10^6}=19.84\mu s$. In contrast, software processing time scales up significantly with the packet size, due to additional data manipulation and processing
 
@@ -384,13 +383,12 @@ As discussed earlier in this thesis, a benefit of hardware packet filters is the
 
 \subsection{Firewall latency}
 
-To accurately gauge the latency introduced by software firewalls, a GPIO pin was configured to toggle states, marking the entry and exit of a packet during the filtering process. This approach makes the assumption that the latency involved in setting the GPIO pin states is reciprocal and the turn on and turn of time is the same, thereby minimising the potential influence on the overall delay measurement.
+To accurately gauge the latency introduced by software firewalls, a GPIO pin was configured to toggle states, marking the entry and exit of a packet during the filtering process. This approach makes the assumption that the latency involved in setting the GPIO pin states is reciprocal and the turn on and turn off time is the same, thereby minimising the potential influence on the overall delay measurement.
 
 For consistency and to ensure a level playing field in the comparisons, the software based implementation of the firewall on the Nucleo-F767ZI board used eight rules. This aligns with the FPGA design's limitation and ensures the analysis remains fair.
 
 Utilising an oscilloscope enabled precise time measurements of the firewall latency as found in figure \ref{fig:sw_pf_timings}. These measurements revealed the timings are dependent on the quantity and the positioning of the applied rules. For example, the best case scenario is when the first rule is matched, resulting in a lower latency, whereas the worst case is when the last rule is matched, resulting in a higher latency.
 
-A best case time was measured to be $3.14\mu s$ (figure \ref{fig:sw_pf_best_case}) while an average case was $10.76\mu s$ (figure \ref{fig:sw_pf_bad_case}).
 
 
 \begin{figure}[h]
@@ -411,6 +409,7 @@ A best case time was measured to be $3.14\mu s$ (figure \ref{fig:sw_pf_best_case
 \end{figure}
 
 
+A best case time was measured to be $3.14\mu s$ (figure \ref{fig:sw_pf_best_case}) while an average case was $10.76\mu s$ (figure \ref{fig:sw_pf_bad_case}).
 The lower latency observed in the ideal software scenario (figure \ref{fig:sw_pf_best_case}) is attributed to the packet matching the first rule, thereby reducing the necessary computations. This made the software filter quicker than the hardware filter in this case. However, in real-world applications, it is impractical to assume that the first rule will always be matched. Instead, the average-case latency is more indicative of actual performance.
 
 It is important to recognise that these delays influence throughput as the processor is limited to only one task at a time and cannot multitask. 
@@ -600,7 +599,7 @@ The design's total power consumption was calculated to be 487mW, as shown in fig
 \end{figure}
 
 
-Vivado further breaks down the design's power consumption into the different hierarchical components, as shown in table \ref{tab:power_consumption}. Notably, the RISC-V processor (NEORV32) constitutes to the majority of the power consumption in the design. In contrast, the Ethernet hardware consumes under 100mW while the packet classifier consumes just 2mW. This implies that incorporating a packet classifier into a design comes at a minimal power cost, making it ideal to be included in low power systems. 
+Vivado further breaks down the design's power consumption into the different hierarchical components, as shown in table \ref{tab:power_consumption_per_component}. Notably, the RISC-V processor (NEORV32) constitutes to the majority of the power consumption in the design. In contrast, the Ethernet hardware consumes under 100mW while the packet classifier consumes just 2mW. This implies that incorporating a packet classifier into a design comes at a minimal power cost, making it ideal to be included in low power systems. 
 
 
 \begin{table}[h]
@@ -616,45 +615,43 @@ Vivado further breaks down the design's power consumption into the different hie
         packet classifier & 2 \\
         \bottomrule
     \end{tabular}
-    \label{tab:power_consumption}
+    \label{tab:power_consumption_per_component}
 \end{table}
 
 
 
 \subsection{Measured power analysis}
 
-For the empirical analysis, the current was measured since the voltage remained constant across devices (5V from USB power). The Nordic Semiconductor PPK2, used for current measurements, can record up to 100kSa/s. However, a 10kSa/s sampling rate was chosen to reduce noise in the results. It's important to treat these results as indication of power consumption as they do not account for regulator inefficiencies and do not give a true power rating of the core parts of the design. 
+For the empirical analysis, the current was measured since the voltage remained constant across devices (5V from USB power). The Nordic Semiconductor PPK2, used for current measurements, can record up to 100kSa/s. However, a 10kSa/s sampling rate was chosen to reduce noise in the results. It's important to treat these results as an indication of power consumption as they do not account for regulator inefficiencies and do not give a true power rating of the core parts of the design. 
 
 As a baseline, the Nexys A7 board with no design loaded drew 200mA (1W at 5V), which is attributable to all the board's additional components. Upon loading the hardware design (not including the firmware), the current consumption increased to 284.4mA. After flashing the firmware, the idle current reached an average of 301.84mA, or a power draw of 1.51W was observed. Deducting the quiescent current of the board's miscellaneous components (assumed to be the baseline 200mA measurement) yields a power consumption of 0.51W,roughly aligning with the synthesis tool's calculations.
 
 A series of tests were conducted including sending ICMP pings and web requests. When the device was pinged at 50ms intervals, the average current of 300.72mA was measured. Interestingly, the current consumption patterns were cyclic in nature, as illustrated in figure \ref{fig:ppk_icmp_ping}. Subsequent UDP ping tests resulted in a similar waveform pattern, with an average current draw of 301.13mA.
 
-This phenomenon was explored further by blocking the network packets using the packet filter. The results revealed that the filter had a negligible impact on the current consumption, with an average current of 300.92mA. Notably, the cycle's periodicity, approximately 83ms which not only exceeds to the 50ms time between pings, but is also consistent with the previous tests, indicating that it's not a consequence of the firmware. Secondary observations were made by capturing the PHY status LED at 240 frames per second which revealed a 20-frame period (approximately 84ms), consistent with the current measurements indicating that the difference in current is due to the LED.
+This phenomenon was explored further by blocking the network packets using the packet filter. The results revealed that the filter had a negligible impact on the current consumption, with an average current of 300.92mA. Notably, the cycle's periodicity, approximately 83ms, not only exceeds to the 50ms time between pings, but also is consistent with the previous tests. This indicates that it's not a consequence of the firmware. Secondary observations with a high speed camera were made by capturing the PHY status LED at 240 frames-per-second which revealed a 20-frame period (approximately 84ms), consistent with the current measurements indicating that the difference in current is due to the LED.
 
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.9\textwidth]{Images/PPK_ping_zoom.png}
+    \includegraphics[width=0.88\textwidth]{Images/PPK_ping_zoom.png}
     \caption[Zoomed in current consumption for ICMP pings]{Zoomed in current consumption for ICMP pings.}
     \label{fig:ppk_icmp_ping}
 \end{figure}
 
-The subsequent test was centred around accessing the webserver, and the results are detailed in figure \ref{fig:ppk_http_annotated}, where five distinctive regions are depicted, each corresponding to a specific action.
+The next test centred around accessing the webserver, and the results are detailed in figure \ref{fig:ppk_http_annotated}, where five distinctive regions are depicted, each corresponding to a specific action.
 
 
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.9\textwidth]{Images/PPK_http_annotated.png}
+    \includegraphics[width=0.88\textwidth]{Images/PPK_http_annotated.png}
     \caption[Current consumption of Nexys A7 with HTTP requests]{Current consumption of Nexys A7 with HTTP requests.}
     \label{fig:ppk_http_annotated}
 \end{figure}
 
 
-The first action (on the far left) is the initial HTTP GET requests. Notably, this section is split in two, as the client fetches the HTML, CSS, and favicon first, followed by a request for a considerably larger Javascript file. The readings for each of these points are given as: average current, maximum current, and time, going from top to bottom.
-
-The second section was triggered by navigating to the 'about page'. The third part of the test involves navigating to the config page, while the fourth segment is initiated by pressing the 'load rules' button on the config page. The final test case is a result of refreshing the statistics on the main page.
+The first action (on the far left) is the initial HTTP GET requests. Notably, this section is split in two, as the client fetches the HTML, CSS, and favicon first, followed by a request for a considerably larger Javascript file. The readings for each of these points are given as: average current, maximum current, and time, going from top to bottom. The second section was triggered by navigating to the 'about page'. The third test involves navigating to the config page, while the fourth segment is initiated by pressing the 'load rules' button on the config page. The final test case is a result of refreshing the statistics on the main page.
 
 A crucial observation to highlight is the role of client side routing and rendering, which makes subsequent full-page requests unnecessary and instead, only requires smaller API requests for data updates. The savings are two-fold due to the reduced network traffic and not requiring and SD card read or write operations, which greatly impact the current consumption. The fourth request, albeit involving an SD card read, is limited to accessing a single page due to the small file it is accessing. Conversely, the fifth request does not include SD card read/write operations, instead only a single SPI transaction, which consequently consumes significantly less power.
 
-An essential learning from this is the efficacy of static page applications with client-side routing, like those created with Vue.js, in embedded systems for minimising resource utilisation, network traffic and power consumption. Another result from these tests is the negligible impact of the packet filter on the power consumption, which is Vivado predicted, making it a perfect addition to future microprocessors with built-in Ethernet MACs.
+An essential learning from this is the efficacy of static page applications with client-side routing, like those created with Vue.js, in embedded systems for minimising resource utilisation, network traffic and power consumption. Another result from these tests is the negligible power consumption impact that the packet filter has, making it a perfect addition to future microprocessors with built-in Ethernet.

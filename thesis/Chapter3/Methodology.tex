@@ -17,7 +17,7 @@ Digilent, parented by National Instruments, make a wide range of Xilinx based FP
 
 Xilinx has multiple FPGAs in their 7-series lineup with different target audiences. The Artix-7 family is optimised for low power designs with high logic throughput. The XC7A100T has 101,440 logic cells, 4,860Kbits of Block RAM (BRAM) and 240 DSP blocks \cite{Xilinx7SeriesDatasheet}. There is a variant of the Nexys A7 FPGA board that consists of a XC7A50T FPGA (fewer resources), but ultimately the XC7A100T variant was used due to its larger amount of resources.  
 
-Importantly, there are four ways this FPGA can be configured (essentially \textit{'programmed'}), at each power on cycle using JTAG, nonvolatile SPI flash, microSD card or using a USB stick through the HID interface. These modes are switchable using jumpers, JP1 and JP2, on the board. The JTAG interface is ideal for testing and as such it was used throughout development process, while storing these configurations on a microSD card was used once the design was solidified. 
+Importantly, there are four ways this FPGA can be configured (essentially \textit{'programmed'}) at each power on cycle, these are: using JTAG, nonvolatile SPI flash, microSD card and using a USB stick through the HID interface. These modes are switchable using jumpers, JP1 and JP2, on the board. The JTAG interface is ideal for testing and as such it was used throughout development process, while storing these configurations on a microSD card was used once the design was solidified. 
 
 \begin{figure}[h!]
     \centering
@@ -37,7 +37,7 @@ Importantly, there are four ways this FPGA can be configured (essentially \texti
 
 After the FPGA has been configured using the microSD card, the onboard microcontroller on the Nexys A7 board power cycles the microSD card and relinquishes control of the bus. On power up of the RISC-V softcore processor, it has full control of the card. 
 
-The selected MicroSD card for use in this project is the Patriot LX Series 32GB card, seen in figure \ref{fig:microsd_card}. SD cards, like the patriot card have 2 modes of operation: native SDIO mode and SPI mode. While the native SDIO mode allows for higher speeds, it adds complexity to the design. As the files stored on the SD card are minimal ($< 100KB$), to keep things simple, the microSD card was connected in SPI mode.
+The selected MicroSD card for use in this project is the Patriot LX Series 32GB card, seen in figure \ref{fig:microsd_card}. SD cards, like the patriot card have two modes of operation: native SDIO mode and SPI mode. While the native SDIO mode allows for higher speeds, it adds complexity to the design. As the files stored on the SD card are minimal ($< 100KB$), to keep things simple, the microSD card was connected in SPI mode.
 
 \begin{figure}[h]
     \centering
@@ -63,9 +63,9 @@ A benefit to using an FPGA is that full control is given to the overall system d
 
 The NEORV32 processor is RISC-V compatible and designed by GitHub user \textit{stnolting} and is highly configurable. In this design, seen in figure \ref{fig:soc_architecture}, the Wishbone, SPI, UART and external interrupts interfaces were enabled and configured. In addition to these, the M extension (Multiplier) was configured to use the DSP blocks to reduce the number of LUTs needed to handle multiplication in the core. 
 
-The Wishbone B4 classic bus is an open source interface that allows for multiple bits of hardware to connect and communicate together. In this project, the bus is 32bits wide and clocked at 80MHz, giving a bandwidth of $32 \times 80 \times 10^6 = 2.56\times 10^9bit/s=2.56Gbit/s$. Due to its relatively high bandwidth, it was used to connect the MAC with the NEORV32 as packets of 1500 bytes would need to be transferred quickly to not bottleneck the 100Mbit Ethernet interface. In addition to this, the MAC had an interrupt line to the NEORV32 processor to notify it when a packet has been received and ready for processing in the higher layers. This connects into the XIRQ lines which creates a fast interrupt request by firing a mcause trap event (RISC-V terminology).
+The Wishbone B4 classic bus is an open source interface that allows for multiple bits of hardware to connect and communicate together. In this project, the bus is 32bits wide and clocked at 80MHz, giving a bandwidth of $32 \times 80 \times 10^6 = 2.56\times 10^9bit/s=2.56Gbit/s$. Due to its relatively high bandwidth, it was used to connect the MAC with the NEORV32 as packets of 1500 bytes would need to be transferred quickly to not bottleneck the 100Mbit/s Ethernet interface. In addition to this, the MAC had an interrupt line to the NEORV32 processor to notify it when a packet has been received and ready for processing in the higher layers. This connects into the XIRQ lines which creates a fast interrupt request by firing an mcause trap event (RISC-V terminology).
 
-Serial peripheral Interface (SPI) was used to connect to both the MicroSD card and Packet classifier. These are comparatively low speed and low priority peripherals and so do not require a high speed interface. UART was connected to the onboard serial to USB converter chip for CLI commands and debugging. 
+Serial peripheral Interface (SPI) was used to connect to both the MicroSD card and packet classifier. These are comparatively low speed and low priority peripherals and so do not require a high speed interface. UART was connected to the onboard serial to USB converter chip for CLI commands and debugging. 
 
 
 
@@ -78,13 +78,13 @@ Serial peripheral Interface (SPI) was used to connect to both the MicroSD card a
 
 \newpage
 
-\noindent Since the design is only concerned about incoming filtering, the packet filter was only placed between the RMII PHY and the MAC. By filtering at the RMII interface level, the Ethernet MAC is indifferent to the filter and ultimately doesn't care about it. This allows for a simpler modular design compared to integrating the filter in the MAC hardware. This filter consists of classifier (discussed in section \ref{sec:packet_classifier}) which would determine whether to forward or block an incoming packet.
+\noindent Since the design is only concerned about incoming filtering, the packet filter was only placed between the RMII PHY and the MAC. By filtering at the RMII interface level, the Ethernet MAC is indifferent to the filter and ultimately doesn't care about it. This allows for a simpler modular design compared to integrating the filter in the MAC hardware. This filter consists of classifier (discussed in section \ref{sec:packet_classifier}) which determines whether to forward or block an incoming packet.
 
-To do the filtering itself, a shift register can be used to essentially delay the inputs from the RMII PHY until the packet classifier has determined whether to forward or drop the packet. A simple MUX can then be used to either allow the packet to enter the wishbone MAC or to not. 
+For the filtering itself, a shift register is used to essentially delay the inputs from the RMII PHY until the packet classifier has determined whether to forward or drop the packet. A simple MUX can then be used to either allow the packet to enter the wishbone MAC or not. 
 
-As the hardware in the MAC only processes the input if crs\_dv is high, we only need to gate the crs\_dv and can always have the rxd lines always attached. However, these should also go through a shift register.
+As the hardware in the MAC only processes the input if crs\_dv is high, only the crs\_dv needs to be controlled, while the rxd lines can remain attached. However, these receive lines also are required to go through a shift register for alignment purposes.
 
-By doing this, it means that we can operate the filter at wirespeed with the only downside is the extra latency that the shift registers bring. The delay that these registers add to the latency can be found to be $T_{latency} = N\times T_{clk}$ where $N$ is the size of the registers. In the design a size of 224 ticks was used. This is because at a minimum, the packet classifier needed to input a maximum of $22 + 24 + 4 = 50$ bytes (22 for MAC headers including preamble, maximum 24 bytes for IP header and 4 bytes for the TCP/UDP headers (only need to check the source and destination port)) need to be processed. As there are four clock cycles per byte the needed register size is $50 \times 4=200$ for the data to propagate to the end of the registers after the packet classifier has determined whether to drop or allow the packet. Importantly this does not affect the speed/bandwidth of the connection. 
+By doing this, it means that the filter can operate at wirespeed with the only downside being the extra latency that the shift registers add. The delay that these registers add to the latency can be found to be $T_{latency} = N\times T_{clk}$ where $N$ is the size of the registers. In the design a size of 200 ticks was used. This is because at a minimum, the packet classifier needed to input a maximum of $22 + 24 + 4 = 50$ bytes (22 for MAC headers including preamble, maximum 24 bytes for IP header and 4 bytes for the TCP/UDP headers (only need to check the source and destination port)) need to be processed. As there are four clock cycles per byte the needed register size is $50 \times 4=200$ for the data to propagate to the end of the registers after the packet classifier has determined whether to drop or allow the packet. Importantly this does not affect the throughput/bandwidth of the connection. 
 
 
 It is assumed that any traffic leaving from the device is safe and trusted. In a larger network where there are several devices behind the firewall, it may be desirable to also have a packet filter on the output. 
@@ -101,22 +101,36 @@ It is assumed that any traffic leaving from the device is safe and trusted. In a
 
 \subsection{Ethernet Media Access Controller}
 \label{sec:ethernet_mac}
-The advantage of using an FPGA is that custom hardware can be designed for specific tasks. In this design the MAC layer was done in hardware to free up the microprocessor by handling the lower level logic. 
+The advantage of using an FPGA is that custom hardware can be designed for specific tasks. In this design, the MAC layer was processed in hardware to free up the microprocessor by handling the lower level logic. 
 
-This MAC was implemented as a memory-mapped peripheral which used the MCU's Wishbone B4 classic interface. This then made it easily accessible over the memory address space of the MCU.  
-
-
-
-The hardware can be broken down into two main sections: the transmit logic and receive logic. 
-
-In the receive logic, there are two main functions, one that stores the incoming frame into BRAM and then another to interface the BRAM with the Wishbone interface. On the input side the data is shifted into a 8bit wide shift register - shown in figure \ref{fig:soc_architecture}. While crs\_dv is asserted, after every four clock cycles (modulo four since 2 bits is received at a time) the contents of the shift register is stored into BRAM. After each byte has been added to BRAM, a counter is incremented to store the next byte in the next index. The end of the packet is signified when crs\_dv is deasserted, at which point the payload length is stored for use when the processor receives the frame over the wishbone interface. After the first two bits equals "01" (first 2 bits of the preamble) have been received, a trigger output is asserted so that it can fire a CPU interrupt.
-
-On the wishbone side of the receive logic, only read requests are accepted and processed. A register access returns the payload size of the received frame to help the driver (section \ref{sec:ethernet_mac_driver}) identify how much data it needs to extract from the hardware buffer. When accessing the BRAM memory locations over the Wishbone interface two things are considered. The first is that an offset of eight is needed since the BRAM stores the preamble and SFD which is not wanted by the processor. The second is that the payload is stored in 8bit values whereas the wishbone interface can send 32bits at once. Therefore some conversion between the memory addresses and the memory accesses to BRAM take place. 
+This MAC was implemented as a memory-mapped peripheral which used the MCU's Wishbone B4 classic interface. This then made it easily accessible over the memory address space of the MCU, with the specific mapping illustrated in figure \ref{fig:memory_layout}. The documentation for the NEORV32 states that all memory accesses that do not target specific processor-internal address regions (see appendix \ref{app:mem_address}) get forwarded to the external interfaces, such as the Wishbone interface. As such, there is a large block of unused memory between the IMEM and DMEM regions. The memory mapping, figure \ref{fig:memory_layout}, used in this design ranges from 0x13370000 to 0x133805F8 and is required for developing the drivers (section \ref{sec:ethernet_mac_driver}) to access the correct registers.
 
 
-\newpage
 
-\begin{lstlisting}[language=VHDL, caption=Wishbone access logic for Ethernet receive]
+\begin{figure}[h!]
+    \begin{center}
+    
+\begin{bytefield}{24}
+% \memsection{ffff ffff}{0040 0000}{5}{Processor memory}\\
+\memsection{1338 05F8}{1338 0008}{5}{RX PAYLOAD}\\
+\memsection{1338 0007}{1338 0004}{2}{RX SIZE}\\
+\memsectioncolour{1338 0003}{1337 6411}{3}{Unused}\\
+\memsection{1337 6410}{1337 1004}{4}{TX PAYLOAD}\\
+\memsection{1337 1003}{1337 1000}{2}{TX SIZE}\\
+\memsection{1337 0003}{1337 0000}{2}{TX CONFIG}\\
+% \memsection{1336 ffff}{0000 0000}{5}{Processor memory}
+\end{bytefield}
+\caption{Memory Address Layout}
+\label{fig:memory_layout}
+\end{center}
+\end{figure}
+
+The remainder of the hardware can be broken down into two main sections: the transmit logic and receive logic. In the receive logic, there are two main functions, one that stores the incoming frame into BRAM and then another to interface the BRAM with the Wishbone interface. On the input side the data is shifted into a 8-bit wide shift register - shown in figure \ref{fig:soc_architecture}. While crs\_dv is asserted, after every four clock cycles (modulo four since two bits is received at a time) the contents of the shift register is stored into BRAM. The start of the packet is signified when the first two bits equals "01" (first two bits of the preamble) have been received, a trigger output is asserted so that it can fire a CPU interrupt. After each byte has been added to BRAM, a counter is incremented to store the next byte in the next index. The end of the packet is signified when crs\_dv is deasserted, at which point the payload length is stored for use when the processor receives the frame over the wishbone interface. 
+
+On the wishbone side of the receive logic, only read requests are accepted and processed. A register access returns the payload size of the received frame to help the driver (section \ref{sec:ethernet_mac_driver}) identify how much data it needs to extract from the hardware buffer. When accessing the BRAM memory locations over the Wishbone interface two things are considered. The first is that an offset of eight is needed since the BRAM stores the preamble and SFD which is not wanted by the processor. The second is that the payload is stored in 8-bit values whereas the wishbone interface can send 32-bits at once. Therefore some conversion between the memory addresses and the memory accesses to BRAM take place which can be seen in listing \ref{lst:wishbone_logic}. 
+
+
+\begin{lstlisting}[language=VHDL, caption=Wishbone access logic for Ethernet receive, label=lst:wishbone_logic]
 if wb_i_stb = '1' and wb_i_addr(31 downto 16) = x"1338" then 
     wb_o_ack <= '1';
     if wb_i_we = '0' then -- Ensure write enable is reset to read.
@@ -132,10 +146,10 @@ else
 end if;
 \end{lstlisting}
 
-\noindent By splitting the address over 2 if conditions, the amount of resources can be greatly reduced as the nested if conditions only need to compare 16bits instead of 32bits each time. Another important design decision is that this version of the Ethernet MAC does not validate the FCS after receiving a packet, instead it assumes it's a valid packet. 
+\noindent By splitting the address over two if conditions, the amount of resources can be greatly reduced as the nested if conditions only need to compare 16-bits instead of 32-bits each time. Another important design decision is that this version of the Ethernet MAC does not validate the FCS after receiving a packet, instead it assumes it's a valid packet. 
 
 
-The transmit logic is broken down into three parts: Wishbone handler, main FSM and RMII conversion. The process of creating and sending an Ethernet frame starts with the processor sending data over the Wishbone interface. Like the receive logic, there are two types of commands that can be sent over the Wishbone interface, one that controls the logic, the other that stores payload data into BRAM. There are three configuration commands, one to initialise the hardware and FSM, another to start the transmission of data (used after all data has been transferred into BRAM) and one to set the payload length of the packet. The other register addresses allow the processor to store the payload in the frame buffer (BRAM). See figure \ref{fig:bram_frame_format} for the format of data in BRAM. The preamble, SFD and FCS are left out as these are appended in hardware. To be accurate, this is a quasi-MAC as the MAC addresses and type fields in the header (expanded view of payload in figure \ref{fig:bram_frame_format}) are populated in software. 
+The transmit logic is broken down into three parts: Wishbone handler, main FSM and RMII conversion. The process of creating and sending an Ethernet frame starts with the processor sending data over the Wishbone interface. Like the receive logic, there are two types of commands that can be sent over the Wishbone interface, one that controls the logic, the other that stores payload data into BRAM. There are three configuration commands, one to initialise the hardware and FSM, another to start the transmission of data (used after all data has been transferred into BRAM) and one to set the payload length of the packet. These registers can be seen in figure \ref{fig:memory_layout}. The other register addresses allow the processor to store the payload in the frame buffer (BRAM). See figure \ref{fig:bram_frame_format} for the format of data in BRAM, where the first row, consisting of the preamble, SFD and FCS is controlled in hardware, while the bottom row is created in software. 
 
 \begin{figure}[h!]
     \centering
@@ -172,7 +186,7 @@ The transmit logic is broken down into three parts: Wishbone handler, main FSM a
 
 \noindent Once a payload has been stored in the frame buffer, the main FSM takes control and at this point the CPU is free to do anything else. Since the FCS is calculated in hardware, the FSM resets the FCS hardware and begins to send the bytes to both the FCS hardware (to calculate the CRC32) and to a FIFO buffer. Once the payload has been transmitted to the FIFO, the resulting CRC32 FCS is sent out to the FIFO without missing a clock cycle. 
 
-A FIFO buffer is used to cross the domains since the RMII interface is 50MHz at 2bits wide, whereas the bytes are stored as 8bit vectors in the frame buffer. This also allows the FSM to have a higher clock speed as well. The current implementation of the FSM uses a 80MHz clock signal, consequently the equivalent bit rate is 6/4 times larger than the output needed to the RMII interface. The FIFO used in this design, figure \ref{fig:fifo_diagram}, is slightly modified so that the read clock is one quarter the 50MHz output frequency since the FIFO itself returns 8 bits at a time. An FSM operating at 50MHz then sends each 2bit nibble out to the RMII PHY at a time in a circular fashion. The tx\_en line is asserted while the FIFO is non-empty.
+A FIFO buffer is used to cross the domains since the RMII interface is 50MHz at 2-bits wide, whereas the bytes are stored as 8-bit vectors in the frame buffer. This also allows the FSM to have a higher clock speed as well. The current implementation of the FSM uses a 80MHz clock signal, consequently the equivalent bit rate is 6.4 times larger than the output needed to the RMII interface. The FIFO used in this design, figure \ref{fig:fifo_diagram}, is slightly modified so that the read clock is one quarter the 50MHz output frequency since the FIFO itself returns eight bits at a time, thus limiting it to 100Mbit/s. An FSM operating at 50MHz then sends each 2-bit nibble out to the RMII PHY at a time in a circular fashion. The tx\_en line is asserted while the FIFO is non-empty.
 
 
 \begin{figure}[h!]
@@ -184,40 +198,7 @@ A FIFO buffer is used to cross the domains since the RMII interface is 50MHz at 
 
 
 
-
-\noindent The documentation for the NEORV32 states that all memory accesses that do not target specific processor-internal address regions (see appendix \ref{app:mem_address}) get forwarded to the external interfaces, such as the Wishbone interface. As such, there is a large block of unused memory between the IMEM and DMEM regions. The memory mapping, figure \ref{fig:memory_layout}, used in this design ranges from 0x13370000 to 0x133805F8.
-
-
-% \begin{tikzpicture}[remember picture,overlay]
-%     % Define coordinates for shading
-%     \coordinate (top-left) at (3.95, -0.05);  % Adjust as necessary
-%     \coordinate (bottom-right) at (10, -2.5); % Adjust as necessary
-    
-%     % Draw shading
-%     \fill[gray!30] (top-left) rectangle (bottom-right); % Change gray!30 to your desired shading color and intensity
-% \end{tikzpicture}
-
-\begin{figure}[h!]
-    \begin{center}
-    
-\begin{bytefield}{24}
-% \memsection{ffff ffff}{0040 0000}{5}{Processor memory}\\
-\memsection{1338 05F8}{1338 0008}{5}{RX PAYLOAD}\\
-\memsection{1338 0007}{1338 0004}{2}{RX SIZE}\\
-\memsectioncolour{1338 0003}{1337 6411}{3}{Unused}\\
-\memsection{1337 6410}{1337 1004}{4}{TX PAYLOAD}\\
-\memsection{1337 1003}{1337 1000}{2}{TX SIZE}\\
-\memsection{1337 0003}{1337 0000}{2}{TX CONFIG}\\
-% \memsection{1336 ffff}{0000 0000}{5}{Processor memory}
-\end{bytefield}
-\caption{Memory Address Layout}
-\label{fig:memory_layout}
-\end{center}
-\end{figure}
-
-This mapping is required for developing the driver (section \ref{sec:ethernet_mac_driver}) to access the correct registers.
-
-
+\newpage
 
 
 
@@ -229,7 +210,7 @@ This mapping is required for developing the driver (section \ref{sec:ethernet_ma
 \label{sec:packet_classifier}
 Inspired by \cite{FastRecongifFPGAFirewall}, to further save MCU resources, the packet classification was done in hardware. Not only did this reduce the load on the MCU itself - giving it more time to do other things - it allowed the interface to run at \textit{'wirespeed'}. That is, at the full speed of the interface - 100Mbit/s. 
 
-This was possible by having the rulset been evaluated in parallel as the data is coming into the firewall. This method however is not suitable for large rulesets as the fan-in and fan-out limit the maximum number of parallel comparisons. For every new rule, the number of gates grows exponentially. Hence a design decision of a maximum ruleset of size 8 was chosen. 
+This was possible by having the rulset been evaluated in parallel as the data is coming into the firewall. This method however is not suitable for large rulesets as the fan-in and fan-out limit the maximum number of parallel comparisons. For every new rule, the number of gates grows exponentially. Hence a design decision of a maximum ruleset of size eight was chosen. 
 
 The way this classifier was designed was to be a \textit{'default-block'} where all connections were blocked except for the ones specifically whitelisted in the ruleset. The specific rules had a few options, namely the source IP address, destination IP address, source port, destination port and protocol could be configured. In addition to these, each field had a wildcard operator which allowed all values for that specific option to be classified. 
 
@@ -249,9 +230,7 @@ The design of the packet classifier hardware, inspired from \cite{FastRecongifFP
 \end{figure}
 
 
-\noindent The wildcard attribute signifies whether to allow all possible combinations (in other words, disregard) for the positional attribute where the most significant bit refers to the $IP_{Dest}$ and the least significant bit refers to the $Protocol$.
-
-An FSM then records the position of the incoming and configures the multiplexers on the BRAM to output the current property to the comparators where they compare with the shift register which contains the current field being classified. On a successful match, a bit is left set in the result register, otherwise clear if no match. Importantly, the bits only get set on the first iteration of the classification. 
+\noindent The wildcard field signifies whether to allow all possible combinations for the positional attribute, or in other words, ignore the current field. An FSM then records the position of the incoming bits and configures the multiplexers on the BRAM to output the current rule to the comparators where they compare with the shift register which contains the current field being classified. On a successful match, a bit is left set in the result register, otherwise the bit is cleared if no match. Importantly, the bits only get set on the first iteration of the classification. 
 
 After passing through all the fields, if there is any bit set in the results register, it indicates that a rule matched and that a packet should be forwarded. 
 
@@ -263,7 +242,7 @@ After passing through all the fields, if there is any bit set in the results reg
     \label{fig:packet_classifier_architecture}
 \end{figure}
 
-\noindent This reduces the required resources as only 1 set of comparators are needed, which is important as for each rule that exists, another comparator is needed. In this design, there are a total of 8 comparators, 8 multiplexers and the results register is 8bits wide. 
+\noindent This design decision reduces the required resources as only one set of comparators are needed, which is important as for each rule that exists, another comparator is needed. In this design, there are a total of eight comparators, eight multiplexers and the results register is eight bits wide. 
 
 A more resource efficient design is possible at the cost of latency. This is one of the critiques of the design mentioned in \cite{FastRecongifFPGAFirewall} as multiple clock cycles would be needed to classify the headers. In theory the clock speed could be faster than Ethernet frequency and as only two bits from the RMII interface are processed at a time, it could be a viable alternative, however this may likely fall apart when higher speeds are required. 
 
@@ -283,7 +262,7 @@ Several options exist for configuring the ruleset in the packet classifier such 
 
 
 
-\noindent Notably, the data is received into a shift register and after all bits have been received the BRAM is updated at the corresponding index in a single clock cycle.
+\noindent Notably, the data is received into a shift register and after all bits have been received the BRAM is updated at the corresponding index in a single clock cycle. This allows for one rule to be updated at a time.
 
 
 
@@ -296,7 +275,7 @@ Several options exist for configuring the ruleset in the packet classifier such 
 \subsection{Ethernet drivers}
 \label{sec:ethernet_mac_driver}
 
-Since the Ethernet hardware was custom, drivers were needed to interface with the hardware in software. There were two types of commands that were needed, first the RMII serial management interface (SMI) and secondly the MAC drivers - the drivers that would handle the data.  The SMI interface is used to control the mode of operation of the PHY chip including the speed, Auto-MDIX, duplex settings. The LAN8720A datasheet, (\cite{LAN8720ADatasheet}) provided some details (seen in figure \ref{fig:smi_packet_structure}) into how the protocol operated. The datasheet also outlined that a maximum frequency of 2.5MHz, but no lower bound. As such the interface was \textit{'bitbanged'} with GPIO pins to reduce complexity. The maximum switching frequency of the NEORV32's GPIO was measured to be $\approx 1$MHz, thus no additional delays were needed in the code and that the GPIO pin could be toggled at the fasted speed possible. 
+Since the Ethernet hardware was custom, drivers were needed to interface the hardware with the software. There were two types of commands that were needed, first the RMII serial management interface (SMI) and secondly the MAC drivers - which would handle the network data.  The SMI interface is used to control the mode of operation of the PHY chip including the speed, Auto-MDIX, duplex settings. The LAN8720A datasheet, \cite{LAN8720ADatasheet} provided some details (seen in figure \ref{fig:smi_packet_structure}) into how the protocol operated. The datasheet also outlined that a maximum frequency of 2.5MHz, but no lower bound. As such the interface was \textit{'bitbanged'} with GPIO pins to reduce complexity. The maximum switching frequency of the NEORV32's GPIO was measured to be $\approx 1$MHz, thus no additional delays were needed in the code and that the GPIO pin could be toggled at the fasted speed possible. 
 
 
 \begin{figure}[h!]
@@ -332,18 +311,18 @@ typedef struct __attribute__((__packed__))  {
 \noindent This allowed for the connected wishbone Ethernet to be accessed like any other register in the embedded system. 
 
 
-There are three fundamental functions that the driver itself must fulfill, initialisation, send data and receive data. The initialisation resets the Ethernet MAC and resets the interrupt registers. 
+There are three fundamental functions that the driver itself must fulfill, initialisation, transmission and reception of data. The initialisation resets the Ethernet MAC and the interrupt registers. 
 
 The send method is also trivial, but importantly it takes in two parameters, the first is an array of data to send and the second is the amount or length of the data. Like with the SMI interface, these instructions and data transfers were actioned without any delays as the hardware was capable of handling the native speed of the processor. After the data had been transferred, the hardware is instructed to send out the packet. There is no need to provide the FCS as this is calculated on the fly in hardware. 
 
-Similarly, a receive method was created that took in a buffer to store the bytes into as it transfers the data into memory from the registers. Both the transmit and receive functions handled the data translation from 32bit values over the wishbone interface to 8bit bytes in software. In addition to this, as the Ethernet hardware used external interrupts to signal to the processor that there is an Ethernet packet ready for processing. This would use direct task notifications to signal to other functions in the code to call the receive method. 
+Similarly, a receive method was created that took in a buffer to store the bytes into as it transfers the data into memory from the registers. Both the transmit and receive functions handled the data translation from 32-bit values over the wishbone interface to single bytes in software. In addition to this, as the Ethernet hardware used external interrupts to signal to the processor that there is an Ethernet packet ready for processing. This would use direct task notifications to signal to other functions in the code to call the receive method. 
 
 
 \subsection{SD card drivers}
 \label{sec:microsd_drivers}
 To use a micro SD card, drivers must be created so that the card can be initialised, written to and read from. More precisely, in accordance to the  documentation for the FreeRTOS-Plus-FAT file system, the driver had to implement a function that reads sectors from the media and one that rights sectors to the media. 
 
-Unlike the Ethernet MAC, initialising a MicroSD card isn't as trivial and requires multiple steps. A guide online for AVRs\footnote[1]{See: http://www.rjhcoding.com/avrc-sd-interface-1.php} was followed and the code was ported to the NEORV32 system. In essence, the SPI interface was initialised with a clock divisor of 1 and a prescalar of 3, several commands were sent and received from the SD card and then it was put into IDLE mode after increasing the speed of the SPI interface to have no clock divisor and a prescalar of 1.
+Unlike the Ethernet MAC, initialising a MicroSD card isn't as trivial and requires multiple steps. A guide online for AVRs\footnote[1]{See: http://www.rjhcoding.com/avrc-sd-interface-1.php} was followed and the code was ported to the NEORV32 system. In essence, the SPI interface was initialised with a clock divisor of one and a prescalar of three, several commands were sent and received from the SD card and then it was put into IDLE mode after increasing the speed of the SPI interface to have no clock divisor and a prescalar of one.
 
 Similarly, the same guide was followed to implement the read and write sector functions. Importantly, these functions would read and write a whole block at a time. On a microSD card, a block is considered to be 512 bytes. 
 
@@ -356,7 +335,7 @@ In addition to these, a simple function to determine if a SD card is present in 
 
 \subsection{Packet classifier drivers}
 \label{sec:packet_filter_driver}
-An initialisation function was created to enable and configure the SPI interface on the microprocessor for mode 0, and with no clock diviser and a prescalar of 1. The SPI hardware for the classifier can handle speeds in excess of 80Mhz (given by the positive slack in section \ref{sec:timing_summary}), hence there was no need to slow down the clock. Moreover, calling this initialise function is only required if the microSD card intialise function has not been called. 
+An initialisation function was created to enable and configure the SPI interface on the microprocessor for mode zero, and with no clock diviser and a prescalar of one. The SPI hardware for the classifier can handle speeds in excess of 80Mhz (given by the positive slack in section \ref{sec:timing_summary}), hence there was no need to slow down the clock. Moreover, calling this initialise function is only required if the microSD card intialise function has not been called. 
 
 A single function was created that takes in all the attributes needed in the packet filter and that sends these out in the correct order and format to the hardware. 
 
@@ -378,6 +357,7 @@ The FreeRTOS-Plus-FAT filesystem library was used to allow the system to read an
 
 The library then uses the microSD card drivers (section \ref{sec:microsd_drivers}) to access the disk. 
 
+\newpage
 
 \subsection{Network Stack}
 \label{sec:freertos_tcpip_stack}
@@ -423,6 +403,20 @@ payload=Index | Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | 
 \]
 
 Where $|$ is the concatenation operator and all fields are in hexadecimal. The IP addresses are stored in network byte order with each octet being converted to hexadecimal, for example, an IP address of 10.1.2.3 would be stored as 0x0A010203. Similarly, the ports are also stored in the same way, but as a 16bit value. As an example, to insert a rule at index 0, and with a wildcard operator for all items with a destination IP of 10.20.1.120, source IP of 10.0.0.159, source and destination port of 80 and a protocol of TCP, the following body would need to be sent to the API: \codebg{payload=003F0A1401780A00009F0050005006}. The API server then takes the necessary action and applies the rule to the packet filter by calling the methods in the packet filter driver (section \ref{sec:packet_filter_driver}).
+
+
+\subsubsection{Overall design}
+
+An overall flowchart for the webserver and API server can be seen in illustrated in figure \ref{fig:http_flowchart} maps out the high level logic for the HTTP requests. All the TCP requests to the IP address of the NEORV32 on port 80 will execute this logic. Essentially, depending on the type of request and the URL, the webserver will either serve a webpage or process an API request.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{Images/thesisWebserver.png}
+    \caption[Flowchart for HTTP packets]{Flowchart for HTTP packets.}
+    \label{fig:http_flowchart}
+\end{figure}
+
+\newpage
 
 
 
