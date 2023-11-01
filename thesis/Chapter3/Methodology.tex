@@ -47,7 +47,7 @@ The selected MicroSD card for use in this project is the Patriot LX Series 32GB 
 \end{figure}
 
 
-The files that were stored on the microSD card include the bitstream file for the FPGA itself and web assets for the webserver. While the bitstream file needed to be at the root directory of the filesystem, the web assets were stored in their own folder structure to help segregate the files.  
+\noindent The files that were stored on the microSD card include the bitstream file for the FPGA itself and web assets for the webserver. While the bitstream file needed to be at the root directory of the filesystem, the web assets were stored in their own folder structure to help segregate the files.  
 
 
 
@@ -78,7 +78,7 @@ Serial peripheral Interface (SPI) was used to connect to both the MicroSD card a
 
 \newpage
 
-Since the design is only concerned about incoming filtering, the packet filter was only placed between the RMII PHY and the MAC. By filtering at the RMII interface level, the Ethernet MAC is indifferent to the filter and ultimately doesn't care about it. This allows for a simpler modular design compared to integrating the filter in the MAC hardware. This filter consists of classifier (discussed in section \ref{sec:packet_classifier}) which would determine whether to forward or block an incoming packet.
+\noindent Since the design is only concerned about incoming filtering, the packet filter was only placed between the RMII PHY and the MAC. By filtering at the RMII interface level, the Ethernet MAC is indifferent to the filter and ultimately doesn't care about it. This allows for a simpler modular design compared to integrating the filter in the MAC hardware. This filter consists of classifier (discussed in section \ref{sec:packet_classifier}) which would determine whether to forward or block an incoming packet.
 
 To do the filtering itself, a shift register can be used to essentially delay the inputs from the RMII PHY until the packet classifier has determined whether to forward or drop the packet. A simple MUX can then be used to either allow the packet to enter the wishbone MAC or to not. 
 
@@ -132,7 +132,7 @@ else
 end if;
 \end{lstlisting}
 
-By splitting the address over 2 if conditions, the amount of resources can be greatly reduced as the nested if conditions only need to compare 16bits instead of 32bits each time. Another important design decision is that this version of the Ethernet MAC does not validate the FCS after receiving a packet, instead it assumes it's a valid packet. 
+\noindent By splitting the address over 2 if conditions, the amount of resources can be greatly reduced as the nested if conditions only need to compare 16bits instead of 32bits each time. Another important design decision is that this version of the Ethernet MAC does not validate the FCS after receiving a packet, instead it assumes it's a valid packet. 
 
 
 The transmit logic is broken down into three parts: Wishbone handler, main FSM and RMII conversion. The process of creating and sending an Ethernet frame starts with the processor sending data over the Wishbone interface. Like the receive logic, there are two types of commands that can be sent over the Wishbone interface, one that controls the logic, the other that stores payload data into BRAM. There are three configuration commands, one to initialise the hardware and FSM, another to start the transmission of data (used after all data has been transferred into BRAM) and one to set the payload length of the packet. The other register addresses allow the processor to store the payload in the frame buffer (BRAM). See figure \ref{fig:bram_frame_format} for the format of data in BRAM. The preamble, SFD and FCS are left out as these are appended in hardware. To be accurate, this is a quasi-MAC as the MAC addresses and type fields in the header (expanded view of payload in figure \ref{fig:bram_frame_format}) are populated in software. 
@@ -170,7 +170,7 @@ The transmit logic is broken down into three parts: Wishbone handler, main FSM a
 \end{figure}
 
 
-Once a payload has been stored in the frame buffer, the main FSM takes control and at this point the CPU is free to do anything else. Since the FCS is calculated in hardware, the FSM resets the FCS hardware and begins to send the bytes to both the FCS hardware (to calculate the CRC32) and to a FIFO buffer. Once the payload has been transmitted to the FIFO, the resulting CRC32 FCS is sent out to the FIFO without missing a clock cycle. 
+\noindent Once a payload has been stored in the frame buffer, the main FSM takes control and at this point the CPU is free to do anything else. Since the FCS is calculated in hardware, the FSM resets the FCS hardware and begins to send the bytes to both the FCS hardware (to calculate the CRC32) and to a FIFO buffer. Once the payload has been transmitted to the FIFO, the resulting CRC32 FCS is sent out to the FIFO without missing a clock cycle. 
 
 A FIFO buffer is used to cross the domains since the RMII interface is 50MHz at 2bits wide, whereas the bytes are stored as 8bit vectors in the frame buffer. This also allows the FSM to have a higher clock speed as well. The current implementation of the FSM uses a 80MHz clock signal, consequently the equivalent bit rate is 6/4 times larger than the output needed to the RMII interface. The FIFO used in this design, figure \ref{fig:fifo_diagram}, is slightly modified so that the read clock is one quarter the 50MHz output frequency since the FIFO itself returns 8 bits at a time. An FSM operating at 50MHz then sends each 2bit nibble out to the RMII PHY at a time in a circular fashion. The tx\_en line is asserted while the FIFO is non-empty.
 
@@ -185,7 +185,7 @@ A FIFO buffer is used to cross the domains since the RMII interface is 50MHz at 
 
 
 
-The documentation for the NEORV32 states that all memory accesses that do not target specific processor-internal address regions (see appendix \ref{app:mem_address}) get forwarded to the external interfaces, such as the Wishbone interface. As such, there is a large block of unused memory between the IMEM and DMEM regions. The memory mapping, figure \ref{fig:memory_layout}, used in this design ranges from 0x13370000 to 0x133805F8.
+\noindent The documentation for the NEORV32 states that all memory accesses that do not target specific processor-internal address regions (see appendix \ref{app:mem_address}) get forwarded to the external interfaces, such as the Wishbone interface. As such, there is a large block of unused memory between the IMEM and DMEM regions. The memory mapping, figure \ref{fig:memory_layout}, used in this design ranges from 0x13370000 to 0x133805F8.
 
 
 % \begin{tikzpicture}[remember picture,overlay]
@@ -227,14 +227,14 @@ This mapping is required for developing the driver (section \ref{sec:ethernet_ma
 
 \subsection{Packet Classifier}
 \label{sec:packet_classifier}
-To further save MCU resources, the packet classification was done in hardware. Not only did this reduce the load on the MCU itself - giving it more time to do other things - it allowed the interface to run at \textit{'wirespeed'}. That is, at the full speed of the interface - 100Mbit/s. 
+Inspired by \cite{FastRecongifFPGAFirewall}, to further save MCU resources, the packet classification was done in hardware. Not only did this reduce the load on the MCU itself - giving it more time to do other things - it allowed the interface to run at \textit{'wirespeed'}. That is, at the full speed of the interface - 100Mbit/s. 
 
 This was possible by having the rulset been evaluated in parallel as the data is coming into the firewall. This method however is not suitable for large rulesets as the fan-in and fan-out limit the maximum number of parallel comparisons. For every new rule, the number of gates grows exponentially. Hence a design decision of a maximum ruleset of size 8 was chosen. 
 
 The way this classifier was designed was to be a \textit{'default-block'} where all connections were blocked except for the ones specifically whitelisted in the ruleset. The specific rules had a few options, namely the source IP address, destination IP address, source port, destination port and protocol could be configured. In addition to these, each field had a wildcard operator which allowed all values for that specific option to be classified. 
 
 
-The design of the packet classifier hardware, figure \ref{fig:packet_classifier_architecture} stores the firewall rules in block memory. The rules are stored in BRAM as an array of 112 bits with the format shown in figure \ref{fig:pc_rule_format}.
+The design of the packet classifier hardware, inspired from \cite{FastRecongifFPGAFirewall} and shown in figure \ref{fig:packet_classifier_architecture}, stores the firewall rules in block memory. The rules are stored in BRAM as an array of 112 bits with the format shown in figure \ref{fig:pc_rule_format}.
 
 
 \begin{figure}[h!]
@@ -249,7 +249,7 @@ The design of the packet classifier hardware, figure \ref{fig:packet_classifier_
 \end{figure}
 
 
-The wildcard attribute signifies whether to allow all possible combinations (in other words, disregard) for the positional attribute where the most significant bit refers to the $IP_{Dest}$ and the least significant bit refers to the $Protocol$.
+\noindent The wildcard attribute signifies whether to allow all possible combinations (in other words, disregard) for the positional attribute where the most significant bit refers to the $IP_{Dest}$ and the least significant bit refers to the $Protocol$.
 
 An FSM then records the position of the incoming and configures the multiplexers on the BRAM to output the current property to the comparators where they compare with the shift register which contains the current field being classified. On a successful match, a bit is left set in the result register, otherwise clear if no match. Importantly, the bits only get set on the first iteration of the classification. 
 
@@ -263,7 +263,7 @@ After passing through all the fields, if there is any bit set in the results reg
     \label{fig:packet_classifier_architecture}
 \end{figure}
 
-This reduces the required resources as only 1 set of comparators are needed, which is important as for each rule that exists, another comparator is needed. In this design, there are a total of 8 comparators, 8 multiplexers and the results register is 8bits wide. 
+\noindent This reduces the required resources as only 1 set of comparators are needed, which is important as for each rule that exists, another comparator is needed. In this design, there are a total of 8 comparators, 8 multiplexers and the results register is 8bits wide. 
 
 A more resource efficient design is possible at the cost of latency. This is one of the critiques of the design mentioned in \cite{FastRecongifFPGAFirewall} as multiple clock cycles would be needed to classify the headers. In theory the clock speed could be faster than Ethernet frequency and as only two bits from the RMII interface are processed at a time, it could be a viable alternative, however this may likely fall apart when higher speeds are required. 
 
@@ -283,7 +283,7 @@ Several options exist for configuring the ruleset in the packet classifier such 
 
 
 
-Notably, the data is received into a shift register and after all bits have been received the BRAM is updated at the corresponding index in a single clock cycle.
+\noindent Notably, the data is received into a shift register and after all bits have been received the BRAM is updated at the corresponding index in a single clock cycle.
 
 
 
@@ -306,7 +306,7 @@ Since the Ethernet hardware was custom, drivers were needed to interface with th
     \label{fig:smi_packet_structure}
 \end{figure}
 
-On power up the RMII interface would be set to full duplex, 100Mbps and auto-negotiate in accordance to the LAN8720A datasheet. 10Mbit and half duplex modes were excluded from the design as further hardware design would be required.  
+\noindent On power up the RMII interface would be set to full duplex, 100Mbps and auto-negotiate in accordance to the LAN8720A datasheet. 10Mbit and half duplex modes were excluded from the design as further hardware design would be required.  
 
 
 As the Ethernet hardware used the Wishbone interface, the register locations were mapped into the processors address space. Accessing these registers is analogous to accessing any other variable in memory, using pointers to the memory address. As an example, to access memory location \codebg{0x12345678} the following C code can be used \codebg{*(volatile uint32_t *) 0x12345678}
@@ -329,7 +329,7 @@ typedef struct __attribute__((__packed__))  {
 } EthMacTx;
 \end{lstlisting}
 
-This allowed for the connected wishbone Ethernet to be accessed like any other register in the embedded system. 
+\noindent This allowed for the connected wishbone Ethernet to be accessed like any other register in the embedded system. 
 
 
 There are three fundamental functions that the driver itself must fulfill, initialisation, send data and receive data. The initialisation resets the Ethernet MAC and resets the interrupt registers. 

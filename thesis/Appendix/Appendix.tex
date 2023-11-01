@@ -12,14 +12,15 @@ Please find it at \url{https://github.com/matty0005/thesis}.
 \begin{figure}[h!]
     \centering
     \includegraphics[width=1\textwidth]{Images/neorv32_address_space.png}
-    \caption{Neorv32 Memory Address space.}
+    \caption[Neorv32 Memory Address space.]{Neorv32 Memory Address space \cite{neorv32Datasheet}}
 \end{figure}
 
+\newpage
 
 
 \section{FPGA primitives utilisation}
 \label{app:res_usage}
-\begin{table}
+\begin{table}[h]
     \centering
     \caption{FPGA primitives utilisation for XC7A100T}
     \begin{tabular}{|l|r|l|}
@@ -54,22 +55,7 @@ Please find it at \url{https://github.com/matty0005/thesis}.
     \end{tabular}
 \end{table}
 
-\begin{table}
-    \centering
-    \caption{Memory Utilisation}
-    \begin{tabular}{|l|r|r|r|r|r|}
-        \toprule
-        Site Type      & Used & Fixed & Prohibited & Available & Util\% \\
-        \midrule
-        Block RAM Tile &  130 &     0 &          0 &       135 & 96.30 \\
-        RAMB36/FIFO*   &  130 &     0 &          0 &       135 & 96.30 \\
-        RAMB36E1 only  &  130 &     - &          - &         - &    -  \\
-        RAMB18         &    0 &     0 &          0 &       270 &  0.00 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{table}
+\begin{table}[h]
     \centering
     \caption{Slice Logic Utilisation}
     \begin{tabular}{|l|r|r|r|r|r|}
@@ -91,6 +77,25 @@ Please find it at \url{https://github.com/matty0005/thesis}.
 \end{table}
 
 
+\begin{table}[h]
+    \centering
+    \caption{Memory Utilisation}
+    \begin{tabular}{|l|r|r|r|r|r|}
+        \toprule
+        Site Type      & Used & Fixed & Prohibited & Available & Util\% \\
+        \midrule
+        Block RAM Tile &  130 &     0 &          0 &       135 & 96.30 \\
+        RAMB36/FIFO*   &  130 &     0 &          0 &       135 & 96.30 \\
+        RAMB36E1 only  &  130 &     - &          - &         - &    -  \\
+        RAMB18         &    0 &     0 &          0 &       270 &  0.00 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+
+\newpage
+
 \section{Additional webpages built into the webserver.}
 \label{app:additional_webpages}
 \begin{figure}[h!]
@@ -108,6 +113,7 @@ Please find it at \url{https://github.com/matty0005/thesis}.
 \end{figure}
 
 
+\newpage
 \section{UDP ping times between boards}
 \label{app:udp_ping_measurements}
 \begin{table}[ht]
@@ -194,6 +200,7 @@ UDP (10.20.1.34, 9999) received response from ('10.20.1.34', 9999) in 1.08ms: ok
 Failed to retrieve content from http://10.20.1.34/
 \end{lstlisting}
 
+\newpage
 
 \subsection*{Node 3}
 \begin{lstlisting}[style=consoleoutput]pi@node2:~/thesis-tools $ python3 test.py
@@ -220,6 +227,7 @@ Failed to retrieve content from http://10.20.1.34/
 \end{lstlisting}
 
 
+\newpage
 
 \section{Iperf 3 Test results}
 \label{app:iperf3_test_results}
@@ -242,6 +250,7 @@ Failed to retrieve content from http://10.20.1.34/
     \caption{MilkV-duo Iperf3 test results.}
 \end{figure}
 
+\newpage
 
 
 \section{Eye Diagrams of PMOD port}

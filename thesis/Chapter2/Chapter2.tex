@@ -34,7 +34,7 @@ Essentially, the architecture in figure \ref{fig:fast-fpga-classifier} employs m
 \end{figure}
 
 
-Wasti \cite{Wasti2001HardwareAP} presents several other classification algorithms for both hardware and software packet filters. \textit{'Sequential matching'} provides the most trivial solution as it matches each rule to the incoming packet. While simple, this design has scalability issues as more rules get added. Another method proposed in \cite{Wasti2001HardwareAP} is by using a \textit{'Grid of tries'} which uses tries (a type of tree data-structure) to help pattern match the packets, but fails to extend to multiple fields. 
+\noindent Wasti \cite{Wasti2001HardwareAP} presents several other classification algorithms for both hardware and software packet filters. \textit{'Sequential matching'} provides the most trivial solution as it matches each rule to the incoming packet. While simple, this design has scalability issues as more rules get added. Another method proposed in \cite{Wasti2001HardwareAP} is by using a \textit{'Grid of tries'} which uses tries (a type of tree data-structure) to help pattern match the packets, but fails to extend to multiple fields. 
 Hardware algorithms using \textit{Ternary CAMs} (stores words with 3-valued-digits - namely '0', '1' and '*') and \textit{Bit-parallelism} were also discussed. Both of these exploited the parallelised nature of hardware design. One limiting factor with the classification methods cited in \cite{Wasti2001HardwareAP} is their configurability and expandability. 
 
 
@@ -117,7 +117,7 @@ Figure \ref{fig:tcp_ip_model} shows the updated five layers of the TCP/IP model 
     \label{fig:tcp_ip_model}
 \end{figure}
 
-Each layer encapsulates the previous and provides a service to the layer above it. They are typically processed and handled by a separate process in either hardware or software. The physical layer is responsible for the transmission and reception of the above layers over a physical medium such as copper, radio frequency or fibre optics. 
+\noindent Each layer encapsulates the previous and provides a service to the layer above it. They are typically processed and handled by a separate process in either hardware or software. The physical layer is responsible for the transmission and reception of the above layers over a physical medium such as copper, radio frequency or fibre optics. 
 
 The data link layer (layer two, coloured grey) is responsible for the physical addressing of devices on the network and \textit{links} devices together. Ethernet is the most common protocol used in the data link layer and will be discussed in \ref{sec:eth_mac_lit} and throughout the thesis. Other protocols such as Point-to-Point Protocol (PPP) also exist \cite{ciscoCCNABook}.
 
@@ -195,9 +195,22 @@ A core function of the Ethernet MAC is to attach the required MAC headers and pr
     \label{fig:ieee-mac-headers}
 \end{figure}
 
-The preamble and start frame delimiter (SFD) is used to synchronise the physical interface (PHY) and get it ready to send out data and is typically omitted when passing data up to higher layers such as for inspection with tools like Wireshark.
+\noindent The preamble and start frame delimiter (SFD) is used to synchronise the physical interface (PHY) and get it ready to send out data and is typically omitted when passing data up to higher layers such as for inspection with tools like Wireshark.
 
-After the packet has been constructed, the data is forwarded to the PHY least significant bit (LSB) first \cite{IEEE802.3-2012}. Typically, a PHY management chip is used to handle the physical layer channel encoding and scrambling amongst other things. 
+%talk about 802.1q
+A variation to the Ethernet packet is the 802.1q standard \cite{IEEE802.1q-2005} which incorporates a four byte virtual local area network (VLAN) \textit{'tag'} to the Ethernet packet. A VLAN is a segregated network that allows devices to communicate over the same physical network but are logically separated to enhance network management and security. The updated packet structure presented in \ref{fig:ieee-dot1q-headers} adds four bytes for the VLAN headers. To identify a \textit{tagged} packet, the type field of the Ethernet type header is designated as 0x8100. The following two bytes identify the user priority, the canonical format indicator (CFI) bit and importantly the VLAN Identifier (VID). The VID is a 12 bit field that determines what VLAN the packet is associated with.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images/vlan_tagging_packet.png}
+    \caption[MAC layer headers with 802.1Q VLAN tagging]{MAC layer headers with 802.1Q VLAN tagging\cite{IEEE802.1q-2005}}
+    \label{fig:ieee-dot1q-headers}
+\end{figure}
+
+
+
+\noindent After the packet has been constructed, the data is forwarded to the PHY least significant bit (LSB) first \cite{IEEE802.3-2012}. Typically, a PHY management chip is used to handle the physical layer channel encoding and scrambling amongst other things. 
 These PHY chips can often be interfaced with the media independent interfaces such as MII, RMII, GMII and RGMII \cite{OptimisedEthernetMAC}. The Reduced Media Independent Interface (RMII) is one of these standards defined in \cite{IEEE802.3-2012} and consists of a reference clock, 2 bit wide transmit (TX), 2 bit wide receive (RX) lines and a few other supplementary signals like defined in the LAN8720A datasheet, an example RMII PHY \cite{LAN8720ADatasheet}.
 
 
@@ -215,7 +228,7 @@ on FPGAs each with a slightly different approach and focusing on different prope
     \label{fig:eth_fsm}
 \end{figure}
 
-The source address field is typically filled in by hardware and is fixed as the MAC address is supposed to be globally unique to prevent address clashes on the same network. The destination address is typically set by software however as the ARP (Address Resolution Protocol) tables are typically stored in software due to them storing a mapping between the layer three IP addresses and the MAC addresses to forward a packet to. 
+\noindent The source address field is typically filled in by hardware and is fixed as the MAC address is supposed to be globally unique to prevent address clashes on the same network. The destination address is typically set by software however as the ARP (Address Resolution Protocol) tables are typically stored in software due to them storing a mapping between the layer three IP addresses and the MAC addresses to forward a packet to. 
 
 The Length/Type field has a dual purpose, and it depends on the value. If a value is less than or equal to 1500, then it indicates the size of the packet. While if a value of greater than 1500, then it indicates the type of packet, called EtherType \footnote[1]{See https://en.wikipedia.org/wiki/EtherType for the different types}. Common values are 0x0800 for IPv4 packets and 0x0806 for ARP. Like with the destination address, this is usually populated by software as the type is dependent on the above layers.
 
