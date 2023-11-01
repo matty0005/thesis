@@ -412,7 +412,7 @@ In addition, as this is all client side and compiles to HTML, CSS and Javascript
 \subsection{Webserver}
 A simple HTTP webserver running on top of a TCP server was used to serve the webpages for the project. FreeRTOS give an example of how to setup a TCP and HTTP server that uses the FAT filesystem to get the content such as the HTML, CSS and Javascript files. All the TCP webserver has to do is determine the route requested by the client, based on this it knows whether to read a file from the micro SD card and send it over multiple TCP packets or if it needs to respond with raw data like in the case of the API. Regardless of the type of request, a response is formed in the standard HTTP 1.1 format given in RFC2616 \cite{rfc2616}.
 
-
+\newpage
 \subsubsection{API server}
 A subset of the webserver is the API server itself. To make the design simpler, an API was created so that the interface to set and get the firewall rules was independent of the web content. The way the software distinguishes between requests to load a webpage and the API server itself is by inspecting both the route/URL (pcUrlData) and the method type (GET, POST, PUT).
 
@@ -422,7 +422,7 @@ For setting the firewall rules, a POST request to the \textit{'/api/firewall'} e
 payload=Index | Wildcard | IP_{Dest} |  IP_{Src}  | Port_{Dest} |  Port_{Src} | Protocol
 \]
 
-Where $|$ is the concatenation operator and all fields are in hexadecimal. As an example, to insert a rule at index 0, and with a wildcard operator for all items with a destination IP of 10.20.1.120, source IP of 10.0.0.159, source and destination port of 80 and a protocol of TCP, the following body would need to be sent to the API: \codebg{payload=003F0A1401780A00009F0050005006}. The API server then takes the necessary action and applies the rule to the packet filter by calling the methods in the packet filter driver (section \ref{sec:packet_filter_driver}).
+Where $|$ is the concatenation operator and all fields are in hexadecimal. The IP addresses are stored in network byte order with each octet being converted to hexadecimal, for example, an IP address of 10.1.2.3 would be stored as 0x0A010203. Similarly, the ports are also stored in the same way, but as a 16bit value. As an example, to insert a rule at index 0, and with a wildcard operator for all items with a destination IP of 10.20.1.120, source IP of 10.0.0.159, source and destination port of 80 and a protocol of TCP, the following body would need to be sent to the API: \codebg{payload=003F0A1401780A00009F0050005006}. The API server then takes the necessary action and applies the rule to the packet filter by calling the methods in the packet filter driver (section \ref{sec:packet_filter_driver}).
 
 
 

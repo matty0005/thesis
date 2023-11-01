@@ -258,14 +258,7 @@ A summary of the results can be seen in table \ref{tab:firewall_test_cases} whic
 
 The detailed output from the script on each host is available in appendix \ref{app:testing_pf}. While these tests don't formally prove the firewall is correctly working, they do provide substantial evidence of the design's correctness. It's important to note that additional rigorous testing, which wasn't formally documented, was conducted throughout the development of the design. Such an example test case involves spamming ping packets from one host while sending valid packets from another. 
 
-These results stipulate the devices suitability for use in a real world environment. The filter exhibits capacity to filter out the significant majority of unwanted packets, making it ideal for low security applications. However, formal verification and meticulous testing is imperative to suitability for high-security applications. With the absence of these in the above tests, the design would necessitate further validation to be deployed in high security environments. 
-
-
-
-
-
-
-
+These results stipulate the devices suitability for use in a real world environment. The filter exhibits capacity to filter out the significant majority of unwanted packets, making it ideal for low security applications. However, formal verification and further meticulous testing is required for the design to be deemed to suitable for high-security applications. With the absence of these in the above tests, the design would necessitate further validation to be deployed in high security environments. 
 
 
 
@@ -278,7 +271,7 @@ These results stipulate the devices suitability for use in a real world environm
 
 To ensure the effectiveness of the designed hardware, comparisons to preexisting solutions with \textit{Fast Ethernet} (100Mbits/s) were conducted. The selected devices include the WIZ5500 Pico \footnote[1]{See: https://www.wiznet.io/product-item/w5500-evb-pico/}, Nucleo-F767ZI \footnote[2]{See: https://www.st.com/en/evaluation-tools/nucleo-f767zi.html} and MilkV-Duo \footnote[3]{See: https://milkv.io/duo}.
 
-The WIZ5500 Pico integrates a \textit{Raspberry Pi RP2040} (ARM-based) as its MCU, operating at 133Mhz, and employs the \textit{WIZ5500} IC to manage Ethernet traffic. Notably, the WIZ5500 handles layers one to four onboard and interfaces ov er SPI. This is in contrast to the other designs compared which use an external PHY and then have the higher layers in software. 
+The WIZ5500 Pico integrates a \textit{Raspberry Pi RP2040} (ARM-based) as its MCU, operating at 133Mhz, and employs the \textit{WIZ5500} IC to manage Ethernet traffic. Notably, the WIZ5500 handles layers one to four onboard and interfaces over SPI. This is in contrast to the other designs compared which use an external PHY and then have the higher layers in software. 
 
 The Nucleo-F767ZI (referred to as just F767ZI) is powered by the \textit{STM32F767} (ARM-based) MCU and features an onboard \textit{LAN8742A} PHY chip. Similarly to the Nexys A7 board, the LAN8742A PHY chip connects to the STM32F767 over RMII and has hardware support for. This establishes a good comparison between the two devices from a hardware perspective. However, unlike the Nexys A7, it utilised the LwIP network stack opposed to FreeRTOS-Plus-TCP. 
 
