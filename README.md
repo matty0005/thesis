@@ -45,6 +45,6 @@ This repository contains mixed content under different licenses:
 
 - **Hardware VHDL Code**: The VHDL code located in vivado excluding the NEORV32 core found in *vivado/thesis.srcs/sources_1/imports/core* is licensed under a proprietary license that restricts commercial use. The full license text can be found at the beginning of each VHDL file and must be respected as per the terms described therein. See [LICENSE.md](/LICENSE.md) for full details.
 
-- **Documentation and Text**: All written content provided outside of the VHDL code directories is licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0), which allows for sharing and adaptation for any purpose, as long as appropriate credit is given. See [LICENSE-docs.md](/LICENSE-docs.md) for full details.
+- **Documentation and Text**: All written content provided outside of the VHDL code directories is licensed under the BSD 3-Clause License, which allows for sharing and adaptation for any purpose, as long as appropriate credit is given. See [LICENSE-docs.md](/LICENSE-docs.md) for full details.
 
 Please ensure you comply with the licensing terms for each part of the repository. For any use beyond what is permitted by these licenses, please contact Matthew Gilpin at matt@matthewgilpin.com
