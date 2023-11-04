@@ -1,0 +1,38 @@
+Thesis VHDL Code License
+======================================
+
+Copyright (C) 2023 Matthew Gilpin
+All Rights Reserved
+
+Definitions
+-----------
+"The author" refers to the individual or entity that has created and released the VHDL code under this license.
+"The VHDL code" refers to all hardware description language files in the vivado directory of the Thesis repository, but excluding files in the *vivado/thesis.srcs/sources_1/imports/core* folder.
+"Commercial use" refers to any activity that involves exchanging the VHDL code for money or other financial compensation or using the VHDL code in a manner that is primarily intended for or directed toward commercial advantage or private monetary compensation.
+
+License Grant
+-------------
+The author grants you a perpetual, non-exclusive, non-transferable license to use, copy, modify, and distribute the VHDL code provided in the Thesis repository for non-commercial purposes only, subject to the following conditions:
+
+1. You must give appropriate credit to the author, provide a link to the source of the VHDL code, and indicate if changes were made. You must do so in any reasonable manner, but not in any way that suggests the author endorses you or your use.
+
+2. You may not use the VHDL code for commercial purposes. For any commercial use, please obtain a separate license from the author.
+
+3. If you modify, transform, or build upon the VHDL code, you must distribute your contributions under the same license as the original.
+
+4. You may not distribute or sublicense the VHDL code under any other license that permits commercial use.
+
+Disclaimer
+----------
+THE VHDL CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE VHDL CODE OR THE USE OR OTHER DEALINGS IN THE VHDL CODE.
+
+Governing Law
+-------------
+This license is governed by the laws of Australia, without regard to its conflict of law provisions.
+
+Contact Information
+-------------------
+Any inquiries regarding this license or the VHDL code can be directed to:
+
+Matthew Gilpin
+matt@matthewgilpin.com
