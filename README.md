@@ -21,7 +21,7 @@ To include this packet filter in the design, the input from the RMII interface i
 
 ## Advantages
 Some of the advantages of this design include:
-- Fast! `4.48us` to classify packet
+- Fast! `4us` to classify packet
 - Wirespeed - does not impact throughput. 
 
 ## Limitations
@@ -38,3 +38,13 @@ The website was written in Vue.js and using the Tailwindcss framework.
 ![webserver](diagrams/firewall_home.png "Webserver Interface")
 
 The website also has an about page where the user can find out about the project. Only 3 main pages were added to this design as a proof of concept. Other webpages can be easily added without worry of size due to the web content being stored on an external MicroSD card.  
+
+# Licensing
+
+This repository contains mixed content under different licenses:
+
+- **Hardware VHDL Code**: The VHDL code located in vivado excluding the NEORV32 core found in *vivado/thesis.srcs/sources_1/imports/core* is licensed under a proprietary license that restricts commercial use. The full license text can be found at the beginning of each VHDL file and must be respected as per the terms described therein. See [LICENSE.md](/LICENSE.md) for full details.
+
+- **Documentation and Text**: All written content provided outside of the VHDL code directories is licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0), which allows for sharing and adaptation for any purpose, as long as appropriate credit is given. See [LICENSE-docs.md](/LICENSE-docs.md) for full details.
+
+Please ensure you comply with the licensing terms for each part of the repository. For any use beyond what is permitted by these licenses, please contact Matthew Gilpin at matt@matthewgilpin.com
