@@ -1,66 +1,92 @@
-% ***************************************************
-% Conclusion
-% ***************************************************
 \chapter[Conclusion]{Conclusion}
 \label{Chap:Conclusion}
 
-% ********* Enter your text below this line: ********
-Conclude your thesis.
+\section{Summary}
 
-% ***************************************************
+This thesis explored the design and implementation of a hardware packet filter, Ethernet MAC with a RISC-V softcore processor. The Ethernet MAC and packet filter were created from scratch, while the NEORV32 RISC-V softcore was used to interface with the custom hardware. This was all implemented on a Xilinx Artix 7 FPGA board with the LAN8720A PHY. The design was evaluated and compared against similar preexisting solutions on the market. While the design in this thesis did not outperform the preexisting solutions in all cases, it was comparable and did provide new and unique features not seen before in the embedded systems space. In addition to the hardware, a webserver and web application was created to allow for easy configuration of the packet filter. 
 
-\section{Limitations and improvements}
+The design in this thesis shows that hardware packet filters in embedded systems are feasible and consume minimal resources while providing great performance. The design was able to achieve a latency of $4\mu s$ while only consuming 571 slice LUTs and 1145 slice registers. The packet filter design was also able to achieve a power consumption of just 2mW.
+
+
+
+\section{Limitations}
+While this thesis explored the design and implementation of a hardware packet filter, Ethernet MAC with a RISC-V softcore processor, there are some limitations to the design and the research conducted. These can be summarised in the following points:
+
 
 \begin{itemize}
-    \item Bidirectional filtering - currently only doing incomming filtering
-    \item Support IPv6
-    \item Redesign of the transmit logic to consume less resources while not losing on speed/performance - can reduce number of buffers. 
-    \item Add a second interface - would need a new pcb and would need onboard switch if webserver was also wanted.
-    \item Utilise the DDR2 RAM onboard the Nexys a7 board for RAM to free up BRAM. 
-    \item Use another FPGA board with only the essential peripherals (eg dont need USB, Audio, temperature sensor etc on Nexys board)
-    \item Support certificates for HTTPS. 
-    \item Support faster media interfaces, eg RGMII for 1Gbit/s or XGMII for 10Gbit/s as an example
-    \item Make efficiency considerations in the ethernet hardware and RISC-V core. 
+    \item The current system only supports filtering network packets in one direction as it assumes all packets leaving the device is safe. 
+    \item The design only considers IPv4 packets without IEEE 802.1Q VLAN tagging.
+    \item The transmit logic is not optimised for resource usage and can be improved.
+    \item Only one interface is supported due to the bandwidth limitations of the PMOD ports on the Nexys A7 board.
+    \item Only HTTP and other unencrypted protocols are supported.
+    \item The current design is bottlenecked from the processor - NEORV32.
+    \item The packet classifier design is not scalable to support additional rules.
 \end{itemize}
 
 
-\section{Recommendations}
-
-Add dedicated hardware packet filtering to SoC based computers - safer - faster, efficient and lightweight
-
-Reduce number of transmit buffers needed - consolidate them.
-
-Use an FPGA with more BRAM as this would help with filter sizes, buffers and also ram needed for the RTOS and webservers.
-
-Consider Hybrid SoC FPGA such as the Xilinx Zynq lineup.
-
-Hardware ethernet and packet filter reduces latency, but is bottlenecked by CPU.
-
-Use a different bus which the processor can handle - wishbone is overkill ~2.5Gbit for 100Mbit connection.
-
-If power efficiency is desired, consider something like the MilkV duo. 128mA at 94mbit/s
-
-The NeoRV32 is a solid softcore processor, but it's size grows exponentially when you use the wishbone interface. It's feature set is growing and while good, is not a great idea in production devices. 
+In addition, only one interface is supported due to the Nexys A7 board only consisting of one Ethernet PHY and the additional PMOD ports are not suitable for Ethernet. This is because the PMOD ports are only rated for a 25Mhz bandwidth, while the RMII signals are 50Mhz. As such, signal integrity issues arose (see appendix \ref{app:eye_diagrams} for eye diagram) and restricted the use to just one interface - the onboard PHY. A new development board with two PHYs would be needed.
 
 
-While Freertos plus TCP provides a good library, it's documentation and community support is lackluster in comparison to LwIP. But is relatively easy to use. 
- 
-Using Vue.js to write the website in is a good idea as it reduces the network traffic between the device as routing is handled on the client side. So for lightweight applications, it is ideal. No need to have a special webserver for it as the site is static. However a separate API is needed, but easy to implement. 
 
 
-Configure the DHCP server so that it statically assigns the IP address to the firewall for easy configuration. 
+
+
+
+
+
 
 
 \section{Sustainability}
 
-Ethernet standards have been in place since xxxx and the IP, TCP, UDP and other layer 4 protocols have been in service for decades and have not changed. Typically if new features do need to be added in these areas, they are added ontop of and not modify the packet structure itself. Such event was in 1998 with the introduction of IPv6 \cite{rfc2460}.
 
-While malicious bad actors come up with new and innovative ways to breach a system, the core of this packet filter is solid and fundamentally should not need to change in future. Instead other additions to the architecture of a system should be added to better protect a host. 
 
-Using the neorv32 while is feature-rich, as it's in its developement process and new features are continually getting added and existing features moved around, it doesn't make for the best choice for ease of updating, but it does get regularly updated so if there was a security vulnerability, odds are that it will get patched.
+The sustainability of the designed system in this thesis is multi-layered with considerations in hardware, software, and web development taken into consideration. 
 
-Perhaps a larger issue with sustainability is the lifecyle of a Vue.js webapp. When updates are needed, potentially new versions of the toolchain may be needed thus contributing to longer development times. 
+Starting at the hardware level, the specific implementation in this thesis uses the Digilent Nexys A7 FPGA board with a Xilinx Artix 7 FPGA and a LAN8720A PHY. The LAN8720A PHY uses the standardised RMII interface, increasing the portability across various FPGAs assuming adequate resources. Likewise, other RMII PHY chips could be swapped out with the LAN8720A without issue due to the standardised interface. The specific implementation of the hardware in this thesis requires minimal modification to support other media independent interfaces such as RGMII or XGMII. The main difference would be in the input and output FIFOs being able to support the different clock rates and bit widths. Apart from the clocking IP block, the design is written in vendor-agnostic VHDL and can be easily ported to other FPGAs. 
 
-Choice of riscv makes this project easy to commercialise since there is no licences needed for the risc-v cores are royalty free and the specific variant, neorv32 is open sourced under the BSD-3-Clause license. \footnote[1]{See: https://github.com/stnolting/neorv32/blob/main/LICENSE}
+The TCP/IP standards including the IEEE 802.3 Ethernet standards and protocols such as IP, TCP, and UDP, have being around for decades with minimal adjustments to the standards since their inception. New features in these standards typically are additive and do not modify the packet structure itself, allowing for backwards compatibility. An example of this is the introduction of IPv6 in 1998 \cite{rfc2460}. This is important when designing a hardware layer packet filter which assumes the bit positioning of the fields in the packet. Considering this, the packet filter should be still applicable in the future as the packet structure is unlikely to change.
 
-This design was deployed on a Xilinx Artix 7 FPGA board with the LAN8720A PHY. As the LAN8720A chip uses the standardised RMII interface, there should be no issues porting the project to another FPGA or FPGA board so long as there is sufficient LUTs and BRAM available on the FPGA and uses an RMII phy. The hardware could be updated to RGMII or XGMII without too many issues with the main difference being in the input and output FIFO being able to support the different clock rates and bit widths.  
+
+The choice of using a RISC-V processor architecture is another sustainable consideration made in this project. While RISC-V is royalty-free and the core instruction set architecture is open-source, not all implementations of RISC-V cores are open-source or free. The specific implementation of RISC-V used in this thesis is the NEORV32, which is open-source and free to use under the BSD-3-Clause license \footnote[1]{See: https://github.com/stnolting/neorv32/blob/main/LICENSE}. This importantly allows for commercial use and redistribution, but does not carry any liability. Additionally, the NEORV32 is still in active development and is continually getting updated with new features and bug fixes. While this means that new features and security patches will get added, it also incurs additional work to update the design to the latest version. The future of the open-source design is also vulnerable to becoming abandoned if the developer decides to stop working on it. 
+
+
+Similarly to the NEORV32, FreeRTOS and their first-party FreeRTOS-Plus-TCP library are also open-source and free to use under the MIT license \footnote[2]{See: https://www.freertos.org/a00114.html}. Like the NEORV32, FreeRTOS and it's libraries are actively maintained by Amazon and feature updates, albeit less frequently than the NEORV32. The FreeRTOS-Plus-TCP library is also feature-rich and is continually getting updated, however, it's documentation and community support is more limited than that of LwIP.
+
+
+
+In terms of web development, Vue.js was used as a framework for web development. Primary issues of concern for web applications are dependencies and library support and maintenance. In this project, only a small handful of packages were used, each of which are well maintained and have a large community support. If future designs were to use Vue.js with other packages, it is recommended that the packages used are well maintained. Like the TCP/IP stack, HTTP, HTML, Javascript and CSS, which Vue.js is built upon, are heavily standardised but do change over time. As such, future designs should be aware of these changes and adapt accordingly.
+
+
+Finally, the security of the design poses the greatest risk to sustainability. Malicious bad actors are continually innovating and finding new ways to breach systems. Despite this, the core design of the packet filter remains fundamentally strong due to it's basic filtering capabilities. While it will not prevent all cyber attacks, it can be used as a tool in a much larger system to help mitigate the risk of such attacks. Further fortifications can be made to the system architecture by using HTTPs, public key cryptography, and deep packet inspection.
+
+
+
+
+
+\section{Recommendations and future work}
+
+In light of the findings in this thesis, several key recommendations can be made for future work in the area of embedded system SoC design which features Ethernet connectivity.
+
+The primary recommendation is to incorporate dedicated hardware packet filtering into SoC designs. As demonstrated in this thesis, the resource utilisation for the packet filtering logic is minimal (571 slice LUTs and 1145 slice registers) and can be easily integrated into the design with minimal impact to cost. Superior latency, throughput and power consumption metrics are only some of the benefits presented in this thesis over the conventional software based packet filters. Additionally, the potential resilience against potential security vulnerabilities is another key advantage of this approach.
+
+While the NEORV32 is a solid general-purpose softcore processor, it seemed to bottleneck the design and withheld the design from achieving better performance. The CVITEK CV1800B, used in the MilkV-Duo and compared in this thesis, is a powerful SoC with an abundance of resources including a hardware MAC and PHY, but falls short of including a hardware packet filter. An ideal choice would be to have the performance of the CVITEK CV1800B with the hardware packet filtering capabilities of the design presented in this thesis. This would give the best of both worlds, performance and security.
+
+Alternatively, research into using hybrid SoC FPGAs such as the Xilinx Zynq lineup which include an FPGA and a hardcore processor connected over a high speed fabric could be a good avenue. This provides the flexibility of an FPGA with the performance of a hardcore processor, ideal for small scale designs that would otherwise be too expensive for custom silicon.
+
+Leveraging single page application frameworks such as Vue.js for use in embedded systems is another recommendation resulting from the work done in this thesis. Light-weight applications and low power devices can benefit greatly from the use of such frameworks as fewer network traffic is required due to client-side routing and static web content. In combination with a lightweight API, dynamic data can be obtained with minimal network traffic, making the user experience seamless and responsive.
+
+In addition to these recommendations for future designs, the work in this thesis can be extended in the following areas:
+
+\begin{itemize}
+    \item Redesign of the transmit logic to consume less resources while not losing on speed/performance, 
+    \item Add a second Ethernet interface to filter traffic for other devices on the network, 
+    \item Utilise the DDR2 RAM to free up BRAM in the FPGA, 
+    \item Implement public key cryptography for HTTPS,
+    \item Support faster media interfaces, eg RGMII for 1Gbit/s or XGMII for 10Gbit/s,
+    \item Use a different bus interconnect for the processor, eg AXI4, and
+    \item Look into using LwIP over FreeRTOS-Plus-TCP.
+\end{itemize}
+
+
+
+

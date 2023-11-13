@@ -3,7 +3,8 @@
 % ***************************************************
 \chapter{Appendix}
 
-Write your appendix here. Following two are examples. 
+\section{Code and Hardware Repository}
+Please find it at \url{https://github.com/matty0005/thesis}.
 
 
 \section{Neorv32 memory address space layout}
@@ -11,14 +12,15 @@ Write your appendix here. Following two are examples.
 \begin{figure}[h!]
     \centering
     \includegraphics[width=1\textwidth]{Images/neorv32_address_space.png}
-    \caption{Neorv32 Memory Address space.}
+    \caption[Neorv32 Memory Address space.]{Neorv32 Memory Address space \cite{neorv32Datasheet}}
 \end{figure}
 
+\newpage
 
 
 \section{FPGA primitives utilisation}
 \label{app:res_usage}
-\begin{table}
+\begin{table}[h]
     \centering
     \caption{FPGA primitives utilisation for XC7A100T}
     \begin{tabular}{|l|r|l|}
@@ -53,22 +55,7 @@ Write your appendix here. Following two are examples.
     \end{tabular}
 \end{table}
 
-\begin{table}
-    \centering
-    \caption{Memory Utilisation}
-    \begin{tabular}{|l|r|r|r|r|r|}
-        \toprule
-        Site Type      & Used & Fixed & Prohibited & Available & Util\% \\
-        \midrule
-        Block RAM Tile &  130 &     0 &          0 &       135 & 96.30 \\
-        RAMB36/FIFO*   &  130 &     0 &          0 &       135 & 96.30 \\
-        RAMB36E1 only  &  130 &     - &          - &         - &    -  \\
-        RAMB18         &    0 &     0 &          0 &       270 &  0.00 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{table}
+\begin{table}[h]
     \centering
     \caption{Slice Logic Utilisation}
     \begin{tabular}{|l|r|r|r|r|r|}
@@ -90,6 +77,25 @@ Write your appendix here. Following two are examples.
 \end{table}
 
 
+\begin{table}[h]
+    \centering
+    \caption{Memory Utilisation}
+    \begin{tabular}{|l|r|r|r|r|r|}
+        \toprule
+        Site Type      & Used & Fixed & Prohibited & Available & Util\% \\
+        \midrule
+        Block RAM Tile &  130 &     0 &          0 &       135 & 96.30 \\
+        RAMB36/FIFO*   &  130 &     0 &          0 &       135 & 96.30 \\
+        RAMB36E1 only  &  130 &     - &          - &         - &    -  \\
+        RAMB18         &    0 &     0 &          0 &       270 &  0.00 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+
+\newpage
+
 \section{Additional webpages built into the webserver.}
 \label{app:additional_webpages}
 \begin{figure}[h!]
@@ -107,6 +113,7 @@ Write your appendix here. Following two are examples.
 \end{figure}
 
 
+\newpage
 \section{UDP ping times between boards}
 \label{app:udp_ping_measurements}
 \begin{table}[ht]
@@ -114,7 +121,7 @@ Write your appendix here. Following two are examples.
     \caption{Average UDP RTT for different devices and payload sizes.}
     \begin{tabular}{lcc}
     \toprule
-    Device & 7 bytes (ms) & 256 bytes (ms) \\
+    Device & 8 bytes (ms) & 256 bytes (ms) \\
     \midrule
     WIZ5500 Pico & 1.88 & 2.07 \\
     F767ZI & 1.30 & 1.39 \\
@@ -125,7 +132,7 @@ Write your appendix here. Following two are examples.
     \end{tabular}
     \end{table}
 
-\section{Current measurments from boards}
+\section{Current measurements from boards}
 \label{app:current_measurements}
 
 Table \ref{tab:power_consumption} shows the current measurments. Notably Diff1 is the difference between the Idle and No ETH fields while Diff2 is the difference between the Idle and Clean states.
@@ -148,10 +155,10 @@ Table \ref{tab:power_consumption} shows the current measurments. Notably Diff1 i
 
 
 \section{Thermal measurements for boards}
-
+\label{app:thermal_measurements}
 \begin{table}[ht]
     \centering
-    \caption{Device measurements over time using FLIR One thermal camera}
+    \caption{Device measurements over time using FLIR One thermal camera, all measurements in degrees Celsius.}
     \label{tab:measurements}
     \begin{tabular}{lcccccc}
     \toprule
@@ -193,6 +200,7 @@ UDP (10.20.1.34, 9999) received response from ('10.20.1.34', 9999) in 1.08ms: ok
 Failed to retrieve content from http://10.20.1.34/
 \end{lstlisting}
 
+\newpage
 
 \subsection*{Node 3}
 \begin{lstlisting}[style=consoleoutput]pi@node2:~/thesis-tools $ python3 test.py
@@ -219,4 +227,38 @@ Failed to retrieve content from http://10.20.1.34/
 \end{lstlisting}
 
 
+\newpage
 
+\section{Iperf 3 Test results}
+\label{app:iperf3_test_results}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{Images/iperf3Test1M3.png}
+    \caption{Nexys A7 and designed hardware Iperf3 test results.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{Images/iperf2TestNucleo.png}
+    \caption{Nucleo-F767ZI Iperf3 test results.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{Images/iperf3TestMilkV.png}
+    \caption{MilkV-duo Iperf3 test results.}
+\end{figure}
+
+\newpage
+
+
+\section{Eye Diagrams of PMOD port}
+\label{app:eye_diagrams}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Images/EyeDiagramTX.png}
+    \caption[Eye diagram of TXD through PMOD interface]{Eye diagram of TXD through PMOD interface.}
+    \label{fig:eye_diagram}
+\end{figure}

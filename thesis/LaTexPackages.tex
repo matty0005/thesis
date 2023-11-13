@@ -58,6 +58,7 @@
 
 \usetikzlibrary{shapes.geometric, arrows}
 \usetikzlibrary{arrows.meta, calc}
+\usetikzlibrary{decorations.pathreplacing, backgrounds}
 %You can add more packages here if you need
 
 
@@ -124,9 +125,19 @@
     backgroundcolor=\color[gray]{0.9}
 }
 
+\lstdefinestyle{vhdl}{
+    basicstyle=\small\ttfamily,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color[gray]{0.98}
+}
+
 
 \definecolor{lightergray}{gray}{0.95}
 \newcommand{\codebg}[1]{\colorbox{lightergray}{\lstinline!#1!}}
+
+\newcolumntype{P}[1]{>{\arraybackslash}p{#1}}
+
 
 \newcommand{\memsection}[4]{
     \bytefieldsetup{bitheight=#3\baselineskip}
